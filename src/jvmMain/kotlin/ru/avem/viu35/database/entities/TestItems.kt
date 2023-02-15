@@ -1,14 +1,14 @@
 package ru.avem.viu35.database.entities
 
-import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
+import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.transactions.transaction
 
 object TestItems : IntIdTable() {
     val name = varchar("name", 256)
-    val type = integer("type")
+    val type = varchar("type", 256)
 }
 
 class TestItem(id: EntityID<Int>) : IntEntity(id) {
@@ -19,10 +19,16 @@ class TestItem(id: EntityID<Int>) : IntEntity(id) {
 
     val fieldsIterable by TestItemField referrersOn (TestItemFields.testItem)
 
-    val fields: Map<String, TestItemField>
+    val fields: Map<Int, TestItemField>
         get() {
-            return transaction { fieldsIterable.map { it.key1 to it }.toMap() }
+            return transaction { fieldsIterable.map { it.key to it }.toMap() }
         }
 
     override fun toString() = name
 }
+
+data class TestItemScheme(
+    var name: String,
+    var type: String,
+    var tests: List<TestItemFieldScheme>
+)
