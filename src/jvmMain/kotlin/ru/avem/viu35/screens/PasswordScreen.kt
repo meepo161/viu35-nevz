@@ -11,24 +11,21 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.*
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
-import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import ru.avem.viu35.PASSWORD
+import kotlinx.coroutines.launch
+import ru.avem.viu35.viewmodels.PasswordScreenViewModel
 
 class PasswordScreen(private val navigateTo: Screen) : Screen {
     @OptIn(ExperimentalComposeUiApi::class)
@@ -38,6 +35,8 @@ class PasswordScreen(private val navigateTo: Screen) : Screen {
         val password = remember { mutableStateOf("") }
         val passwordVisible = remember { mutableStateOf(false) }
         val passwordError = remember { mutableStateOf(false) }
+        val scope = rememberCoroutineScope()
+        val viewModel = rememberScreenModel { PasswordScreenViewModel(navigateTo) }
 
         Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
             TopAppBar(
@@ -66,7 +65,9 @@ class PasswordScreen(private val navigateTo: Screen) : Screen {
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     modifier = Modifier.onKeyEvent {
                         if (it.key == Key.Enter && it.type == KeyEventType.KeyDown) {
-                            checkPassword(password, navigator, passwordError)
+                            scope.launch {
+                                viewModel.checkPassword(password, navigator, passwordError)
+                            }
                         }
                         false
                     },
@@ -82,39 +83,22 @@ class PasswordScreen(private val navigateTo: Screen) : Screen {
                 )
                 Button(
                     onClick = {
-                        if (password.value == "123") {
-                            navigator.push(navigateTo)
-                        } else {
-                            passwordError.value = true
+                        scope.launch {
+                            viewModel.checkPassword(password, navigator, passwordError)
                         }
                     },
                     elevation = ButtonDefaults.elevation(
                         defaultElevation = 10.dp,
                         pressedElevation = 15.dp,
                         disabledElevation = 0.dp
-                    ),
-
-                    ) {
+                    )
+                ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(text = "Далее")
                         Icon(imageVector = Icons.Filled.ArrowForward, contentDescription = null)
                     }
                 }
             }
-
         }
     }
-
-    private fun checkPassword(
-        password: MutableState<String>,
-        navigator: Navigator,
-        passwordError: MutableState<Boolean>
-    ) {
-        if (password.value == PASSWORD) {
-            navigator.push(navigateTo)
-        } else {
-            passwordError.value = true
-        }
-    }
-
 }

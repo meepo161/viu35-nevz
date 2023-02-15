@@ -29,7 +29,7 @@ fun ScrollableLazyColumn(
 
     Box(modifier) {
         LazyColumn(
-            state = scrollState, modifier = Modifier.fillMaxSize().draggable(
+            state = scrollState, modifier = Modifier.draggable(
                 orientation = Orientation.Vertical,
                 state = rememberDraggableState {
                     scope.launch {

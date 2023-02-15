@@ -1,9 +1,8 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("multiplatform") version ("1.7.20")
-    id("org.jetbrains.compose") version ("1.2.2")
+    kotlin("multiplatform") version ("1.8.0")
+    id("org.jetbrains.compose") version ("1.3.0")
 }
 
 group = "ru.avem"
@@ -23,7 +22,7 @@ val exposedVersion = "0.41.1"
 kotlin {
     jvm {
         compilations.all {
-            kotlinOptions.jvmTarget = "11"
+            kotlinOptions.jvmTarget = "15"
         }
         withJava()
     }
@@ -60,19 +59,8 @@ compose.desktop {
         mainClass = "MainKt"
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "ikas-10-multiplatform"
+            packageName = "viu35-nevz"
             packageVersion = "1.0.0"
         }
     }
 }
-dependencies {
-//    implementation(kotlin("stdlib-jdk8"))
-}
-//val compileKotlin: KotlinCompile by tasks
-//compileKotlin.kotlinOptions {
-//    jvmTarget = "1.8"
-//}
-//val compileTestKotlin: KotlinCompile by tasks
-//compileTestKotlin.kotlinOptions {
-//    jvmTarget = "1.8"
-//}

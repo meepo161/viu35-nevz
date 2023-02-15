@@ -7,6 +7,7 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.transitions.FadeTransition
+import ru.avem.viu35.database.validateDB
 import ru.avem.viu35.screens.MainScreen
 
 @OptIn(ExperimentalAnimationApi::class)
@@ -22,6 +23,7 @@ fun App() {
 }
 
 fun main() = application {
+    validateDB()
     Window(onCloseRequest = ::exitApplication) {
         App()
     }
