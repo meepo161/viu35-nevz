@@ -15,12 +15,11 @@ fun validateDB() {
         SchemaUtils.create(TestItems, TestItemFields)
 
         if (TestItem.all().empty()) {
-            var list = mutableListOf<TestItemFieldScheme>()
-            var k = 0
             for (i in 1 until 99) {
+                var k = 0
+                var list = mutableListOf<TestItemFieldScheme>()
                 for (j in 0 until i) {
-                    k++
-                    list.add(TestItemFieldScheme("", "dot${k}", "dot${k}", "description$i"))
+                    list.add(TestItemFieldScheme(k++, "dot${k}", "dot${k}", "description$i"))
                 }
                 TestItem.new {
                     name = "$i"
@@ -29,6 +28,7 @@ fun validateDB() {
                     list.forEach {
                         TestItemField.new {
                             testItem = ti
+                            key = it.key
                             dot1 = it.dot1
                             dot2 = it.dot2
                             description = it.description

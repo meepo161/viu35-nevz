@@ -7,7 +7,7 @@ import org.jetbrains.exposed.dao.id.IntIdTable
 
 object TestItemFields : IntIdTable() {
     val testItem = reference("testItem", TestItems)
-    val key = integer("key").autoIncrement()
+    val key = integer("key")
     val dot1 = varchar("dot1", 256)
     val dot2 = varchar("dot2", 256)
     val description = varchar("description", 256)
@@ -26,7 +26,7 @@ class TestItemField(id: EntityID<Int>) : IntEntity(id) {
     override fun toString() = "${testItem.name}"
 }
 data class TestItemFieldScheme(
-    var key: String,
+    var key: Int,
     var dot1: String,
     var dot2: String,
     var description: String

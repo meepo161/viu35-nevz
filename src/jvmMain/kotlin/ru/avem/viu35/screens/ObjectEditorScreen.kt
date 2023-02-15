@@ -36,7 +36,7 @@ object ObjectEditorScreen : Screen {
         val name = remember { mutableStateOf("") }
         val type = remember { mutableStateOf("") }
         var isExpandedDropDownMenu = mutableStateOf(false)
-        futureTVM.value = listOf(TestItemFieldScheme("", "", "", ""))
+        futureTVM.value = listOf(TestItemFieldScheme(0, "", "", ""))
 
         LaunchedEffect(objects) {
             launch {
@@ -44,8 +44,9 @@ object ObjectEditorScreen : Screen {
                 transaction {
                     objects.forEach {
                         val listTests = mutableListOf<TestItemFieldScheme>()
+                        var key = 0
                         it.fields.values.forEach {
-                            listTests.add(TestItemFieldScheme(it.key, it.dot1, it.dot2, it.description))
+                            listTests.add(TestItemFieldScheme(key++, it.dot1, it.dot2, it.description))
                         }
                         objectsState.add(TestItemScheme(name = it.name, type = it.type, tests = listTests))
                     }
@@ -159,11 +160,12 @@ object ObjectEditorScreen : Screen {
                             selectedItem = futureTVM.value.first(),
                             items = futureTVM.value,
                             columns = listOf(
+                                TestItemFieldScheme::key,
                                 TestItemFieldScheme::dot1,
                                 TestItemFieldScheme::dot2,
                                 TestItemFieldScheme::description,
                             ),
-                            columnNames = listOf("Первая точка", "Вторая точка", "Описание"),
+                            columnNames = listOf("№ Проверки","Первая точка", "Вторая точка", "Описание"),
                             onItemPrimaryPressed = { /*currentTests = tests[it]*/ },
                             onItemSecondaryPressed = { /*currentTests = tests[it]*/ },
                             contextMenuContent = {
