@@ -16,6 +16,7 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import kotlinx.coroutines.launch
 import ru.avem.viu35.composables.ScrollableLazyColumn
+import ru.avem.viu35.composables.TableView
 import ru.avem.viu35.composables.TestObjectListItem
 import ru.avem.viu35.database.entities.TestItem
 import ru.avem.viu35.database.getAllTestItems
@@ -28,11 +29,13 @@ object ObjectEditorScreen : Screen {
         val objects = mutableStateListOf<TestItem>()
         val name = remember { mutableStateOf("") }
         val type = remember { mutableStateOf("") }
+        var isExpandedDropDownMenu = mutableStateOf(false)
 
         LaunchedEffect(objects) {
             launch {
                 objects.addAll(getAllTestItems())
             }
+            println(objects.first())
         }
 
         Scaffold(
@@ -73,7 +76,10 @@ object ObjectEditorScreen : Screen {
                                 disabledElevation = 0.dp
                             ),
                         ) {
-                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
                                 Icon(imageVector = Icons.Filled.Add, contentDescription = null)
                                 Text(text = "Создать новый")
                             }
@@ -87,7 +93,10 @@ object ObjectEditorScreen : Screen {
                                 disabledElevation = 0.dp
                             ),
                         ) {
-                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
                                 Icon(imageVector = Icons.Filled.ContentCopy, contentDescription = null)
                                 Text(text = "Копировать")
                             }
@@ -101,7 +110,10 @@ object ObjectEditorScreen : Screen {
                                 disabledElevation = 0.dp
                             ),
                         ) {
-                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
                                 Icon(imageVector = Icons.Filled.Edit, contentDescription = null)
                                 Text(text = "Редактировать")
                             }
@@ -115,38 +127,39 @@ object ObjectEditorScreen : Screen {
                                 disabledElevation = 0.dp
                             ),
                         ) {
-                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
                                 Icon(imageVector = Icons.Filled.Delete, contentDescription = null)
                                 Text(text = "Удалить")
                             }
                         }
                     }
-                    Column(modifier = Modifier.fillMaxWidth(0.6f).padding(8.dp)) {
-                        ScrollableLazyColumn(
-                            modifier = Modifier.padding(4.dp).weight(0.6f),
-                        ) {
-                            item {
-                                Row(
-                                    modifier = Modifier.padding(8.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(24.dp)
-                                ) {
-                                    Text(text = "Имя аппарата:")
-                                    TextField(value = name.value, onValueChange = { name.value = it })
-                                }
-                            }
-                            item {
-                                Row(
-                                    modifier = Modifier.padding(8.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(24.dp)
-                                ) {
-                                    Text(text = "Тип аппарата:")
-                                    TextField(value = type.value, onValueChange = { type.value = it })
-                                }
-                            }
-                        }
-
+                    Column(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
+//                        TableView(
+//                            selectedItem = currentObject,
+//                            items = objects,
+//                            columns = listOf(Tests::first, Tests::second, Tests::description),
+//                            columnNames = listOf("Первая точка", "Вторая точка", "Описание"),
+//                            onItemPrimaryPressed = { currentTests = tests[it] },
+//                            onItemSecondaryPressed = { currentTests = tests[it] },
+//                            contextMenuContent = {
+//                                DropdownMenuItem(onClick = {
+//                                    isExpandedDropDownMenu.value = false
+//                                    // navigator.push(TestsEditorScreen) TODO
+//                                }) {
+//                                    Text("Редактировать")
+//                                }
+//                                DropdownMenuItem(onClick = {
+//                                    tests.remove(currentTests)
+//                                    currentTests = tests.first()
+//                                }) {
+//                                    Text("Удалить")
+//                                }
+//                            },
+//                            isExpandedDropdownMenu = isExpandedDropDownMenu
+//                        )
                     }
                 }
             }

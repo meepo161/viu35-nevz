@@ -2,6 +2,7 @@ package ru.avem.viu35.database
 
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
+import org.jetbrains.exposed.sql.SizedCollection
 import org.jetbrains.exposed.sql.transactions.TransactionManager
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.avem.viu35.database.entities.TestItem
@@ -14,15 +15,6 @@ fun validateDB() {
 
     transaction {
         SchemaUtils.create(TestItems)
-
-        if (TestItem.all().count() == 0L) {
-            for (i in 100 downTo 0) {
-                TestItem.new {
-                    name = "${i}"
-                    type = "аппарат"
-                }
-            }
-        }
     }
 }
 

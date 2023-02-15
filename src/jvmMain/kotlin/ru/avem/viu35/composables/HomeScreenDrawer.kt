@@ -50,7 +50,8 @@ fun HomeScreenDrawer() {
     }
     Divider()
     DrawerMenuItem(Icons.Filled.Settings, "База данных испытываемых аппаратов") {
-        navigator.push(PasswordScreen(ObjectEditorScreen))
+//        navigator.push(PasswordScreen(ObjectEditorScreen))
+        navigator.push(ObjectEditorScreen)
     }
     DrawerMenuItem(painterResource("icons/baseline_storage_24.xml"), "База данных протоколов") {
 //        navigator.push(ProtocolsScreen)
