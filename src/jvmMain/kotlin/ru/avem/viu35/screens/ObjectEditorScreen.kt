@@ -16,13 +16,13 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import kotlinx.coroutines.launch
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.avem.viu35.composables.ScrollableLazyColumn
 import ru.avem.viu35.composables.TableView
 import ru.avem.viu35.composables.TestObjectListItem
-import ru.avem.viu35.database.entities.TestItem
-import ru.avem.viu35.database.entities.TestItemFieldScheme
-import ru.avem.viu35.database.entities.TestItemScheme
+import ru.avem.viu35.database.entities.*
 import ru.avem.viu35.database.getAllTestItems
 import ru.avem.viu35.viewmodels.ObjectEditorViewModel
 
@@ -31,25 +31,19 @@ object ObjectEditorScreen : Screen {
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
-        val objects = mutableStateListOf<TestItem>()
-        val objectsState = mutableStateListOf<TestItemScheme>()
-        val objectsTableVIewState = mutableStateOf(listOf<TestItemFieldScheme>())
-        val name = remember { mutableStateOf("") }
-        val type = remember { mutableStateOf("") }
         val isExpandedDropDownMenu = mutableStateOf(false)
-        val viewModel = rememberScreenModel { ObjectEditorViewModel() }
-        viewModel.tvm.value = TestItemScheme("", "", listOf())
+        val vm = rememberScreenModel { ObjectEditorViewModel() }
 
-        LaunchedEffect(objects) {
+        LaunchedEffect(vm.objects) {
             launch {
-                objects.addAll(getAllTestItems())
+                vm.objects.addAll(getAllTestItems())
                 transaction {
-                    objects.forEach {
+                    vm.objects.forEach {
                         val listTests = mutableListOf<TestItemFieldScheme>()
                         it.fields.values.forEach {
                             listTests.add(TestItemFieldScheme(it.key, it.dot1, it.dot2, it.description))
                         }
-                        objectsState.add(TestItemScheme(name = it.name, type = it.type, tests = listTests))
+                        vm.objectsState.add(TestItemScheme(name = it.name, type = it.type, tests = listTests))
                     }
                 }
             }
@@ -69,7 +63,7 @@ object ObjectEditorScreen : Screen {
                     })
             }
         ) {
-            AnimatedVisibility(objects.isNotEmpty(), enter = fadeIn(), exit = fadeOut()) {
+            AnimatedVisibility(vm.objects.isNotEmpty(), enter = fadeIn(), exit = fadeOut()) {
                 Row(modifier = Modifier.fillMaxSize()) {
                     Column(
                         modifier = Modifier.fillMaxWidth(0.3f).padding(8.dp),
@@ -78,11 +72,11 @@ object ObjectEditorScreen : Screen {
                         ScrollableLazyColumn(
                             modifier = Modifier.padding(4.dp).weight(0.6f),
                         ) {
-                            objectsState.sortedBy { it.name }.forEach {
+                            vm.objectsState.sortedBy { it.name }.forEach {
                                 item {
                                     TestObjectListItem(
                                         text = "${it.name} ${it.type}",
-                                        click = { viewModel.tvm.value = it }
+                                        click = { vm.tvm.value = it }
                                     )
                                 }
                             }
@@ -158,8 +152,8 @@ object ObjectEditorScreen : Screen {
                     }
                     Column(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
                         TableView(
-                            selectedItem = viewModel.currentTVM.value,
-                            items = viewModel.tvm.value.tests,
+                            selectedItem = vm.currentTVM.value,
+                            items = vm.tvm.value.tests,
                             columns = listOf(
                                 TestItemFieldScheme::key,
                                 TestItemFieldScheme::dot1,
@@ -167,8 +161,8 @@ object ObjectEditorScreen : Screen {
                                 TestItemFieldScheme::description,
                             ),
                             columnNames = listOf("№ Проверки", "Первая точка", "Вторая точка", "Описание"),
-                            onItemPrimaryPressed = { viewModel.currentTVM.value = viewModel.tvm.value.tests[it] },
-                            onItemSecondaryPressed = { viewModel.currentTVM.value = viewModel.tvm.value.tests[it] },
+                            onItemPrimaryPressed = { vm.currentTVM.value = vm.tvm.value.tests[it] },
+                            onItemSecondaryPressed = { vm.currentTVM.value = vm.tvm.value.tests[it] },
                             contextMenuContent = {
                                 DropdownMenuItem(onClick = {
                                     isExpandedDropDownMenu.value = false
@@ -177,9 +171,11 @@ object ObjectEditorScreen : Screen {
                                     Text("Редактировать")
                                 }
                                 DropdownMenuItem(onClick = {
-//                                    tests.remove(currentTests)
+//                                    transaction {
+//                                        TestItemFields.deleteWhere {TestItemFields.key eq vm.currentTVM.value.key }
+//                                    } TODO
                                     isExpandedDropDownMenu.value = false
-                                    viewModel.currentTVM.value = viewModel.tvm.value.tests.first()
+                                    vm.currentTVM.value = vm.tvm.value.tests.first()
                                 }) {
                                     Text("Удалить")
                                 }
