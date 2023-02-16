@@ -11,6 +11,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
@@ -23,7 +24,7 @@ import ru.avem.viu35.database.entities.TestItem
 import ru.avem.viu35.database.entities.TestItemFieldScheme
 import ru.avem.viu35.database.entities.TestItemScheme
 import ru.avem.viu35.database.getAllTestItems
-import ru.avem.viu35.futureTVM
+import ru.avem.viu35.viewmodels.ObjectEditorViewModel
 
 object ObjectEditorScreen : Screen {
 
@@ -35,8 +36,9 @@ object ObjectEditorScreen : Screen {
         val objectsTableVIewState = mutableStateOf(listOf<TestItemFieldScheme>())
         val name = remember { mutableStateOf("") }
         val type = remember { mutableStateOf("") }
-        var isExpandedDropDownMenu = mutableStateOf(false)
-        futureTVM.value = listOf(TestItemFieldScheme(0, "", "", ""))
+        val isExpandedDropDownMenu = mutableStateOf(false)
+        val viewModel = rememberScreenModel { ObjectEditorViewModel() }
+        viewModel.tvm.value = TestItemScheme("", "", listOf())
 
         LaunchedEffect(objects) {
             launch {
@@ -44,9 +46,8 @@ object ObjectEditorScreen : Screen {
                 transaction {
                     objects.forEach {
                         val listTests = mutableListOf<TestItemFieldScheme>()
-                        var key = 0
                         it.fields.values.forEach {
-                            listTests.add(TestItemFieldScheme(key++, it.dot1, it.dot2, it.description))
+                            listTests.add(TestItemFieldScheme(it.key, it.dot1, it.dot2, it.description))
                         }
                         objectsState.add(TestItemScheme(name = it.name, type = it.type, tests = listTests))
                     }
@@ -81,7 +82,7 @@ object ObjectEditorScreen : Screen {
                                 item {
                                     TestObjectListItem(
                                         text = "${it.name} ${it.type}",
-                                        testObject = it
+                                        click = { viewModel.tvm.value = it }
                                     )
                                 }
                             }
@@ -157,17 +158,17 @@ object ObjectEditorScreen : Screen {
                     }
                     Column(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
                         TableView(
-                            selectedItem = futureTVM.value.first(),
-                            items = futureTVM.value,
+                            selectedItem = viewModel.currentTVM.value,
+                            items = viewModel.tvm.value.tests,
                             columns = listOf(
                                 TestItemFieldScheme::key,
                                 TestItemFieldScheme::dot1,
                                 TestItemFieldScheme::dot2,
                                 TestItemFieldScheme::description,
                             ),
-                            columnNames = listOf("№ Проверки","Первая точка", "Вторая точка", "Описание"),
-                            onItemPrimaryPressed = { /*currentTests = tests[it]*/ },
-                            onItemSecondaryPressed = { /*currentTests = tests[it]*/ },
+                            columnNames = listOf("№ Проверки", "Первая точка", "Вторая точка", "Описание"),
+                            onItemPrimaryPressed = { viewModel.currentTVM.value = viewModel.tvm.value.tests[it] },
+                            onItemSecondaryPressed = { viewModel.currentTVM.value = viewModel.tvm.value.tests[it] },
                             contextMenuContent = {
                                 DropdownMenuItem(onClick = {
                                     isExpandedDropDownMenu.value = false
@@ -177,7 +178,8 @@ object ObjectEditorScreen : Screen {
                                 }
                                 DropdownMenuItem(onClick = {
 //                                    tests.remove(currentTests)
-//                                    currentTests = tests.first()
+                                    isExpandedDropDownMenu.value = false
+                                    viewModel.currentTVM.value = viewModel.tvm.value.tests.first()
                                 }) {
                                     Text("Удалить")
                                 }

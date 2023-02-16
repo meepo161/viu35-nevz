@@ -71,7 +71,8 @@ fun <T> TableView(
             }).background(
                 if (!isExpandedDropdownMenu.value) {
                     if (hoveredItem == item) {
-                        MaterialTheme.colors.secondary
+                        Color.LightGray
+//                        MaterialTheme.colors.primary
                     } else {
                         MaterialTheme.colors.background
                     }

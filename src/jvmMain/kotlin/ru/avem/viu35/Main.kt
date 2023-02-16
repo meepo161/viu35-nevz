@@ -24,6 +24,7 @@ fun App() {
 
 fun main() = application {
     validateDB()
+    println(MaterialTheme.colors.primary)
     Window(onCloseRequest = ::exitApplication) {
         App()
     }
