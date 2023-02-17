@@ -12,15 +12,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import ru.avem.viu35.database.entities.TestItemScheme
 
 @Composable
-fun TestObjectListItem(text: String, click: () -> Unit) {
-    Card(elevation = 4.dp, modifier = Modifier.padding(8.dp).clickable {
-        click()
+fun TestObjectListItem(modifier: Modifier = Modifier, text: String, onClick: () -> Unit) {
+    Card(elevation = 4.dp, modifier = modifier.padding(8.dp).clickable {
+        onClick()
     }) {
         Row(
-            modifier = Modifier.fillMaxWidth().height(64.dp).padding(8.dp),
+            modifier = Modifier.fillMaxWidth().height(48.dp).padding(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(text = text, fontWeight = FontWeight.Bold)

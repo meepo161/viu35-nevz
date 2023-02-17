@@ -35,15 +35,20 @@ fun <T> ComboBox(
     val scope = rememberCoroutineScope()
     val scrollState = rememberLazyListState()
 
-    Column(modifier = modifier.border(1.dp, Color.Gray, shape = RoundedCornerShape(4.dp)).width(280.dp).height(60.dp)) {
+    Column(modifier = modifier.border(1.dp, Color.Gray, shape = RoundedCornerShape(4.dp)).width(280.dp).height(96.dp)) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier.fillMaxWidth().clickable {
                 expandedState = true
-            }.fillMaxWidth().height(64.dp),
+            }.fillMaxWidth().height(96.dp),
         ) {
-            Text(selectedItem.value.toString(), modifier = Modifier.padding(16.dp), style = MaterialTheme.typography.h5)
+            Text(
+                text = selectedItem.value.toString(),
+                modifier = Modifier.padding(16.dp),
+                style = MaterialTheme.typography.h5,
+
+            )
             Icon(Icons.Filled.ArrowDropDown, contentDescription = null)
         }
         if (isEditable) {
@@ -69,7 +74,7 @@ fun <T> ComboBox(
                                 selectedValue(item)
                                 expandedState = false
                             }) {
-                                Text(item.toString(), style = MaterialTheme.typography.h5)
+                                Text(text = item.toString(), style = MaterialTheme.typography.h5)
                             }
                         }
                     }

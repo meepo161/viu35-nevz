@@ -26,9 +26,3 @@ class TestItem(id: EntityID<Int>) : IntEntity(id) {
 
     override fun toString() = name
 }
-
-data class TestItemScheme(
-    var name: String,
-    var type: String,
-    var tests: List<TestItemFieldScheme>
-)

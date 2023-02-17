@@ -1,7 +1,10 @@
 package ru.avem.viu35.composables
 
-import androidx.compose.foundation.*
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.mouseClickable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.MaterialTheme
@@ -17,6 +20,7 @@ import androidx.compose.ui.input.pointer.isSecondaryPressed
 import androidx.compose.ui.input.pointer.pointerMoveFilter
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlin.reflect.KProperty1
@@ -35,7 +39,8 @@ fun <T> TableView(
     isExpandedDropdownMenu: MutableState<Boolean>
 ) {
     var hoveredItem by remember { mutableStateOf(selectedItem) }
-    Column(modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(bottom = 60.dp)) {
+
+    Column(modifier = Modifier.fillMaxWidth()) {
         Row {
             if (columnNames.size == columns.size) {
                 columnNames.forEach {
@@ -54,62 +59,71 @@ fun <T> TableView(
                         modifier = Modifier.clip(RoundedCornerShape(10.dp)).weight(0.3f).height(64.dp)
                             .background(MaterialTheme.colors.primary), contentAlignment = Alignment.Center
                     ) {
-                        Text(it.name, style = TextStyle(fontWeight = FontWeight.Bold, color = MaterialTheme.colors.surface))
+                        Text(
+                            it.name,
+                            style = TextStyle(fontWeight = FontWeight.Bold, color = MaterialTheme.colors.surface)
+                        )
                     }
                 }
             }
         }
-
-        items.forEachIndexed { i, item ->
-            Row(modifier = Modifier.mouseClickable(onClick = {
-                if (buttons.isPrimaryPressed) {
-                    onItemPrimaryPressed(i)
-                } else if (buttons.isSecondaryPressed) {
-                    onItemSecondaryPressed(i)
-                    isExpandedDropdownMenu.value = true
-                }
-            }).background(
-                if (!isExpandedDropdownMenu.value) {
-                    if (hoveredItem == item) {
-                        Color.LightGray
+        ScrollableLazyColumn {
+            items(items.size) {
+                Row(
+                    modifier = Modifier.mouseClickable(onClick = {
+                        if (buttons.isPrimaryPressed) {
+                            onItemPrimaryPressed(it)
+                        } else if (buttons.isSecondaryPressed) {
+                            onItemSecondaryPressed(it)
+                            isExpandedDropdownMenu.value = true
+                        }
+                    }).background(
+                        if (!isExpandedDropdownMenu.value) {
+                            if (hoveredItem == items[it]) {
+                                Color.LightGray
 //                        MaterialTheme.colors.primary
-                    } else {
-                        MaterialTheme.colors.background
+                            } else {
+                                MaterialTheme.colors.background
+                            }
+                        } else {
+                            MaterialTheme.colors.background
+                        }
+                    ).pointerMoveFilter( //TODO Deprecated
+                        onMove = { _ ->
+                            hoveredItem = items[it]
+                            false
+                        })
+                ) {
+                    columns.forEach { column ->
+                        val field = items[it]!!.getField<Any>(column.name)!!.toString()
+                        Box(
+                            modifier = Modifier.border(
+                                width = 1.dp, color = MaterialTheme.colors.primary, shape = RoundedCornerShape(4.dp)
+                            ).weight(0.3f).height(48.dp), contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = field,
+                                modifier = Modifier.padding(4.dp),
+                                textAlign = TextAlign.Center,
+//                                fontSize = 30.sp,
+                                color = if (selectedItem == items[it])
+                                    Color.Gray else MaterialTheme.colors.onSurface
+                            )
+                        }
                     }
-                } else {
-                    MaterialTheme.colors.background
-                }
-            ).pointerMoveFilter( //TODO Deprecated
-                onMove = {
-                    hoveredItem = item
-                    false
-                })) {
-                columns.forEach { column ->
-                    val field = item!!.getField<Any>(column.name)!!.toString()
-                    Box(
-                        modifier = Modifier.border(
-                            width = 1.dp, color = MaterialTheme.colors.primary, shape = RoundedCornerShape(4.dp)
-                        ).weight(0.3f).height(48.dp), contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = field,
-                            fontSize = 30.sp,
-                            color = if (selectedItem == item)
-                                Color.Gray else MaterialTheme.colors.onSurface
-                        )
-                    }
-                }
-                if (selectedItem == item) {
-                    DropdownMenu(expanded = isExpandedDropdownMenu.value, onDismissRequest = {
-                        isExpandedDropdownMenu.value = false
-                    }) {
-                        contextMenuContent()
+                    if (selectedItem == items[it]) {
+                        DropdownMenu(expanded = isExpandedDropdownMenu.value, onDismissRequest = {
+                            isExpandedDropdownMenu.value = false
+                        }) {
+                            contextMenuContent()
+                        }
                     }
                 }
             }
         }
     }
 }
+
 
 @Throws(IllegalAccessException::class, ClassCastException::class)
 inline fun <reified T> Any.getField(fieldName: String): T? {

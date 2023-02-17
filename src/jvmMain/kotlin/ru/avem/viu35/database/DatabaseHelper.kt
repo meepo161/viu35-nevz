@@ -4,7 +4,10 @@ import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.TransactionManager
 import org.jetbrains.exposed.sql.transactions.transaction
-import ru.avem.viu35.database.entities.*
+import ru.avem.viu35.database.entities.TestItem
+import ru.avem.viu35.database.entities.TestItemField
+import ru.avem.viu35.database.entities.TestItemFields
+import ru.avem.viu35.database.entities.TestItems
 import java.sql.Connection
 
 fun validateDB() {
@@ -15,25 +18,60 @@ fun validateDB() {
         SchemaUtils.create(TestItems, TestItemFields)
 
         if (TestItem.all().empty()) {
-            for (i in 1 until 99) {
-                var k = 0
-                var list = mutableListOf<TestItemFieldScheme>()
-                for (j in 0 until i) {
-                    list.add(TestItemFieldScheme(k++, "dot${k}", "dot${k}", "description$i"))
+            TestItem.new {
+                name = "Резистор токоограничивающий РТ-45"
+                type = "6TC.277.045"
+            }.also { ti ->
+                TestItemField.new {
+                    testItem = ti
+                    key = 1
+                    nameTest = "Между любым из выводов и стойкой поз.3"
+                    uViu = 7000
+                    time = 60
+                    uMeger = 2500
+                    rMeger = 150
                 }
-                TestItem.new {
-                    name = "$i"
-                    type = "аппарат"
-                }.also { ti ->
-                    list.forEach {
-                        TestItemField.new {
-                            testItem = ti
-                            key = it.key
-                            dot1 = it.dot1
-                            dot2 = it.dot2
-                            description = it.description
-                        }
-                    }
+                TestItemField.new {
+                    testItem = ti
+                    key = 2
+                    nameTest = "Между стойкой поз.3 и поверхностью Д"
+                    uViu = 9500
+                    time = 60
+                    uMeger = 2500
+                    rMeger = 150
+                }
+            }
+
+            TestItem.new {
+                name = "Блок резисторов высоковольтной цепи БРВЦ-46"
+                type = "6TC.277.046"
+            }.also { ti ->
+                TestItemField.new {
+                    testItem = ti
+                    key = 1
+                    nameTest = "Между выводами 1;9 и стойкой поз.6"
+                    uViu = 7000
+                    time = 60
+                    uMeger = 2500
+                    rMeger = 150
+                }
+                TestItemField.new {
+                    testItem = ti
+                    key = 2
+                    nameTest = "Между стойкой поз.6 и поверхностью К"
+                    uViu = 9500
+                    time = 60
+                    uMeger = 2500
+                    rMeger = 150
+                }
+                TestItemField.new {
+                    testItem = ti
+                    key = 3
+                    nameTest = "Между выводами 1 и 9"
+                    uViu = 4500
+                    time = 60
+                    uMeger = 2500
+                    rMeger = 150
                 }
             }
         }

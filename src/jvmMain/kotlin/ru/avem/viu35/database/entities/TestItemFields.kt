@@ -8,9 +8,11 @@ import org.jetbrains.exposed.dao.id.IntIdTable
 object TestItemFields : IntIdTable() {
     val testItem = reference("testItem", TestItems)
     val key = integer("key")
-    val dot1 = varchar("dot1", 256)
-    val dot2 = varchar("dot2", 256)
-    val description = varchar("description", 256)
+    val nameTest = varchar("nameTest", 2048)
+    val uViu = integer("uViu")
+    val time = integer("time")
+    val uMeger = integer("uMeger")
+    val rMeger = integer("rMeger")
 }
 
 class TestItemField(id: EntityID<Int>) : IntEntity(id) {
@@ -19,15 +21,11 @@ class TestItemField(id: EntityID<Int>) : IntEntity(id) {
     var testItem by TestItem referencedOn TestItemFields.testItem
 
     var key by TestItemFields.key
-    var dot1 by TestItemFields.dot1
-    var dot2 by TestItemFields.dot2
-    var description by TestItemFields.description
+    var nameTest by TestItemFields.nameTest
+    var uViu by TestItemFields.uViu
+    var time by TestItemFields.time
+    var uMeger by TestItemFields.uMeger
+    var rMeger by TestItemFields.rMeger
 
     override fun toString() = "${testItem.name}"
 }
-data class TestItemFieldScheme(
-    var key: Int,
-    var dot1: String,
-    var dot2: String,
-    var description: String
-)
