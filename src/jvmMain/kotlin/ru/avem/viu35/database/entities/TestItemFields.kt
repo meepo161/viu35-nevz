@@ -27,5 +27,5 @@ class TestItemField(id: EntityID<Int>) : IntEntity(id) {
     var uMeger by TestItemFields.uMeger
     var rMeger by TestItemFields.rMeger
 
-    override fun toString() = "${testItem.name}"
+    override fun toString() = "${nameTest}"
 }

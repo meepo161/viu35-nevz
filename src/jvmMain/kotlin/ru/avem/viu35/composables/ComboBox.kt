@@ -10,15 +10,21 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material.DropdownMenu
+import androidx.compose.material.DropdownMenuItem
+import androidx.compose.material.Icon
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
+import org.jetbrains.exposed.sql.transactions.transaction
 
 @Composable
 fun <T> ComboBox(
@@ -35,32 +41,32 @@ fun <T> ComboBox(
     val scope = rememberCoroutineScope()
     val scrollState = rememberLazyListState()
 
-    Column(modifier = modifier.border(1.dp, Color.Gray, shape = RoundedCornerShape(4.dp)).width(280.dp).height(96.dp)) {
+    Column(modifier = modifier.border(1.dp, Color.Gray, shape = RoundedCornerShape(4.dp)).width(280.dp).height(64.dp)) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier.fillMaxWidth().clickable {
-                expandedState = true
+                expandedState = !expandedState
             }.fillMaxWidth().height(96.dp),
         ) {
             Text(
-                text = selectedItem.value.toString(),
-                modifier = Modifier.padding(16.dp),
-                style = MaterialTheme.typography.h5,
-
+                text = transaction { selectedItem.value.toString() },
+                fontSize = 20.sp,
+                softWrap = false,
+                modifier = Modifier.padding(16.dp).weight(0.9f),
             )
-            Icon(Icons.Filled.ArrowDropDown, contentDescription = null)
+            Icon(Icons.Filled.ArrowDropDown, contentDescription = null, modifier = Modifier.weight(0.1f))
         }
         if (isEditable) {
             DropdownMenu(
                 expanded = expandedState,
                 onDismissRequest = {
-                    expandedState = false
+                    expandedState = !expandedState
                     onDismissState()
                 }) {
                 LazyColumn(
                     state = scrollState,
-                    modifier = Modifier.width(500.dp).height(300.dp)
+                    modifier = Modifier.width(1200.dp).height(300.dp)
                         .draggable(orientation = Orientation.Vertical, state = rememberDraggableState {
                             scope.launch {
                                 scrollState.scrollBy(-it)
@@ -72,9 +78,13 @@ fun <T> ComboBox(
                             DropdownMenuItem(modifier = Modifier.fillMaxWidth().height(64.dp), onClick = {
                                 selectedItem.value = item
                                 selectedValue(item)
-                                expandedState = false
+                                expandedState = !expandedState
                             }) {
-                                Text(text = item.toString(), style = MaterialTheme.typography.h5)
+                                Text(
+                                    text = transaction { item.toString() },
+                                    overflow = TextOverflow.Visible,
+                                    fontSize = 20.sp,
+                                )
                             }
                         }
                     }

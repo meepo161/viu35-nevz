@@ -24,5 +24,5 @@ class TestItem(id: EntityID<Int>) : IntEntity(id) {
             return transaction { fieldsIterable.map { it.key to it }.toMap() }
         }
 
-    override fun toString() = name
+    override fun toString() = "$name $type"
 }
