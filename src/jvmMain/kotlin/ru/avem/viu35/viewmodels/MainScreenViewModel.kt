@@ -4,26 +4,30 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.state.ToggleableState
 import cafe.adriel.voyager.core.model.ScreenModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.avem.viu35.database.entities.TestItem
 import ru.avem.viu35.database.entities.TestItemField
 import ru.avem.viu35.database.getAllTestItems
+import java.io.File
+import java.nio.file.Files
+import java.nio.file.Paths
+import kotlin.io.path.deleteExisting
+import kotlin.io.path.deleteIfExists
 
 class MainScreenViewModel : ScreenModel {
+
     var selectedMeasurement = mutableStateOf<Boolean>(false)
     val scope = CoroutineScope(Dispatchers.Default)
 
-    val list = listOf(
-        "Резистор токоограничивающий РТ-45 6TC.277.045", "Блок резисторов высоковольтной цепи БРВЦ-46 6TC.277.046"
-    )
-    val listState = mutableStateOf(list[0])
-
     val imageVisibleState = mutableStateOf(false)
+    val image = "${File("").absolutePath}\\images\\image.jpg"
 
     val listSerialNumbers = List(10) { mutableStateOf("") }
     val listCurrents = List(10) { mutableStateOf("") }
@@ -37,6 +41,7 @@ class MainScreenViewModel : ScreenModel {
     val specifiedUViu = mutableStateOf("")
     val specifiedUMeger = mutableStateOf("")
     val specifiedI = mutableStateOf("")
+    val specifiedTime = mutableStateOf("")
 
     val measuredUViu = mutableStateOf("")
     val measuredTime = mutableStateOf("")
@@ -44,12 +49,15 @@ class MainScreenViewModel : ScreenModel {
     val dot1 = mutableStateOf("")
     val dot2 = mutableStateOf("")
 
-    val listColors = List(10) { mutableStateOf(Color.Cyan) }
+    val listColorsProtection = List(10) { mutableStateOf(Color(0xFF0071bb)) }
+    val colorZone = mutableStateOf(Color(0xFF0071bb))
+    val colorCurrent = mutableStateOf(Color(0xFF0071bb))
 
     val objects = mutableStateListOf(*getAllTestItems().sortedBy { it.name }.toTypedArray())
     val selectedObject = mutableStateOf<TestItem?>(null)
     val objectFields = mutableStateListOf<TestItemField>()
     val selectedField = mutableStateOf<TestItemField?>(null)
+
 
     fun onTestObjectSelected(testItem: TestItem) {
         scope.launch {
@@ -59,7 +67,9 @@ class MainScreenViewModel : ScreenModel {
                 objectFields.addAll(testItem.fieldsIterable)
                 selectedField.value = objectFields.first()
             }
+            selectedField.value?.let { onTestObjectFieldSelected(it) }
         }
+//        Files.write(Paths.get(image), testItem.image.bytes)
     }
 
     fun onTestObjectFieldSelected(testItemField: TestItemField) {
@@ -68,7 +78,8 @@ class MainScreenViewModel : ScreenModel {
                 selectedField.value = testItemField
                 specifiedUViu.value = selectedField.value!!.uViu.toString()
                 specifiedUMeger.value = selectedField.value!!.uMeger.toString()
-                specifiedI.value = selectedField.value!!.time.toString()
+                specifiedI.value = selectedField.value!!.current.toString()
+                specifiedTime.value = selectedField.value!!.time.toString()
             }
         }
     }

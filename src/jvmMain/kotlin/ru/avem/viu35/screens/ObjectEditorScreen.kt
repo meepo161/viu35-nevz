@@ -31,19 +31,15 @@ object ObjectEditorScreen : Screen {
         val isExpandedDropDownMenu = mutableStateOf(false)
         val vm = rememberScreenModel { ObjectEditorViewModel() }
 
-        Scaffold(
-            topBar = {
-                TopAppBar(
-                    title = { Text("База данных испытываемых аппаратов") },
-                    navigationIcon = {
-                        IconButton(onClick = {
-                            navigator.popUntilRoot()
-                        }) {
-                            Icon(Icons.Filled.ArrowBack, contentDescription = null)
-                        }
-                    })
-            }
-        ) {
+        Scaffold(topBar = {
+            TopAppBar(title = { Text("База данных испытываемых аппаратов") }, navigationIcon = {
+                IconButton(onClick = {
+                    navigator.popUntilRoot()
+                }) {
+                    Icon(Icons.Filled.ArrowBack, contentDescription = null)
+                }
+            })
+        }) {
             AnimatedVisibility(vm.objects.isNotEmpty(), enter = fadeIn(), exit = fadeOut()) {
                 Row(modifier = Modifier.fillMaxSize()) {
                     Column(
@@ -55,21 +51,24 @@ object ObjectEditorScreen : Screen {
                         ) {
                             items(vm.objects.size) {
                                 TestObjectListItem(
-                                    modifier = Modifier.background(if (vm.selectedObject.value?.id == vm.objects[it].id) MaterialTheme.colors.primary else MaterialTheme.colors.background),
+                                    modifier = Modifier.background(
+                                        if (vm.selectedObject.value?.id == vm.objects[it].id) {
+                                            MaterialTheme.colors.primary
+                                        } else {
+                                            MaterialTheme.colors.background
+                                        }
+                                    ),
                                     text = "${vm.objects[it].name} ${vm.objects[it].type}",
                                     onClick = {
                                         vm.onTestObjectSelected(vm.objects[it])
-                                    }
-                                )
+                                    })
                             }
                         }
                         Button(
                             onClick = {},
                             modifier = Modifier.fillMaxWidth(),
                             elevation = ButtonDefaults.elevation(
-                                defaultElevation = 10.dp,
-                                pressedElevation = 15.dp,
-                                disabledElevation = 0.dp
+                                defaultElevation = 10.dp, pressedElevation = 15.dp, disabledElevation = 0.dp
                             ),
                         ) {
                             Row(
@@ -84,9 +83,7 @@ object ObjectEditorScreen : Screen {
                             onClick = {},
                             modifier = Modifier.fillMaxWidth(),
                             elevation = ButtonDefaults.elevation(
-                                defaultElevation = 10.dp,
-                                pressedElevation = 15.dp,
-                                disabledElevation = 0.dp
+                                defaultElevation = 10.dp, pressedElevation = 15.dp, disabledElevation = 0.dp
                             ),
                         ) {
                             Row(
@@ -101,9 +98,7 @@ object ObjectEditorScreen : Screen {
                             onClick = {},
                             modifier = Modifier.fillMaxWidth(),
                             elevation = ButtonDefaults.elevation(
-                                defaultElevation = 10.dp,
-                                pressedElevation = 15.dp,
-                                disabledElevation = 0.dp
+                                defaultElevation = 10.dp, pressedElevation = 15.dp, disabledElevation = 0.dp
                             ),
                         ) {
                             Row(
@@ -118,9 +113,7 @@ object ObjectEditorScreen : Screen {
                             onClick = {},
                             modifier = Modifier.fillMaxWidth(),
                             elevation = ButtonDefaults.elevation(
-                                defaultElevation = 10.dp,
-                                pressedElevation = 15.dp,
-                                disabledElevation = 0.dp
+                                defaultElevation = 10.dp, pressedElevation = 15.dp, disabledElevation = 0.dp
                             ),
                         ) {
                             Row(
@@ -135,9 +128,7 @@ object ObjectEditorScreen : Screen {
                             onClick = {},
                             modifier = Modifier.fillMaxWidth(),
                             elevation = ButtonDefaults.elevation(
-                                defaultElevation = 10.dp,
-                                pressedElevation = 15.dp,
-                                disabledElevation = 0.dp
+                                defaultElevation = 10.dp, pressedElevation = 15.dp, disabledElevation = 0.dp
                             ),
                         ) {
                             Row(
@@ -160,15 +151,10 @@ object ObjectEditorScreen : Screen {
                                     TestItemField::uViu,
                                     TestItemField::time,
                                     TestItemField::uMeger,
-                                    TestItemField::rMeger,
+                                    TestItemField::current,
                                 ),
                                 columnNames = listOf(
-                                    "№",
-                                    "Наименование",
-                                    "U ВИУ, В",
-                                    "Время, с",
-                                    "U мегер, В",
-                                    "R изоляции, не менее, МОм"
+                                    "№", "Наименование", "U ВИУ, В", "Время, с", "U мегер, В", "Ток утечки, мА"
                                 ),
                                 onItemPrimaryPressed = { vm.selectedField.value = vm.objectFields[it] },
                                 onItemSecondaryPressed = { vm.selectedField.value = vm.objectFields[it] },
@@ -197,9 +183,7 @@ object ObjectEditorScreen : Screen {
                                 onClick = {},
                                 modifier = Modifier.weight(0.5f).height(96.dp),
                                 elevation = ButtonDefaults.elevation(
-                                    defaultElevation = 10.dp,
-                                    pressedElevation = 15.dp,
-                                    disabledElevation = 0.dp
+                                    defaultElevation = 10.dp, pressedElevation = 15.dp, disabledElevation = 0.dp
                                 ),
                             ) {
                                 Row(
@@ -214,9 +198,7 @@ object ObjectEditorScreen : Screen {
                                 onClick = {},
                                 modifier = Modifier.weight(0.5f).height(96.dp),
                                 elevation = ButtonDefaults.elevation(
-                                    defaultElevation = 10.dp,
-                                    pressedElevation = 15.dp,
-                                    disabledElevation = 0.dp
+                                    defaultElevation = 10.dp, pressedElevation = 15.dp, disabledElevation = 0.dp
                                 ),
                             ) {
                                 Row(
@@ -236,9 +218,7 @@ object ObjectEditorScreen : Screen {
                                 onClick = {},
                                 modifier = Modifier.weight(0.25f).height(72.dp),
                                 elevation = ButtonDefaults.elevation(
-                                    defaultElevation = 10.dp,
-                                    pressedElevation = 15.dp,
-                                    disabledElevation = 0.dp
+                                    defaultElevation = 10.dp, pressedElevation = 15.dp, disabledElevation = 0.dp
                                 ),
                             ) {
                                 Row(
@@ -253,9 +233,7 @@ object ObjectEditorScreen : Screen {
                                 onClick = {},
                                 modifier = Modifier.weight(0.25f).height(72.dp),
                                 elevation = ButtonDefaults.elevation(
-                                    defaultElevation = 10.dp,
-                                    pressedElevation = 15.dp,
-                                    disabledElevation = 0.dp
+                                    defaultElevation = 10.dp, pressedElevation = 15.dp, disabledElevation = 0.dp
                                 ),
                             ) {
                                 Row(
@@ -270,9 +248,7 @@ object ObjectEditorScreen : Screen {
                                 onClick = {},
                                 modifier = Modifier.weight(0.25f).height(72.dp),
                                 elevation = ButtonDefaults.elevation(
-                                    defaultElevation = 10.dp,
-                                    pressedElevation = 15.dp,
-                                    disabledElevation = 0.dp
+                                    defaultElevation = 10.dp, pressedElevation = 15.dp, disabledElevation = 0.dp
                                 ),
                             ) {
                                 Row(
@@ -287,9 +263,7 @@ object ObjectEditorScreen : Screen {
                                 onClick = {},
                                 modifier = Modifier.weight(0.25f).height(72.dp),
                                 elevation = ButtonDefaults.elevation(
-                                    defaultElevation = 10.dp,
-                                    pressedElevation = 15.dp,
-                                    disabledElevation = 0.dp
+                                    defaultElevation = 10.dp, pressedElevation = 15.dp, disabledElevation = 0.dp
                                 ),
                             ) {
                                 Row(

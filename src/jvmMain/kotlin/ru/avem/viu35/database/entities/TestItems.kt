@@ -9,6 +9,7 @@ import org.jetbrains.exposed.sql.transactions.transaction
 object TestItems : IntIdTable() {
     val name = varchar("name", 256)
     val type = varchar("type", 256)
+    val image = blob("image")
 }
 
 class TestItem(id: EntityID<Int>) : IntEntity(id) {
@@ -16,6 +17,7 @@ class TestItem(id: EntityID<Int>) : IntEntity(id) {
 
     var name by TestItems.name
     var type by TestItems.type
+    var image by TestItems.image
 
     val fieldsIterable by TestItemField referrersOn (TestItemFields.testItem)
 
