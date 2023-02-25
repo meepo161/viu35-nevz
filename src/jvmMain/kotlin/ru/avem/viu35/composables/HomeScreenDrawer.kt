@@ -17,11 +17,11 @@ import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import ru.avem.viu35.screens.ObjectEditorScreen
-import ru.avem.viu35.screens.MainScreen
+import ru.avem.viu35.viewmodels.MainScreenViewModel
 import kotlin.system.exitProcess
 
 @Composable
-fun HomeScreenDrawer() {
+fun HomeScreenDrawer(mainViewModel: MainScreenViewModel) {
     val navigator = LocalNavigator.currentOrThrow
 
     Column(
@@ -49,7 +49,7 @@ fun HomeScreenDrawer() {
     Divider()
     DrawerMenuItem(Icons.Filled.Settings, "База данных испытываемых аппаратов") {
 //        navigator.push(PasswordScreen(ObjectEditorScreen))
-        navigator.push(ObjectEditorScreen)
+        navigator.push(ObjectEditorScreen(mainViewModel))
     }
     DrawerMenuItem(painterResource("icons/baseline_storage_24.xml"), "База данных протоколов") {
 //        navigator.push(ProtocolsScreen)

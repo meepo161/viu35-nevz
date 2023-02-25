@@ -47,6 +47,7 @@ kotlin {
                 implementation("org.jetbrains.exposed:exposed-jdbc:$exposedVersion")
                 implementation("org.xerial:sqlite-jdbc:3.30.1")
                 implementation("io.github.microutils:kotlin-logging-jvm:3.0.2")
+                implementation("com.darkrockstudios:mpfilepicker:1.0.0")
             }
         }
         val jvmTest by getting

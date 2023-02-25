@@ -31,7 +31,6 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.jetbrains.skia.Bitmap
 import org.jetbrains.skia.Image
 import ru.avem.composables.HomeScreenDrawer
 import ru.avem.viu35.composables.ComboBox
@@ -50,7 +49,7 @@ object MainScreen : Screen {
         val navigator = LocalNavigator.currentOrThrow
         val scaffoldState = rememberScaffoldState()
         val scope = rememberCoroutineScope()
-        val vm = rememberScreenModel { MainScreenViewModel() }
+        val mainViewModel = rememberScreenModel { MainScreenViewModel() }
 
         val size = Dimension(800, 600)
         val img = BufferedImage(size.width, size.height, BufferedImage.TYPE_INT_RGB)
@@ -62,7 +61,7 @@ object MainScreen : Screen {
         ImageIO.write(img, "BMP", File("test.bmp"))
 
         Scaffold(scaffoldState = scaffoldState, drawerContent = {
-            HomeScreenDrawer()
+            HomeScreenDrawer(mainViewModel)
         }, drawerShape = object : Shape {
             override fun createOutline(
                 size: Size, layoutDirection: LayoutDirection, density: Density
@@ -83,20 +82,19 @@ object MainScreen : Screen {
             }, title = {
                 Text("ВИУ-35")
             }, actions = {
-                MainScreenActionBar(navigator, vm) {}
+                MainScreenActionBar(navigator, mainViewModel) {}
             })
         }) {
-            if (vm.imageVisibleState.value) {
-
+            if (mainViewModel.imageVisibleState.value) {
                 Image(
                     modifier = Modifier.fillMaxSize().onClick(matcher = PointerMatcher.mouse(PointerButton.Primary),
                         keyboardModifiers = { true },
                         onClick = {
-                            vm.imageVisibleState.value = false
+                            mainViewModel.imageVisibleState.value = false
                         }),
                     contentDescription = "image",
-                    bitmap = if (vm.selectedObject.value != null) {
-                        Image.Companion.makeFromEncoded(vm.selectedObject.value!!.image.bytes)
+                    bitmap = if (mainViewModel.selectedObject.value != null) {
+                        Image.Companion.makeFromEncoded(mainViewModel.selectedObject.value!!.image.bytes)
                             .toComposeImageBitmap()
                     } else {
                         ImageBitmap(800, 800)
@@ -106,15 +104,15 @@ object MainScreen : Screen {
                 Row(
                     modifier = Modifier.fillMaxSize().padding(16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    LeftPanel(modifier = Modifier.weight(0.4f), vm)
-                    RighPanel(modifier = Modifier.weight(0.6f), vm)
+                    LeftPanel(modifier = Modifier.weight(0.4f), mainViewModel)
+                    RighPanel(modifier = Modifier.weight(0.6f), mainViewModel)
                 }
             }
         }
     }
 
     @Composable
-    private fun LeftPanel(modifier: Modifier, vm: MainScreenViewModel) {
+    private fun LeftPanel(modifier: Modifier, mainViewModel: MainScreenViewModel) {
         Card(modifier = modifier, elevation = 4.dp) {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Card(elevation = 4.dp) {
@@ -127,21 +125,21 @@ object MainScreen : Screen {
                             fontSize = 20.sp,
                             text = "Имя и тип аппарата"
                         )
-                        ComboBox(selectedItem = vm.selectedObject,
+                        ComboBox(selectedItem = mainViewModel.selectedObject,
                             modifier = Modifier.fillMaxWidth().padding(8.dp),
                             onDismissState = {},
-                            items = vm.objects,
+                            items = mainViewModel.objects,
                             selectedValue = {
-                                vm.onTestObjectSelected(it!!)
+                                mainViewModel.onTestObjectSelected(it!!)
                             })
 
-                        ComboBox(selectedItem = vm.selectedField,
+                        ComboBox(selectedItem = mainViewModel.selectedField,
                             modifier = Modifier.fillMaxWidth().padding(8.dp),
-                            isEditable = vm.selectedObject.value != null,
+                            isEditable = mainViewModel.selectedObject.value != null,
                             onDismissState = {},
-                            items = vm.objectFields,
+                            items = mainViewModel.objectFields,
                             selectedValue = {
-                                vm.onTestObjectFieldSelected(it!!)
+                                mainViewModel.onTestObjectFieldSelected(it!!)
                             })
                     }
                 }
@@ -168,7 +166,7 @@ object MainScreen : Screen {
                                 Box(modifier = Modifier.weight(0.3f)) {
                                     OutlinedTextField(textStyle = TextStyle.Default.copy(
                                         fontSize = 20.sp, textAlign = TextAlign.Center
-                                    ), value = vm.specifiedI.value, onValueChange = {})
+                                    ), value = mainViewModel.specifiedI.value, onValueChange = {})
                                 }
                             }
                             Row(modifier = Modifier.fillMaxWidth().weight(0.5f).padding(end = 16.dp)) {
@@ -185,7 +183,7 @@ object MainScreen : Screen {
                                 Box(modifier = Modifier.weight(0.3f)) {
                                     OutlinedTextField(textStyle = TextStyle.Default.copy(
                                         fontSize = 20.sp, textAlign = TextAlign.Center
-                                    ), value = vm.specifiedUMeger.value, onValueChange = {})
+                                    ), value = mainViewModel.specifiedUMeger.value, onValueChange = {})
                                 }
                             }
                         }
@@ -204,7 +202,7 @@ object MainScreen : Screen {
                                 Box(modifier = Modifier.weight(0.3f)) {
                                     OutlinedTextField(textStyle = TextStyle.Default.copy(
                                         fontSize = 20.sp, textAlign = TextAlign.Center
-                                    ), value = vm.specifiedUViu.value, onValueChange = {})
+                                    ), value = mainViewModel.specifiedUViu.value, onValueChange = {})
                                 }
                             }
                             Row(modifier = Modifier.fillMaxWidth().weight(0.5f).padding(end = 16.dp)) {
@@ -219,7 +217,7 @@ object MainScreen : Screen {
                                 Box(modifier = Modifier.weight(0.3f)) {
                                     OutlinedTextField(textStyle = TextStyle.Default.copy(
                                         fontSize = 20.sp, textAlign = TextAlign.Center
-                                    ), value = vm.specifiedTime.value, onValueChange = {})
+                                    ), value = mainViewModel.specifiedTime.value, onValueChange = {})
                                 }
                             }
                         }
@@ -244,7 +242,7 @@ object MainScreen : Screen {
                                 Box(modifier = Modifier.weight(0.3f)) {
                                     OutlinedTextField(textStyle = TextStyle.Default.copy(
                                         fontSize = 20.sp, textAlign = TextAlign.Center
-                                    ), value = vm.measuredUViu.value, onValueChange = {})
+                                    ), value = mainViewModel.measuredUViu.value, onValueChange = {})
                                 }
                             }
                             Row(modifier = Modifier.fillMaxWidth().weight(0.5f).padding(end = 16.dp)) {
@@ -261,7 +259,7 @@ object MainScreen : Screen {
                                 Box(modifier = Modifier.weight(0.3f)) {
                                     OutlinedTextField(textStyle = TextStyle.Default.copy(
                                         fontSize = 20.sp, textAlign = TextAlign.Center
-                                    ), value = vm.measuredTime.value, onValueChange = {})
+                                    ), value = mainViewModel.measuredTime.value, onValueChange = {})
                                 }
                             }
                         }
@@ -279,7 +277,7 @@ object MainScreen : Screen {
                                     )
                                 }
                                 Box(modifier = Modifier.weight(0.3f), contentAlignment = Alignment.Center) {
-                                    Circle(vm.colorCurrent.value)
+                                    Circle(mainViewModel.colorCurrent.value)
                                 }
                             }
                             Row(modifier = Modifier.fillMaxWidth().weight(0.5f).padding(end = 16.dp)) {
@@ -294,7 +292,7 @@ object MainScreen : Screen {
                                     )
                                 }
                                 Box(modifier = Modifier.weight(0.3f), contentAlignment = Alignment.Center) {
-                                    Circle(vm.colorZone.value)
+                                    Circle(mainViewModel.colorZone.value)
                                 }
                             }
                         }
@@ -316,8 +314,8 @@ object MainScreen : Screen {
                                     textStyle = TextStyle.Default.copy(
                                         fontSize = 20.sp, textAlign = TextAlign.Center
                                     ),
-                                    value = vm.dot1.value,
-                                    onValueChange = { vm.dot1.value = it })
+                                    value = mainViewModel.dot1.value,
+                                    onValueChange = { mainViewModel.dot1.value = it })
                             }
                             Column(
                                 modifier = Modifier.weight(0.5f),
@@ -330,17 +328,17 @@ object MainScreen : Screen {
                                     textStyle = TextStyle.Default.copy(
                                         fontSize = 20.sp, textAlign = TextAlign.Center
                                     ),
-                                    value = vm.dot2.value,
-                                    onValueChange = { vm.dot2.value = it })
+                                    value = mainViewModel.dot2.value,
+                                    onValueChange = { mainViewModel.dot2.value = it })
                             }
                         }
                         Image(
                             modifier = Modifier.fillMaxWidth().clickable {
-                                vm.imageVisibleState.value = true
+                                mainViewModel.imageVisibleState.value = true
                             }.height(512.dp),
                             contentDescription = "image",
-                            bitmap = if (vm.selectedObject.value != null) {
-                                Image.Companion.makeFromEncoded(vm.selectedObject.value!!.image.bytes)
+                            bitmap = if (mainViewModel.selectedObject.value != null) {
+                                Image.Companion.makeFromEncoded(mainViewModel.selectedObject.value!!.image.bytes)
                                     .toComposeImageBitmap()
                             } else {
                                 ImageBitmap(800, 800)

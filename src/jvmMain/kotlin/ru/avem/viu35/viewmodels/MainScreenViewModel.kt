@@ -4,25 +4,18 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.state.ToggleableState
 import cafe.adriel.voyager.core.model.ScreenModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.avem.viu35.database.entities.TestItem
 import ru.avem.viu35.database.entities.TestItemField
 import ru.avem.viu35.database.getAllTestItems
 import java.io.File
-import java.nio.file.Files
-import java.nio.file.Paths
-import kotlin.io.path.deleteExisting
-import kotlin.io.path.deleteIfExists
 
 class MainScreenViewModel : ScreenModel {
-
     var selectedMeasurement = mutableStateOf<Boolean>(false)
     val scope = CoroutineScope(Dispatchers.Default)
 
@@ -65,7 +58,7 @@ class MainScreenViewModel : ScreenModel {
             objectFields.clear()
             transaction {
                 objectFields.addAll(testItem.fieldsIterable)
-                selectedField.value = objectFields.first()
+                selectedField.value = objectFields.firstOrNull()
             }
             selectedField.value?.let { onTestObjectFieldSelected(it) }
         }
