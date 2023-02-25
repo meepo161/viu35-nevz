@@ -10,7 +10,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -35,7 +34,7 @@ import ru.avem.viu35.database.entities.TestItemField
 import ru.avem.viu35.viewmodels.MainScreenViewModel
 import ru.avem.viu35.viewmodels.ObjectEditorViewModel
 
-class ObjectEditorScreen(var mainViewModel: MainScreenViewModel) : Screen {
+class ObjectEditorScreen(private var mainViewModel: MainScreenViewModel) : Screen {
 
     @OptIn(ExperimentalFoundationApi::class)
     @Composable
@@ -59,7 +58,7 @@ class ObjectEditorScreen(var mainViewModel: MainScreenViewModel) : Screen {
                 FilePicker(vm.showFilePicker.value, fileExtension = fileType) { path ->
                     vm.showFilePicker.value = false
                     if (path != null) {
-                        vm.imagePathState.value = path
+                        vm.imageObjectState.value = path
                     }
                 }
                 if (vm.createNewObjectVisibleState.value) {
@@ -71,7 +70,7 @@ class ObjectEditorScreen(var mainViewModel: MainScreenViewModel) : Screen {
                             vm.createNewObject()
                         },
                         noCallback = {
-                            vm.closeNewObjectWindow()
+                            vm.closeNewObjectDialog()
                         }) {
                         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                             Row(modifier = Modifier.fillMaxWidth().padding(end = 16.dp)) {
@@ -84,12 +83,11 @@ class ObjectEditorScreen(var mainViewModel: MainScreenViewModel) : Screen {
                                 }
                                 Box(modifier = Modifier.weight(0.7f)) {
                                     OutlinedTextField(textStyle = TextStyle.Default.copy(
-                                        fontSize = 20.sp,
-                                        textAlign = TextAlign.Center
+                                        fontSize = 20.sp, textAlign = TextAlign.Center
                                     ),
-                                        isError = vm.nameStateError.value,
-                                        value = vm.nameState.value,
-                                        onValueChange = { vm.nameState.value = it })
+                                        isError = vm.nameObjectStateError.value,
+                                        value = vm.nameObjectState.value,
+                                        onValueChange = { vm.nameObjectState.value = it })
                                 }
                             }
                             Row(modifier = Modifier.fillMaxWidth().padding(end = 16.dp)) {
@@ -104,9 +102,9 @@ class ObjectEditorScreen(var mainViewModel: MainScreenViewModel) : Screen {
                                     OutlinedTextField(textStyle = TextStyle.Default.copy(
                                         fontSize = 20.sp, textAlign = TextAlign.Center
                                     ),
-                                        isError = vm.typeStateError.value,
-                                        value = vm.typeState.value,
-                                        onValueChange = { vm.typeState.value = it })
+                                        isError = vm.typeObjectStateError.value,
+                                        value = vm.typeObjectState.value,
+                                        onValueChange = { vm.typeObjectState.value = it })
                                 }
                             }
                             Row(modifier = Modifier.fillMaxWidth().padding(end = 16.dp)) {
@@ -115,7 +113,7 @@ class ObjectEditorScreen(var mainViewModel: MainScreenViewModel) : Screen {
                                         vm.showFilePicker.value = true
                                     },
                                     modifier = Modifier.fillMaxWidth().background(
-                                        if (vm.imagePathStateError.value) {
+                                        if (vm.imageObjectStateError.value) {
                                             Color.Red
                                         } else {
                                             MaterialTheme.colors.primary
@@ -135,6 +133,36 @@ class ObjectEditorScreen(var mainViewModel: MainScreenViewModel) : Screen {
                                 }
                             }
                         }
+                    }
+                }
+                if (vm.editFieldVisibleState.value) {
+                    CustomDialog(modifier = Modifier.width(1024.dp),
+                        title = "Редактирование проверки",
+                        text = "Введите данные проверки",
+                        yesButton = "Сохранить",
+                        noButton = "Отмена",
+                        yesCallback = {
+                            vm.editField()
+                        },
+                        noCallback = {
+                            vm.closeEditFieldDialog()
+                        }) {
+                        DialogField(vm)
+                    }
+                }
+                if (vm.createNewFieldVisibleState.value) {
+                    CustomDialog(modifier = Modifier.width(1024.dp),
+                        title = "Создание новой проверки",
+                        text = "Введите данные проверки",
+                        yesButton = "Создать",
+                        noButton = "Отмена",
+                        yesCallback = {
+                            vm.createNewField()
+                        },
+                        noCallback = {
+                            vm.closeNewFieldDialog()
+                        }) {
+                        DialogField(vm)
                     }
                 }
                 if (vm.imageVisibleState.value) {
@@ -170,7 +198,7 @@ class ObjectEditorScreen(var mainViewModel: MainScreenViewModel) : Screen {
                                     ),
                                         text = "${mainViewModel.objects[it].name} ${mainViewModel.objects[it].type}",
                                         onClick = {
-                                            vm.onTestObjectSelected(mainViewModel.objects[it])
+                                            vm.onObjectSelected(mainViewModel.objects[it])
                                         })
                                 }
                             }
@@ -209,9 +237,7 @@ class ObjectEditorScreen(var mainViewModel: MainScreenViewModel) : Screen {
                                 }
                             }
                             Button(
-                                onClick = {
-                                    vm.copyObject(mainViewModel.selectedObject.value!!)
-                                },
+                                onClick = { vm.copyTestObject() },
                                 modifier = Modifier.fillMaxWidth(),
                                 elevation = ButtonDefaults.elevation(
                                     defaultElevation = 10.dp, pressedElevation = 15.dp, disabledElevation = 0.dp
@@ -241,7 +267,7 @@ class ObjectEditorScreen(var mainViewModel: MainScreenViewModel) : Screen {
                                 }
                             }
                             Button(
-                                onClick = { vm.deleteObject() },
+                                onClick = { vm.deleteTestObject() },
                                 modifier = Modifier.fillMaxWidth(),
                                 elevation = ButtonDefaults.elevation(
                                     defaultElevation = 10.dp, pressedElevation = 15.dp, disabledElevation = 0.dp
@@ -282,12 +308,21 @@ class ObjectEditorScreen(var mainViewModel: MainScreenViewModel) : Screen {
                                     contextMenuContent = {
                                         DropdownMenuItem(onClick = {
                                             isExpandedDropDownMenu.value = false
-                                            // navigator.push(TestsEditorScreen) TODO
+                                            vm.nameTestFieldState.value = mainViewModel.selectedField.value!!.nameTest
+                                            vm.uViuFieldState.value =
+                                                mainViewModel.selectedField.value!!.uViu.toString()
+                                            vm.timeFieldState.value =
+                                                mainViewModel.selectedField.value!!.time.toString()
+                                            vm.uMegerFieldState.value =
+                                                mainViewModel.selectedField.value!!.uMeger.toString()
+                                            vm.currentFieldState.value =
+                                                mainViewModel.selectedField.value!!.current.toString()
+                                            vm.editFieldVisibleState.value = true
                                         }) {
                                             Text("Редактировать")
                                         }
                                         DropdownMenuItem(onClick = {
-                                            vm.onObjectFieldDelete()
+                                            vm.deleteField()
                                             isExpandedDropDownMenu.value = false
                                         }) {
                                             Text("Удалить")
@@ -336,7 +371,9 @@ class ObjectEditorScreen(var mainViewModel: MainScreenViewModel) : Screen {
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 Button(
-                                    onClick = {},
+                                    onClick = {
+                                        vm.createNewFieldVisibleState.value = true
+                                    },
                                     modifier = Modifier.weight(0.25f).height(72.dp),
                                     elevation = ButtonDefaults.elevation(
                                         defaultElevation = 10.dp, pressedElevation = 15.dp, disabledElevation = 0.dp
@@ -351,7 +388,16 @@ class ObjectEditorScreen(var mainViewModel: MainScreenViewModel) : Screen {
                                     }
                                 }
                                 Button(
-                                    onClick = {},
+                                    onClick = {
+                                        vm.nameTestFieldState.value = mainViewModel.selectedField.value!!.nameTest
+                                        vm.uViuFieldState.value = mainViewModel.selectedField.value!!.uViu.toString()
+                                        vm.timeFieldState.value = mainViewModel.selectedField.value!!.time.toString()
+                                        vm.uMegerFieldState.value =
+                                            mainViewModel.selectedField.value!!.uMeger.toString()
+                                        vm.currentFieldState.value =
+                                            mainViewModel.selectedField.value!!.current.toString()
+                                        vm.editFieldVisibleState.value = true
+                                    },
                                     modifier = Modifier.weight(0.25f).height(72.dp),
                                     elevation = ButtonDefaults.elevation(
                                         defaultElevation = 10.dp, pressedElevation = 15.dp, disabledElevation = 0.dp
@@ -366,7 +412,7 @@ class ObjectEditorScreen(var mainViewModel: MainScreenViewModel) : Screen {
                                     }
                                 }
                                 Button(
-                                    onClick = {},
+                                    onClick = { vm.copyField() },
                                     modifier = Modifier.weight(0.25f).height(72.dp),
                                     elevation = ButtonDefaults.elevation(
                                         defaultElevation = 10.dp, pressedElevation = 15.dp, disabledElevation = 0.dp
@@ -381,7 +427,9 @@ class ObjectEditorScreen(var mainViewModel: MainScreenViewModel) : Screen {
                                     }
                                 }
                                 Button(
-                                    onClick = {},
+                                    onClick = {
+                                        vm.deleteField()
+                                    },
                                     modifier = Modifier.weight(0.25f).height(72.dp),
                                     elevation = ButtonDefaults.elevation(
                                         defaultElevation = 10.dp, pressedElevation = 15.dp, disabledElevation = 0.dp
@@ -399,6 +447,97 @@ class ObjectEditorScreen(var mainViewModel: MainScreenViewModel) : Screen {
                             }
                         }
                     }
+                }
+            }
+        }
+    }
+
+    @Composable
+    private fun DialogField(vm: ObjectEditorViewModel) {
+        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            Row(modifier = Modifier.fillMaxWidth().padding(end = 16.dp)) {
+                Box(
+                    modifier = Modifier.weight(0.3f).height(48.dp), contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Описание", fontSize = 20.sp, textAlign = TextAlign.Center
+                    )
+                }
+                Box(modifier = Modifier.weight(0.7f)) {
+                    OutlinedTextField(textStyle = TextStyle.Default.copy(
+                        fontSize = 20.sp, textAlign = TextAlign.Center
+                    ),
+                        isError = vm.nameTestFieldErrorState.value,
+                        value = vm.nameTestFieldState.value,
+                        onValueChange = { vm.nameTestFieldState.value = it })
+                }
+            }
+            Row(modifier = Modifier.fillMaxWidth().padding(end = 16.dp)) {
+                Box(
+                    modifier = Modifier.weight(0.3f).height(48.dp), contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "U ВИУ, В", fontSize = 20.sp, textAlign = TextAlign.Center
+                    )
+                }
+                Box(modifier = Modifier.weight(0.7f)) {
+                    OutlinedTextField(textStyle = TextStyle.Default.copy(
+                        fontSize = 20.sp, textAlign = TextAlign.Center
+                    ),
+                        isError = vm.uViuFieldErrorState.value,
+                        value = vm.uViuFieldState.value,
+                        onValueChange = { vm.uViuFieldState.value = it })
+                }
+            }
+            Row(modifier = Modifier.fillMaxWidth().padding(end = 16.dp)) {
+                Box(
+                    modifier = Modifier.weight(0.3f).height(48.dp), contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Ток утечки, мА", fontSize = 20.sp, textAlign = TextAlign.Center
+                    )
+                }
+                Box(modifier = Modifier.weight(0.7f)) {
+                    OutlinedTextField(textStyle = TextStyle.Default.copy(
+                        fontSize = 20.sp, textAlign = TextAlign.Center
+                    ),
+                        isError = vm.currentFieldErrorState.value,
+                        value = vm.currentFieldState.value,
+                        onValueChange = { vm.currentFieldState.value = it })
+                }
+            }
+            Row(modifier = Modifier.fillMaxWidth().padding(end = 16.dp)) {
+                Box(
+                    modifier = Modifier.weight(0.3f).height(48.dp), contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Время, сек", fontSize = 20.sp, textAlign = TextAlign.Center
+                    )
+                }
+                Box(modifier = Modifier.weight(0.7f)) {
+                    OutlinedTextField(textStyle = TextStyle.Default.copy(
+                        fontSize = 20.sp, textAlign = TextAlign.Center
+                    ),
+                        isError = vm.timeFieldErrorState.value,
+                        value = vm.timeFieldState.value,
+                        onValueChange = { vm.timeFieldState.value = it })
+                }
+            }
+            Row(modifier = Modifier.fillMaxWidth().padding(end = 16.dp)) {
+                Box(
+                    modifier = Modifier.weight(0.3f).height(48.dp), contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "U Мегер, В", fontSize = 20.sp, textAlign = TextAlign.Center
+                    )
+                }
+                Box(modifier = Modifier.weight(0.7f)) {
+                    OutlinedTextField(textStyle = TextStyle.Default.copy(
+                        fontSize = 20.sp, textAlign = TextAlign.Center
+                    ),
+                        isError = vm.uMegerFieldErrorState.value,
+                        value = vm.uMegerFieldState.value,
+                        onValueChange = { vm.uMegerFieldState.value = it })
                 }
             }
         }

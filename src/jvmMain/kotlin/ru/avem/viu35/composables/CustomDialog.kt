@@ -10,6 +10,7 @@ import androidx.compose.ui.unit.dp
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun CustomDialog(
+    modifier: Modifier = Modifier.width(500.dp),
     title: String,
     text: String,
     yesButton: String,
@@ -19,7 +20,7 @@ fun CustomDialog(
     content: @Composable BoxScope.() -> Unit
 ) {
     AlertDialog(
-        modifier = Modifier.width(500.dp),
+        modifier = modifier,
         onDismissRequest = {},
         title = { Text(title, style = MaterialTheme.typography.h5) },
         text = { Text(text, style = MaterialTheme.typography.h5) },

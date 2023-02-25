@@ -7,13 +7,13 @@ import org.jetbrains.exposed.dao.id.IntIdTable
 import ru.avem.viu35.database.entities.TestItemField
 
 object TestItemFields : IntIdTable() {
-    val testItem = reference("testItem", TestItems)
-    val key = integer("key")
-    val nameTest = varchar("nameTest", 2048)
-    val uViu = integer("uViu")
-    val time = integer("time")
-    val uMeger = integer("uMeger")
-    val current = integer("current")
+    var testItem = reference("testItem", TestItems)
+    var key = integer("key")
+    var nameTest = varchar("nameTest", 2048)
+    var uViu = integer("uViu")
+    var time = integer("time")
+    var uMeger = integer("uMeger")
+    var current = integer("current")
 }
 
 class TestItemField(id: EntityID<Int>) : IntEntity(id) {

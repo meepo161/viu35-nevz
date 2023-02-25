@@ -14,61 +14,61 @@ import ru.avem.viu35.database.entities.TestItemField
 import ru.avem.viu35.database.entities.TestItemFields
 import ru.avem.viu35.database.entities.TestItems
 import ru.avem.viu35.database.getAllTestItems
-import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
 
-class ObjectEditorViewModel(var mainViewModel: MainScreenViewModel) : ScreenModel {
+class ObjectEditorViewModel(private var mainViewModel: MainScreenViewModel) : ScreenModel {
     private val scope = CoroutineScope(Dispatchers.Default)
-//    val objects = mutableStateListOf(*getAllTestItems().sortedBy { it.name }.toTypedArray())
-//    val selectedObject = mutableStateOf<TestItem?>(null)
-//    val objectFields = mutableStateListOf<TestItemField>()
-//    val selectedField = mutableStateOf<TestItemField?>(null)
 
     var showFilePicker = mutableStateOf(false)
 
-    val nameState = mutableStateOf("")
-    val typeState = mutableStateOf("")
-    val imagePathState = mutableStateOf("")
+    val createNewObjectVisibleState = mutableStateOf(false)
 
-    val nameStateError = mutableStateOf(false)
-    val typeStateError = mutableStateOf(false)
-    val imagePathStateError = mutableStateOf(false)
+    val nameObjectState = mutableStateOf("")
+    val typeObjectState = mutableStateOf("")
+    val imageObjectState = mutableStateOf("")
+
+    val nameObjectStateError = mutableStateOf(false)
+    val typeObjectStateError = mutableStateOf(false)
+    val imageObjectStateError = mutableStateOf(false)
+
+    val createNewFieldVisibleState = mutableStateOf(false)
+    val editFieldVisibleState = mutableStateOf(false)
+
+    val nameTestFieldState = mutableStateOf("")
+    val uViuFieldState = mutableStateOf("")
+    val timeFieldState = mutableStateOf("")
+    val uMegerFieldState = mutableStateOf("")
+    val currentFieldState = mutableStateOf("")
+
+    val nameTestFieldErrorState = mutableStateOf(false)
+    val uViuFieldErrorState = mutableStateOf(false)
+    val timeFieldErrorState = mutableStateOf(false)
+    val uMegerFieldErrorState = mutableStateOf(false)
+    val currentFieldErrorState = mutableStateOf(false)
 
     val imageVisibleState = mutableStateOf(false)
-    val createNewObjectVisibleState = mutableStateOf(false)
-    val image = "${File("").absolutePath}\\images\\image.jpg"
 
-    fun onTestObjectSelected(testItem: TestItem) {
+    fun onObjectSelected(testItem: TestItem) {
         scope.launch {
             mainViewModel.selectedObject.value = testItem
             mainViewModel.objectFields.clear()
             transaction {
-                mainViewModel.objectFields.addAll(testItem.fieldsIterable)
+                mainViewModel.objectFields.addAll(testItem.fieldsIterable.sortedBy { it.key }.toTypedArray())
             }
         }
     }
 
-    fun onObjectFieldDelete() {
-        scope.launch {
-            transaction {
-                TestItemFields.deleteWhere { TestItemFields.id eq mainViewModel.selectedField.value!!.id }
-            }
-            mainViewModel.objectFields.remove(mainViewModel.selectedField.value)
-            mainViewModel.selectedField.value = mainViewModel.objectFields.firstOrNull()
-        }
-    }
-
-    fun copyObject(copyTestItem: TestItem) {
+    fun copyTestObject() {
         if (mainViewModel.selectedObject.value != null) {
             scope.launch {
                 transaction {
                     TestItem.new {
-                        name = copyTestItem.name
-                        type = copyTestItem.type
-                        image = copyTestItem.image
+                        name = mainViewModel.selectedObject.value!!.name
+                        type = mainViewModel.selectedObject.value!!.type
+                        image = mainViewModel.selectedObject.value!!.image
                     }.also { ti ->
-                        copyTestItem.fieldsIterable.forEach {
+                        mainViewModel.selectedObject.value!!.fieldsIterable.forEach {
                             TestItemField.new {
                                 testItem = ti
                                 key = it.key
@@ -87,7 +87,7 @@ class ObjectEditorViewModel(var mainViewModel: MainScreenViewModel) : ScreenMode
         }
     }
 
-    fun deleteObject() {
+    fun deleteTestObject() {
         if (mainViewModel.selectedObject.value != null) {
             scope.launch {
                 transaction {
@@ -100,27 +100,151 @@ class ObjectEditorViewModel(var mainViewModel: MainScreenViewModel) : ScreenMode
     }
 
     fun createNewObject() {
-        nameStateError.value = nameState.value.isEmpty()
-        typeStateError.value = typeState.value.isEmpty()
-        imagePathStateError.value = imagePathState.value.isEmpty()
-        if (!nameStateError.value && !typeStateError.value && !imagePathStateError.value) {
-            transaction {
-                TestItem.new {
-                    name = nameState.value
-                    type = typeState.value
-                    image = ExposedBlob(Files.readAllBytes(Paths.get(imagePathState.value)))
+        nameObjectStateError.value = nameObjectState.value.isEmpty()
+        typeObjectStateError.value = typeObjectState.value.isEmpty()
+        imageObjectStateError.value = imageObjectState.value.isEmpty()
+        if (!nameObjectStateError.value && !typeObjectStateError.value && !imageObjectStateError.value) {
+            scope.launch {
+                transaction {
+                    TestItem.new {
+                        name = nameObjectState.value
+                        type = typeObjectState.value
+                        image = ExposedBlob(Files.readAllBytes(Paths.get(imageObjectState.value)))
+                    }
+                    mainViewModel.objects.clear()
+                    mainViewModel.objects.addAll(getAllTestItems().sortedBy { it.name }.toTypedArray())
                 }
-                mainViewModel.objects.clear()
-                mainViewModel.objects.addAll(getAllTestItems().sortedBy { it.name }.toTypedArray())
+                closeNewObjectDialog()
             }
-            closeNewObjectWindow()
         }
     }
 
-    fun closeNewObjectWindow() {
+    fun closeNewObjectDialog() {
         createNewObjectVisibleState.value = false
-        nameState.value = ""
-        typeState.value = ""
-        imagePathState.value = ""
+        nameObjectState.value = ""
+        typeObjectState.value = ""
+        imageObjectState.value = ""
+    }
+
+    fun createNewField() {
+        nameTestFieldErrorState.value = nameTestFieldState.value.isEmpty()
+        uViuFieldErrorState.value = uViuFieldState.value.isEmpty() || uViuFieldState.value.toIntOrNull() == null
+        timeFieldErrorState.value = timeFieldState.value.isEmpty() || timeFieldState.value.toIntOrNull() == null
+        uMegerFieldErrorState.value = uMegerFieldState.value.isEmpty() || uMegerFieldState.value.toIntOrNull() == null
+        currentFieldErrorState.value =
+            currentFieldState.value.isEmpty() || currentFieldState.value.toIntOrNull() == null
+
+        if (!nameTestFieldErrorState.value
+            && !uViuFieldErrorState.value
+            && !timeFieldErrorState.value
+            && !uMegerFieldErrorState.value
+            && !currentFieldErrorState.value
+        ) {
+            scope.launch {
+                transaction {
+                    var lastKey = 0
+                    mainViewModel.selectedObject.value!!.fieldsIterable.forEach {
+                        if (lastKey < it.key) {
+                            lastKey = it.key
+                        }
+                    }
+                    val newField = TestItemField.new {
+                        testItem = mainViewModel.selectedObject.value!!
+                        key = lastKey + 1
+                        nameTest = nameTestFieldState.value
+                        uViu = uViuFieldState.value.toInt()
+                        time = timeFieldState.value.toInt()
+                        uMeger = uMegerFieldState.value.toInt()
+                        current = currentFieldState.value.toInt()
+                    }
+                    mainViewModel.objectFields.add(newField)
+                    mainViewModel.selectedField.value = mainViewModel.objectFields.lastOrNull()
+                }
+                closeNewFieldDialog()
+            }
+        }
+    }
+
+    fun closeEditFieldDialog() {
+        editFieldVisibleState.value = false
+        clearStates()
+    }
+
+    fun closeNewFieldDialog() {
+        createNewFieldVisibleState.value = false
+        clearStates()
+    }
+
+    private fun clearStates() {
+        nameTestFieldState.value = ""
+        uViuFieldState.value = ""
+        timeFieldState.value = ""
+        uMegerFieldState.value = ""
+        currentFieldState.value = ""
+    }
+
+    fun copyField() {
+        scope.launch {
+            transaction {
+                val newField = TestItemField.new {
+                    testItem = mainViewModel.selectedObject.value!!
+                    key = mainViewModel.selectedObject.value!!.fieldsIterable.last().key + 1
+                    nameTest = mainViewModel.selectedField.value!!.nameTest
+                    uViu = mainViewModel.selectedField.value!!.uViu
+                    time = mainViewModel.selectedField.value!!.time
+                    uMeger = mainViewModel.selectedField.value!!.uMeger
+                    current = mainViewModel.selectedField.value!!.current
+                }
+                mainViewModel.objectFields.add(newField)
+                mainViewModel.selectedField.value = mainViewModel.objectFields.lastOrNull()
+            }
+        }
+    }
+
+
+    fun deleteField() {
+        scope.launch {
+            transaction {
+                TestItemFields.deleteWhere { TestItemFields.id eq mainViewModel.selectedField.value!!.id }
+            }
+            mainViewModel.objectFields.remove(mainViewModel.selectedField.value)
+            mainViewModel.selectedField.value = mainViewModel.objectFields.firstOrNull()
+        }
+    }
+
+    fun editField() {
+        nameTestFieldErrorState.value = nameTestFieldState.value.isEmpty()
+        uViuFieldErrorState.value = uViuFieldState.value.isEmpty() || uViuFieldState.value.toIntOrNull() == null
+        timeFieldErrorState.value = timeFieldState.value.isEmpty() || timeFieldState.value.toIntOrNull() == null
+        uMegerFieldErrorState.value = uMegerFieldState.value.isEmpty() || uMegerFieldState.value.toIntOrNull() == null
+        currentFieldErrorState.value =
+            currentFieldState.value.isEmpty() || currentFieldState.value.toIntOrNull() == null
+
+        if (!nameTestFieldErrorState.value
+            && !uViuFieldErrorState.value
+            && !timeFieldErrorState.value
+            && !uMegerFieldErrorState.value
+            && !currentFieldErrorState.value
+        ) {
+            scope.launch {
+                transaction {
+                    val newField = TestItemField.new {
+                        testItem = mainViewModel.selectedObject.value!!
+                        key = mainViewModel.selectedField.value!!.key
+                        nameTest = nameTestFieldState.value
+                        uViu = uViuFieldState.value.toInt()
+                        time = timeFieldState.value.toInt()
+                        uMeger = uMegerFieldState.value.toInt()
+                        current = currentFieldState.value.toInt()
+                    }
+                    TestItemFields.deleteWhere { TestItemFields.id eq mainViewModel.selectedField.value!!.id }
+                    mainViewModel.objectFields.clear()
+                    mainViewModel.objectFields.addAll(mainViewModel.selectedObject.value!!.fieldsIterable.sortedBy { it.key }
+                        .toTypedArray())
+                    mainViewModel.selectedField.value = mainViewModel.objectFields.lastOrNull()
+                }
+                closeEditFieldDialog()
+            }
+        }
     }
 }

@@ -25,7 +25,7 @@ fun validateDB() {
                 name = "Резистор токоограничивающий РТ-45"
                 type = "6TC.277.045"
                 image =
-                    ExposedBlob(Files.readAllBytes(Paths.get("C:/Users/Maga/IdeaProjects/viu35-nevz/src/jvmMain/resources/unnamed.jpg")))
+                    ExposedBlob(Files.readAllBytes(Paths.get("${File("").absolutePath}/src/jvmMain/resources/unnamed.jpg")))
             }.also { ti ->
                 TestItemField.new {
                     testItem = ti
@@ -51,7 +51,7 @@ fun validateDB() {
                 name = "Блок резисторов высоковольтной цепи БРВЦ-46"
                 type = "6TC.277.046"
                 image =
-                    ExposedBlob(Files.readAllBytes(Paths.get("C:/Users/Maga/IdeaProjects/viu35-nevz/src/jvmMain/resources/unnamed2.jpg")))
+                    ExposedBlob(Files.readAllBytes(Paths.get("${File("").absolutePath}/src/jvmMain/resources/unnamed2.jpg")))
             }.also { ti ->
                 TestItemField.new {
                     testItem = ti

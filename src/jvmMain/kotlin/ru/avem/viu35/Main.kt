@@ -25,7 +25,7 @@ fun App() {
 
 fun main() = application {
     validateDB()
-    Window(onCloseRequest = ::exitApplication, undecorated = true) {
+    Window(onCloseRequest = ::exitApplication, undecorated = true, resizable = false) {
         window.placement = WindowPlacement.Maximized
         App()
     }
