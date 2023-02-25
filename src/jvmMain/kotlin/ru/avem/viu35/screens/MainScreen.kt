@@ -86,6 +86,7 @@ object MainScreen : Screen {
             })
         }) {
             if (mainViewModel.imageVisibleState.value) {
+                println(mainViewModel.selectedObject.value!!.image.bytes) //TODO без этого не работает
                 Image(
                     modifier = Modifier.fillMaxSize().onClick(matcher = PointerMatcher.mouse(PointerButton.Primary),
                         keyboardModifiers = { true },
@@ -332,18 +333,21 @@ object MainScreen : Screen {
                                     onValueChange = { mainViewModel.dot2.value = it })
                             }
                         }
-                        Image(
-                            modifier = Modifier.fillMaxWidth().clickable {
-                                mainViewModel.imageVisibleState.value = true
-                            }.height(512.dp),
-                            contentDescription = "image",
-                            bitmap = if (mainViewModel.selectedObject.value != null) {
-                                Image.Companion.makeFromEncoded(mainViewModel.selectedObject.value!!.image.bytes)
-                                    .toComposeImageBitmap()
-                            } else {
-                                ImageBitmap(800, 800)
-                            }
-                        )
+                        if (mainViewModel.selectedObject.value != null) {
+                            println(mainViewModel.selectedObject.value!!.image.bytes) //TODO без этого не работает
+                            Image(
+                                modifier = Modifier.fillMaxWidth().clickable {
+                                    mainViewModel.imageVisibleState.value = true
+                                }.height(512.dp),
+                                contentDescription = "image",
+                                bitmap = if (mainViewModel.selectedObject.value != null) {
+                                    Image.Companion.makeFromEncoded(mainViewModel.selectedObject.value!!.image.bytes)
+                                        .toComposeImageBitmap()
+                                } else {
+                                    ImageBitmap(800, 800)
+                                }
+                            )
+                        }
                     }
                 }
             }

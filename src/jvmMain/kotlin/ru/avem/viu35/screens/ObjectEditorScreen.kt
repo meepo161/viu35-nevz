@@ -62,7 +62,6 @@ class ObjectEditorScreen(var mainViewModel: MainScreenViewModel) : Screen {
                         vm.imagePathState.value = path
                     }
                 }
-
                 if (vm.createNewObjectVisibleState.value) {
                     CustomDialog(title = "Создание нового аппарата",
                         text = "Введите данные аппарата",
@@ -139,7 +138,7 @@ class ObjectEditorScreen(var mainViewModel: MainScreenViewModel) : Screen {
                     }
                 }
                 if (vm.imageVisibleState.value) {
-                    println(mainViewModel.selectedObject.value!!.image.bytes)
+                    println(mainViewModel.selectedObject.value!!.image.bytes) //TODO без этого не работает
                     Image(
                         modifier = Modifier.fillMaxSize().onClick(matcher = PointerMatcher.mouse(PointerButton.Primary),
                             keyboardModifiers = { true },
