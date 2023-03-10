@@ -28,14 +28,14 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.skia.Image
 import ru.avem.composables.HomeScreenDrawer
 import ru.avem.viu35.composables.ComboBox
+import ru.avem.viu35.composables.ConfirmDialog
 import ru.avem.viu35.composables.MainScreenActionBar
 import ru.avem.viu35.viewmodels.MainScreenViewModel
+import ru.avem.viu35.viewmodels.TestViewModel
 import java.awt.Dimension
 import java.awt.image.BufferedImage
 import java.io.File
@@ -50,6 +50,7 @@ object MainScreen : Screen {
         val scaffoldState = rememberScaffoldState()
         val scope = rememberCoroutineScope()
         val mainViewModel = rememberScreenModel { MainScreenViewModel() }
+        val testViewModel = rememberScreenModel { TestViewModel(mainViewModel) }
 
         val size = Dimension(800, 600)
         val img = BufferedImage(size.width, size.height, BufferedImage.TYPE_INT_RGB)
@@ -106,8 +107,15 @@ object MainScreen : Screen {
                     modifier = Modifier.fillMaxSize().padding(16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     LeftPanel(modifier = Modifier.weight(0.4f), mainViewModel)
-                    RighPanel(modifier = Modifier.weight(0.6f), mainViewModel)
+                    RighPanel(modifier = Modifier.weight(0.6f), mainViewModel, testViewModel)
                 }
+            }
+            if (mainViewModel.dialogVisibleState.value) {
+                ConfirmDialog(
+                    "Диалоговое окно",
+                    "Закрыть окно?",
+                    { mainViewModel.dialogVisibleState.value = false },
+                    { mainViewModel.dialogVisibleState.value = false })
             }
         }
     }
@@ -356,7 +364,7 @@ object MainScreen : Screen {
 
     @Composable
     @OptIn(DelicateCoroutinesApi::class)
-    private fun RighPanel(modifier: Modifier, vm: MainScreenViewModel) {
+    private fun RighPanel(modifier: Modifier, vm: MainScreenViewModel, testViewModel: TestViewModel) {
         Card(modifier = modifier, elevation = 4.dp) {
             Column(
                 modifier = Modifier.padding(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -513,21 +521,7 @@ object MainScreen : Screen {
                     }
                     Button(
                         modifier = Modifier.weight(1 / 3f).height(128.dp), onClick = {
-                            GlobalScope.launch {
-                                while (true) {
-                                    vm.listCurrents.forEach {
-                                        it.value = (1..100000).random().toString()
-                                    }
-                                    vm.listColorsProtection.forEach {
-                                        it.value = Color(
-                                            (1..256).random(),
-                                            (1..256).random(),
-                                            (1..256).random()
-                                        )
-                                    }
-                                    delay(100)
-                                }
-                            }
+                            testViewModel.start()
                         }, elevation = ButtonDefaults.elevation(
                             defaultElevation = 10.dp, pressedElevation = 15.dp, disabledElevation = 0.dp
                         )
@@ -551,7 +545,9 @@ object MainScreen : Screen {
                     }
                     Button(
                         modifier = Modifier.weight(1 / 3f).height(128.dp),
-                        onClick = {},
+                        onClick = {
+                            testViewModel.stop()
+                        },
                         elevation = ButtonDefaults.elevation(
                             defaultElevation = 10.dp, pressedElevation = 15.dp, disabledElevation = 0.dp
                         )

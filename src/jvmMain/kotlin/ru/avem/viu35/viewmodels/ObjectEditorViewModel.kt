@@ -23,6 +23,7 @@ class ObjectEditorViewModel(private var mainViewModel: MainScreenViewModel) : Sc
     var showFilePicker = mutableStateOf(false)
 
     val createNewObjectVisibleState = mutableStateOf(false)
+    val editObjectVisibleState = mutableStateOf(false)
 
     val nameObjectState = mutableStateOf("")
     val typeObjectState = mutableStateOf("")
@@ -119,11 +120,33 @@ class ObjectEditorViewModel(private var mainViewModel: MainScreenViewModel) : Sc
         }
     }
 
+    fun editObject() {
+        nameObjectStateError.value = nameObjectState.value.isEmpty()
+        typeObjectStateError.value = typeObjectState.value.isEmpty()
+        imageObjectStateError.value = imageObjectState.value.isEmpty()
+        if (!nameObjectStateError.value && !typeObjectStateError.value && !imageObjectStateError.value) {
+            scope.launch {
+                transaction {
+                    mainViewModel.selectedObject.value!!.name = nameObjectState.value
+                    mainViewModel.selectedObject.value!!.type = typeObjectState.value
+                    mainViewModel.selectedObject.value!!.image =
+                        ExposedBlob(Files.readAllBytes(Paths.get(imageObjectState.value)))
+                    mainViewModel.objects.clear()
+                    mainViewModel.objects.addAll(getAllTestItems().sortedBy { it.name }.toTypedArray())
+                }
+                closeEditObjectDialog()
+            }
+        }
+    }
+
     fun closeNewObjectDialog() {
         createNewObjectVisibleState.value = false
-        nameObjectState.value = ""
-        typeObjectState.value = ""
-        imageObjectState.value = ""
+        clearObjectStates()
+    }
+
+    fun closeEditObjectDialog() {
+        editObjectVisibleState.value = false
+        clearObjectStates()
     }
 
     fun createNewField() {
@@ -183,6 +206,12 @@ class ObjectEditorViewModel(private var mainViewModel: MainScreenViewModel) : Sc
         currentFieldState.value = ""
     }
 
+    private fun clearObjectStates() {
+        nameObjectState.value = ""
+        typeObjectState.value = ""
+        imageObjectState.value = ""
+    }
+
     fun copyField() {
         scope.launch {
             transaction {
@@ -228,16 +257,10 @@ class ObjectEditorViewModel(private var mainViewModel: MainScreenViewModel) : Sc
         ) {
             scope.launch {
                 transaction {
-                    val newField = TestItemField.new {
-                        testItem = mainViewModel.selectedObject.value!!
-                        key = mainViewModel.selectedField.value!!.key
-                        nameTest = nameTestFieldState.value
-                        uViu = uViuFieldState.value.toInt()
-                        time = timeFieldState.value.toInt()
-                        uMeger = uMegerFieldState.value.toInt()
-                        current = currentFieldState.value.toInt()
-                    }
-                    TestItemFields.deleteWhere { TestItemFields.id eq mainViewModel.selectedField.value!!.id }
+                    mainViewModel.selectedField.value?.uViu = uViuFieldState.value.toInt()
+                    mainViewModel.selectedField.value?.time = timeFieldState.value.toInt()
+                    mainViewModel.selectedField.value?.uMeger = uMegerFieldState.value.toInt()
+                    mainViewModel.selectedField.value?.current = currentFieldState.value.toInt()
                     mainViewModel.objectFields.clear()
                     mainViewModel.objectFields.addAll(mainViewModel.selectedObject.value!!.fieldsIterable.sortedBy { it.key }
                         .toTypedArray())

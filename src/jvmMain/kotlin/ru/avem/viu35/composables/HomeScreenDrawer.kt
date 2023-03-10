@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import onExit
 import ru.avem.viu35.screens.ObjectEditorScreen
 import ru.avem.viu35.viewmodels.MainScreenViewModel
 import kotlin.system.exitProcess
@@ -59,6 +60,6 @@ fun HomeScreenDrawer(mainViewModel: MainScreenViewModel) {
     }
     Divider()
     DrawerMenuItem(Icons.Filled.ExitToApp, "Выход") {
-        exitProcess(0)
+        onExit()
     }
 }

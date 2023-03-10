@@ -4,7 +4,7 @@ import androidx.compose.runtime.MutableState
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.Navigator
-import ru.avem.viu35.PASSWORD
+import ru.avem.viu35.utils.PASSWORD
 
 class PasswordScreenViewModel(private val navigateTo: Screen) : ScreenModel {
     fun checkPassword(

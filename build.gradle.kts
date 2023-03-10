@@ -32,8 +32,10 @@ kotlin {
                 implementation(compose.desktop.linux_arm64)
                 implementation(compose.desktop.currentOs)
 
-                implementation(":kserialpooler-1.0")
+                implementation(":kserialpooler-2.0")
                 implementation(":polling-essentials-1.0")
+                implementation("com.fazecast:jSerialComm:2.9.2")
+
                 implementation("org.jfree:jfreechart:1.5.3")
                 implementation("org.apache.poi:poi:5.0.0")
                 implementation("org.apache.poi:poi-ooxml:5.0.0")
@@ -48,6 +50,9 @@ kotlin {
                 implementation("org.xerial:sqlite-jdbc:3.30.1")
                 implementation("io.github.microutils:kotlin-logging-jvm:3.0.2")
                 implementation("com.darkrockstudios:mpfilepicker:1.0.0")
+
+                implementation("ch.qos.logback:logback-classic:1.2.3")
+                implementation("ch.qos.logback:logback-core:1.2.3")
             }
         }
         val jvmTest by getting

@@ -8,8 +8,13 @@ import androidx.compose.ui.window.WindowPlacement
 import androidx.compose.ui.window.application
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.transitions.FadeTransition
+import ru.avem.viu35.communication.model.CM
+import ru.avem.viu35.communication.model.devices.rele.ReleController
 import ru.avem.viu35.database.validateDB
 import ru.avem.viu35.screens.MainScreen
+import kotlin.system.exitProcess
+
+var isRunning = false
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
@@ -25,8 +30,15 @@ fun App() {
 
 fun main() = application {
     validateDB()
-    Window(onCloseRequest = ::exitApplication, undecorated = true, resizable = false) {
+    Window(onCloseRequest = { onExit() }, undecorated = true, resizable = false) {
         window.placement = WindowPlacement.Maximized
         App()
     }
 }
+
+fun onExit() {
+    isRunning = false
+    CM.device<ReleController>(CM.DeviceID.DD3).offAll()
+    exitProcess(0)
+}
+

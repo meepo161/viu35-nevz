@@ -14,12 +14,14 @@ import ru.avem.viu35.database.entities.TestItem
 import ru.avem.viu35.database.entities.TestItemField
 import ru.avem.viu35.database.getAllTestItems
 import java.io.File
+import kotlin.concurrent.thread
 
 class MainScreenViewModel : ScreenModel {
     var selectedMeasurement = mutableStateOf<Boolean>(false)
     val scope = CoroutineScope(Dispatchers.Default)
 
     val imageVisibleState = mutableStateOf(false)
+    val dialogVisibleState = mutableStateOf(false)
     val image = "${File("").absolutePath}\\images\\image.jpg"
 
     val listSerialNumbers = List(10) { mutableStateOf("") }

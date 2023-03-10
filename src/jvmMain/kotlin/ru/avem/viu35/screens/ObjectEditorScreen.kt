@@ -25,14 +25,14 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.darkrockstudios.libraries.mpfilepicker.FilePicker
+import org.jetbrains.exposed.sql.statements.api.ExposedBlob
 import org.jetbrains.skia.Image
-import ru.avem.viu35.composables.CustomDialog
-import ru.avem.viu35.composables.ScrollableLazyColumn
-import ru.avem.viu35.composables.TableView
-import ru.avem.viu35.composables.TestObjectListItem
+import ru.avem.viu35.composables.*
 import ru.avem.viu35.database.entities.TestItemField
 import ru.avem.viu35.viewmodels.MainScreenViewModel
 import ru.avem.viu35.viewmodels.ObjectEditorViewModel
+import java.nio.file.Files
+import java.nio.file.Paths
 
 class ObjectEditorScreen(private var mainViewModel: MainScreenViewModel) : Screen {
 
@@ -71,6 +71,80 @@ class ObjectEditorScreen(private var mainViewModel: MainScreenViewModel) : Scree
                         },
                         noCallback = {
                             vm.closeNewObjectDialog()
+                        }) {
+                        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                            Row(modifier = Modifier.fillMaxWidth().padding(end = 16.dp)) {
+                                Box(
+                                    modifier = Modifier.weight(0.3f).height(48.dp), contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "Имя", fontSize = 20.sp, textAlign = TextAlign.Center
+                                    )
+                                }
+                                Box(modifier = Modifier.weight(0.7f)) {
+                                    OutlinedTextField(textStyle = TextStyle.Default.copy(
+                                        fontSize = 20.sp, textAlign = TextAlign.Center
+                                    ),
+                                        isError = vm.nameObjectStateError.value,
+                                        value = vm.nameObjectState.value,
+                                        onValueChange = { vm.nameObjectState.value = it })
+                                }
+                            }
+                            Row(modifier = Modifier.fillMaxWidth().padding(end = 16.dp)) {
+                                Box(
+                                    modifier = Modifier.weight(0.3f).height(48.dp), contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "Тип", fontSize = 20.sp, textAlign = TextAlign.Center
+                                    )
+                                }
+                                Box(modifier = Modifier.weight(0.7f)) {
+                                    OutlinedTextField(textStyle = TextStyle.Default.copy(
+                                        fontSize = 20.sp, textAlign = TextAlign.Center
+                                    ),
+                                        isError = vm.typeObjectStateError.value,
+                                        value = vm.typeObjectState.value,
+                                        onValueChange = { vm.typeObjectState.value = it })
+                                }
+                            }
+                            Row(modifier = Modifier.fillMaxWidth().padding(end = 16.dp)) {
+                                Button(
+                                    onClick = {
+                                        vm.showFilePicker.value = true
+                                    },
+                                    modifier = Modifier.fillMaxWidth().background(
+                                        if (vm.imageObjectStateError.value) {
+                                            Color.Red
+                                        } else {
+                                            MaterialTheme.colors.primary
+                                        }
+                                    ),
+                                    elevation = ButtonDefaults.elevation(
+                                        defaultElevation = 10.dp, pressedElevation = 15.dp, disabledElevation = 0.dp
+                                    ),
+                                ) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        Icon(imageVector = Icons.Filled.Search, contentDescription = null)
+                                        Text(text = "Выбрать файл чертежа")
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                if (vm.editObjectVisibleState.value) {
+                    CustomDialog(title = "Редактирование аппарата",
+                        text = "Введите данные аппарата",
+                        yesButton = "Сохранить",
+                        noButton = "Отмена",
+                        yesCallback = {
+                            vm.editObject()
+                        },
+                        noCallback = {
+                            vm.closeEditObjectDialog()
                         }) {
                         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                             Row(modifier = Modifier.fillMaxWidth().padding(end = 16.dp)) {
@@ -252,7 +326,11 @@ class ObjectEditorScreen(private var mainViewModel: MainScreenViewModel) : Scree
                                 }
                             }
                             Button(
-                                onClick = {},
+                                onClick = {
+                                    vm.nameObjectState.value = mainViewModel.selectedObject.value!!.name
+                                    vm.typeObjectState.value = mainViewModel.selectedObject.value!!.type
+                                    vm.editObjectVisibleState.value = true
+                                },
                                 modifier = Modifier.fillMaxWidth(),
                                 elevation = ButtonDefaults.elevation(
                                     defaultElevation = 10.dp, pressedElevation = 15.dp, disabledElevation = 0.dp
@@ -330,41 +408,6 @@ class ObjectEditorScreen(private var mainViewModel: MainScreenViewModel) : Scree
                                     },
                                     isExpandedDropdownMenu = isExpandedDropDownMenu
                                 )
-                            }
-                            Row(
-                                modifier = Modifier.fillMaxWidth().padding(4.dp),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                Button(
-                                    onClick = {},
-                                    modifier = Modifier.weight(0.5f).height(96.dp),
-                                    elevation = ButtonDefaults.elevation(
-                                        defaultElevation = 10.dp, pressedElevation = 15.dp, disabledElevation = 0.dp
-                                    ),
-                                ) {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                    ) {
-                                        Icon(imageVector = Icons.Filled.North, contentDescription = null)
-                                        Text(text = "Переместить выше")
-                                    }
-                                }
-                                Button(
-                                    onClick = {},
-                                    modifier = Modifier.weight(0.5f).height(96.dp),
-                                    elevation = ButtonDefaults.elevation(
-                                        defaultElevation = 10.dp, pressedElevation = 15.dp, disabledElevation = 0.dp
-                                    ),
-                                ) {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                    ) {
-                                        Icon(imageVector = Icons.Filled.South, contentDescription = null)
-                                        Text(text = "Переместить ниже")
-                                    }
-                                }
                             }
                             Row(
                                 modifier = Modifier.fillMaxWidth().padding(4.dp),
