@@ -32,19 +32,19 @@ fun ConfirmDialog(
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("ДА", style = MaterialTheme.typography.h5)
+                        Text("Ок", style = MaterialTheme.typography.h5)
                     }
                 }
-                Button(onClick = {
-                    noCallback()
-                }, modifier = Modifier.fillMaxWidth().height(52.dp)) {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text("НЕТ", style = MaterialTheme.typography.h5)
-                    }
-                }
+//                Button(onClick = {
+//                    noCallback()
+//                }, modifier = Modifier.fillMaxWidth().height(52.dp)) {
+//                    Row(
+//                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+//                        verticalAlignment = Alignment.CenterVertically
+//                    ) {
+//                        Text("НЕТ", style = MaterialTheme.typography.h5)
+//                    }
+//                }
             }
         }
     )

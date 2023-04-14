@@ -6,6 +6,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.mouseClickable
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Card
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -50,18 +51,21 @@ fun <T> TableView(
                         ).weight(0.3f).height(64.dp).clip(RoundedCornerShape(8.dp))
                             .background(MaterialTheme.colors.primary), contentAlignment = Alignment.Center
                     ) {
-                        Text(it, style = TextStyle(fontWeight = FontWeight.Bold, color = MaterialTheme.colors.surface))
+                        Text(
+                            it,
+                            style = TextStyle(fontWeight = FontWeight.Bold, color = MaterialTheme.colors.background)
+                        )
                     }
                 }
             } else {
                 columns.forEach {
                     Box(
                         modifier = Modifier.clip(RoundedCornerShape(10.dp)).weight(0.3f).height(64.dp)
-                            .background(MaterialTheme.colors.primary), contentAlignment = Alignment.Center
+                            .background(MaterialTheme.colors.background), contentAlignment = Alignment.Center
                     ) {
                         Text(
                             it.name,
-                            style = TextStyle(fontWeight = FontWeight.Bold, color = MaterialTheme.colors.surface)
+                            style = TextStyle(fontWeight = FontWeight.Bold, color = MaterialTheme.colors.background)
                         )
                     }
                 }
@@ -80,8 +84,7 @@ fun <T> TableView(
                     }).background(
                         if (!isExpandedDropdownMenu.value) {
                             if (hoveredItem == items[it]) {
-                                Color.LightGray
-//                        MaterialTheme.colors.primary
+                                MaterialTheme.colors.secondary.copy(alpha = 0.2f)
                             } else {
                                 MaterialTheme.colors.background
                             }
@@ -107,7 +110,7 @@ fun <T> TableView(
                                 textAlign = TextAlign.Center,
 //                                fontSize = 30.sp,
                                 color = if (selectedItem == items[it])
-                                    Color.Gray else MaterialTheme.colors.onSurface
+                                    MaterialTheme.colors.secondary else MaterialTheme.colors.primary
                             )
                         }
                     }

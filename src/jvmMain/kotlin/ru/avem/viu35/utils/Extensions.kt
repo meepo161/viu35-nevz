@@ -100,6 +100,9 @@ fun Double.autoformat(): String =
         }
     }
 
+fun Double.formatDigits(digits: Int): String =
+    "%.${digits}f".format(Locale.ENGLISH, this)
+
 @ExperimentalUnsignedTypes
 fun UInt.toBoolean() = this != 0.toUInt()
 

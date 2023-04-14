@@ -14,7 +14,6 @@ import ru.avem.viu35.database.entities.TestItem
 import ru.avem.viu35.database.entities.TestItemField
 import ru.avem.viu35.database.getAllTestItems
 import java.io.File
-import kotlin.concurrent.thread
 
 class MainScreenViewModel : ScreenModel {
     var selectedMeasurement = mutableStateOf<Boolean>(false)
@@ -29,6 +28,7 @@ class MainScreenViewModel : ScreenModel {
     val listRs = List(10) { mutableStateOf("") }
     val listProtections = List(10) { mutableStateOf("") }
     val listCheckBoxesViu = List(10) { mutableStateOf(false) }
+    val mutableStateIsRunning = mutableStateOf(true)
     val listCheckBoxesMeger = List(10) { mutableStateOf(false) }
     val allCheckBoxesViu = mutableStateOf(ToggleableState.Off)
     val allCheckBoxesMeger = mutableStateOf(ToggleableState.Off)
@@ -52,6 +52,9 @@ class MainScreenViewModel : ScreenModel {
     val selectedObject = mutableStateOf<TestItem?>(null)
     val objectFields = mutableStateListOf<TestItemField>()
     val selectedField = mutableStateOf<TestItemField?>(null)
+
+    val titleDialog = mutableStateOf("")
+    val textDialog = mutableStateOf("")
 
 
     fun onTestObjectSelected(testItem: TestItem) {

@@ -46,13 +46,6 @@ fun <T> ComboBox(
 
     Column(
         modifier = modifier.border(1.dp, Color.Gray, shape = RoundedCornerShape(4.dp)).width(280.dp).height(64.dp)
-            .background(
-                if (isEditable) {
-                    Color.White
-                } else {
-                    Color.LightGray
-                }
-            )
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,

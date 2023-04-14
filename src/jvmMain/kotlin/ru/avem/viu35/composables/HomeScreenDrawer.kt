@@ -1,4 +1,4 @@
-package ru.avem.composables
+package ru.avem.viu35.composables
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Divider
@@ -7,22 +7,27 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import isDarkTheme
 import onExit
+import ru.avem.composables.DrawerMenuItem
 import ru.avem.viu35.screens.ObjectEditorScreen
 import ru.avem.viu35.viewmodels.MainScreenViewModel
-import kotlin.system.exitProcess
 
 @Composable
-fun HomeScreenDrawer(mainViewModel: MainScreenViewModel) {
+fun HomeScreenDrawer(mainViewModel: MainScreenViewModel, isClickable: MutableState<Boolean> = mutableStateOf(true)) {
     val navigator = LocalNavigator.currentOrThrow
 
     Column(
@@ -46,20 +51,35 @@ fun HomeScreenDrawer(mainViewModel: MainScreenViewModel) {
                 )
             }
         }
-    }
-    Divider()
-    DrawerMenuItem(Icons.Filled.Settings, "База данных испытываемых аппаратов") {
+        Divider()
+        DrawerMenuItem(Icons.Filled.Settings, "База данных испытываемых аппаратов") {
 //        navigator.push(PasswordScreen(ObjectEditorScreen))
-        navigator.push(ObjectEditorScreen(mainViewModel))
-    }
-    DrawerMenuItem(painterResource("icons/baseline_storage_24.xml"), "База данных протоколов") {
+            if (isClickable.value) {
+                navigator.push(ObjectEditorScreen(mainViewModel))
+            }
+        }
+        DrawerMenuItem(painterResource("icons/baseline_storage_24.xml"), "База данных протоколов") {
 //        navigator.push(ProtocolsScreen)
-    }
-    DrawerMenuItem(Icons.Filled.SettingsRemote, "Состояние защит") {
+        }
+        DrawerMenuItem(Icons.Filled.SettingsRemote, "Состояние защит") {
 //        navigator.push(SettingsScreen)
-    }
-    Divider()
-    DrawerMenuItem(Icons.Filled.ExitToApp, "Выход") {
-        onExit()
+        }
+        DrawerMenuItem(
+            if (isDarkTheme.value) {
+                Icons.Filled.DarkMode
+            } else {
+                Icons.Filled.LightMode
+            }, "Сменить тему"
+        ) {
+            if (isClickable.value) {
+                isDarkTheme.value = !isDarkTheme.value
+            }
+        }
+        Divider()
+        DrawerMenuItem(Icons.Filled.ExitToApp, "Выход") {
+            if (isClickable.value) {
+                onExit()
+            }
+        }
     }
 }

@@ -15,22 +15,20 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.PointerButton
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Density
-import androidx.compose.ui.unit.LayoutDirection
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.*
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import kotlinx.coroutines.DelicateCoroutinesApi
+import isTestRunning
 import kotlinx.coroutines.launch
 import org.jetbrains.skia.Image
-import ru.avem.composables.HomeScreenDrawer
+import ru.avem.viu35.composables.HomeScreenDrawer
 import ru.avem.viu35.composables.ComboBox
 import ru.avem.viu35.composables.ConfirmDialog
 import ru.avem.viu35.composables.MainScreenActionBar
@@ -43,14 +41,14 @@ import javax.imageio.ImageIO
 
 @Suppress("FunctionName")
 object MainScreen : Screen {
-    @OptIn(ExperimentalFoundationApi::class)
+    @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterialApi::class)
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
         val scaffoldState = rememberScaffoldState()
         val scope = rememberCoroutineScope()
-        val mainViewModel = rememberScreenModel { MainScreenViewModel() }
-        val testViewModel = rememberScreenModel { TestViewModel(mainViewModel) }
+        val vm = rememberScreenModel { MainScreenViewModel() }
+        val testViewModel = rememberScreenModel { TestViewModel(vm) }
 
         val size = Dimension(800, 600)
         val img = BufferedImage(size.width, size.height, BufferedImage.TYPE_INT_RGB)
@@ -61,42 +59,47 @@ object MainScreen : Screen {
         }
         ImageIO.write(img, "BMP", File("test.bmp"))
 
-        Scaffold(scaffoldState = scaffoldState, drawerContent = {
-            HomeScreenDrawer(mainViewModel)
-        }, drawerShape = object : Shape {
-            override fun createOutline(
-                size: Size, layoutDirection: LayoutDirection, density: Density
-            ): Outline {
-                return Outline.Rectangle(Rect(offset = Offset.Zero, size = Size(480f, Float.MAX_VALUE)))
-            }
-        }, topBar = {
-            TopAppBar(navigationIcon = {
-                IconButton(onClick = {
-                    scope.launch {
-                        if (scaffoldState.drawerState.isClosed) {
-                            scaffoldState.drawerState.open()
-                        } else {
-                            scaffoldState.drawerState.close()
+        Scaffold(scaffoldState = scaffoldState,
+            drawerGesturesEnabled = scaffoldState.drawerState.isOpen,
+            drawerContent = { HomeScreenDrawer(mainViewModel = vm, isClickable = vm.mutableStateIsRunning) },
+            drawerShape = object : Shape {
+                override fun createOutline(
+                    size: Size, layoutDirection: LayoutDirection, density: Density
+                ): Outline {
+                    return Outline.Rectangle(
+                        Rect(
+                            offset = Offset.Zero, size = Size(480f, Float.MAX_VALUE)
+                        )
+                    )
+                }
+            },
+            topBar = {
+                TopAppBar(navigationIcon = {
+                    IconButton(onClick = {
+                        scope.launch {
+                            if (scaffoldState.drawerState.isClosed && !isTestRunning) {
+                                scaffoldState.drawerState.open()
+                            } else {
+                                scaffoldState.drawerState.close()
+                            }
                         }
-                    }
-                }) { Icon(Icons.Filled.Menu, contentDescription = null) }
-            }, title = {
-                Text("ВИУ-35")
-            }, actions = {
-                MainScreenActionBar(navigator, mainViewModel) {}
-            })
-        }) {
-            if (mainViewModel.imageVisibleState.value) {
-                println(mainViewModel.selectedObject.value!!.image.bytes) //TODO без этого не работает
+                    }) { Icon(Icons.Filled.Menu, contentDescription = null) }
+                }, title = {
+                    Text("ВИУ-35")
+                }, actions = {
+                    MainScreenActionBar(navigator, vm) {}
+                })
+            }) {
+            if (vm.imageVisibleState.value) {
                 Image(
                     modifier = Modifier.fillMaxSize().onClick(matcher = PointerMatcher.mouse(PointerButton.Primary),
                         keyboardModifiers = { true },
                         onClick = {
-                            mainViewModel.imageVisibleState.value = false
+                            vm.imageVisibleState.value = false
                         }),
                     contentDescription = "image",
-                    bitmap = if (mainViewModel.selectedObject.value != null) {
-                        Image.Companion.makeFromEncoded(mainViewModel.selectedObject.value!!.image.bytes)
+                    bitmap = if (vm.selectedObject.value != null) {
+                        Image.Companion.makeFromEncoded(vm.selectedObject.value!!.image.bytes)
                             .toComposeImageBitmap()
                     } else {
                         ImageBitmap(800, 800)
@@ -106,22 +109,22 @@ object MainScreen : Screen {
                 Row(
                     modifier = Modifier.fillMaxSize().padding(16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    LeftPanel(modifier = Modifier.weight(0.4f), mainViewModel)
-                    RighPanel(modifier = Modifier.weight(0.6f), mainViewModel, testViewModel)
+                    LeftPanel(modifier = Modifier.weight(0.4f), vm)
+                    RighPanel(modifier = Modifier.weight(0.6f), vm, testViewModel)
                 }
             }
-            if (mainViewModel.dialogVisibleState.value) {
+            if (vm.dialogVisibleState.value) {
                 ConfirmDialog(
-                    "Диалоговое окно",
-                    "Закрыть окно?",
-                    { mainViewModel.dialogVisibleState.value = false },
-                    { mainViewModel.dialogVisibleState.value = false })
+                    vm.titleDialog.value,
+                    vm.textDialog.value,
+                    { vm.dialogVisibleState.value = false },
+                    { vm.dialogVisibleState.value = false })
             }
         }
     }
 
     @Composable
-    private fun LeftPanel(modifier: Modifier, mainViewModel: MainScreenViewModel) {
+    private fun LeftPanel(modifier: Modifier, vm: MainScreenViewModel) {
         Card(modifier = modifier, elevation = 4.dp) {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Card(elevation = 4.dp) {
@@ -134,21 +137,22 @@ object MainScreen : Screen {
                             fontSize = 20.sp,
                             text = "Имя и тип аппарата"
                         )
-                        ComboBox(selectedItem = mainViewModel.selectedObject,
+                        ComboBox(selectedItem = vm.selectedObject,
                             modifier = Modifier.fillMaxWidth().padding(8.dp),
+                            isEditable = vm.mutableStateIsRunning.value,
                             onDismissState = {},
-                            items = mainViewModel.objects,
+                            items = vm.objects,
                             selectedValue = {
-                                mainViewModel.onTestObjectSelected(it!!)
+                                vm.onTestObjectSelected(it!!)
                             })
 
-                        ComboBox(selectedItem = mainViewModel.selectedField,
+                        ComboBox(selectedItem = vm.selectedField,
                             modifier = Modifier.fillMaxWidth().padding(8.dp),
-                            isEditable = mainViewModel.selectedObject.value != null,
+                            isEditable = vm.selectedObject.value != null && vm.mutableStateIsRunning.value,
                             onDismissState = {},
-                            items = mainViewModel.objectFields,
+                            items = vm.objectFields,
                             selectedValue = {
-                                mainViewModel.onTestObjectFieldSelected(it!!)
+                                vm.onTestObjectFieldSelected(it!!)
                             })
                     }
                 }
@@ -175,7 +179,7 @@ object MainScreen : Screen {
                                 Box(modifier = Modifier.weight(0.3f)) {
                                     OutlinedTextField(textStyle = TextStyle.Default.copy(
                                         fontSize = 20.sp, textAlign = TextAlign.Center
-                                    ), value = mainViewModel.specifiedI.value, onValueChange = {})
+                                    ), value = vm.specifiedI.value, onValueChange = {})
                                 }
                             }
                             Row(modifier = Modifier.fillMaxWidth().weight(0.5f).padding(end = 16.dp)) {
@@ -192,7 +196,7 @@ object MainScreen : Screen {
                                 Box(modifier = Modifier.weight(0.3f)) {
                                     OutlinedTextField(textStyle = TextStyle.Default.copy(
                                         fontSize = 20.sp, textAlign = TextAlign.Center
-                                    ), value = mainViewModel.specifiedUMeger.value, onValueChange = {})
+                                    ), value = vm.specifiedUMeger.value, onValueChange = {})
                                 }
                             }
                         }
@@ -211,7 +215,7 @@ object MainScreen : Screen {
                                 Box(modifier = Modifier.weight(0.3f)) {
                                     OutlinedTextField(textStyle = TextStyle.Default.copy(
                                         fontSize = 20.sp, textAlign = TextAlign.Center
-                                    ), value = mainViewModel.specifiedUViu.value, onValueChange = {})
+                                    ), value = vm.specifiedUViu.value, onValueChange = {})
                                 }
                             }
                             Row(modifier = Modifier.fillMaxWidth().weight(0.5f).padding(end = 16.dp)) {
@@ -226,7 +230,7 @@ object MainScreen : Screen {
                                 Box(modifier = Modifier.weight(0.3f)) {
                                     OutlinedTextField(textStyle = TextStyle.Default.copy(
                                         fontSize = 20.sp, textAlign = TextAlign.Center
-                                    ), value = mainViewModel.specifiedTime.value, onValueChange = {})
+                                    ), value = vm.specifiedTime.value, onValueChange = {})
                                 }
                             }
                         }
@@ -251,7 +255,7 @@ object MainScreen : Screen {
                                 Box(modifier = Modifier.weight(0.3f)) {
                                     OutlinedTextField(textStyle = TextStyle.Default.copy(
                                         fontSize = 20.sp, textAlign = TextAlign.Center
-                                    ), value = mainViewModel.measuredUViu.value, onValueChange = {})
+                                    ), value = vm.measuredUViu.value, onValueChange = {})
                                 }
                             }
                             Row(modifier = Modifier.fillMaxWidth().weight(0.5f).padding(end = 16.dp)) {
@@ -268,7 +272,7 @@ object MainScreen : Screen {
                                 Box(modifier = Modifier.weight(0.3f)) {
                                     OutlinedTextField(textStyle = TextStyle.Default.copy(
                                         fontSize = 20.sp, textAlign = TextAlign.Center
-                                    ), value = mainViewModel.measuredTime.value, onValueChange = {})
+                                    ), value = vm.measuredTime.value, onValueChange = {})
                                 }
                             }
                         }
@@ -286,7 +290,7 @@ object MainScreen : Screen {
                                     )
                                 }
                                 Box(modifier = Modifier.weight(0.3f), contentAlignment = Alignment.Center) {
-                                    Circle(mainViewModel.colorCurrent.value)
+                                    Circle(vm.colorCurrent.value)
                                 }
                             }
                             Row(modifier = Modifier.fillMaxWidth().weight(0.5f).padding(end = 16.dp)) {
@@ -301,7 +305,7 @@ object MainScreen : Screen {
                                     )
                                 }
                                 Box(modifier = Modifier.weight(0.3f), contentAlignment = Alignment.Center) {
-                                    Circle(mainViewModel.colorZone.value)
+                                    Circle(vm.colorZone.value)
                                 }
                             }
                         }
@@ -319,12 +323,15 @@ object MainScreen : Screen {
                                 Text(
                                     text = "Точка 1, №",
                                 )
-                                OutlinedTextField(modifier = Modifier.padding(8.dp).fillMaxWidth(),
+                                OutlinedTextField(
+                                    modifier = Modifier.padding(8.dp).fillMaxWidth(),
                                     textStyle = TextStyle.Default.copy(
                                         fontSize = 20.sp, textAlign = TextAlign.Center
                                     ),
-                                    value = mainViewModel.dot1.value,
-                                    onValueChange = { mainViewModel.dot1.value = it })
+                                    value = vm.dot1.value,
+                                    onValueChange = { vm.dot1.value = it },
+                                    enabled = vm.mutableStateIsRunning.value
+                                )
                             }
                             Column(
                                 modifier = Modifier.weight(0.5f),
@@ -333,23 +340,26 @@ object MainScreen : Screen {
                                 Text(
                                     text = "Точка 2, №",
                                 )
-                                OutlinedTextField(modifier = Modifier.padding(8.dp).fillMaxWidth(),
+                                OutlinedTextField(
+                                    modifier = Modifier.padding(8.dp).fillMaxWidth(),
                                     textStyle = TextStyle.Default.copy(
                                         fontSize = 20.sp, textAlign = TextAlign.Center
                                     ),
-                                    value = mainViewModel.dot2.value,
-                                    onValueChange = { mainViewModel.dot2.value = it })
+                                    value = vm.dot2.value,
+                                    onValueChange = { vm.dot2.value = it },
+                                    enabled = vm.mutableStateIsRunning.value
+                                )
                             }
                         }
-                        if (mainViewModel.selectedObject.value != null) {
-                            println(mainViewModel.selectedObject.value!!.image.bytes) //TODO без этого не работает
+                        if (vm.selectedObject.value != null) {
+                            println(vm.selectedObject.value!!.image.bytes) //TODO без этого не работает
                             Image(
                                 modifier = Modifier.fillMaxWidth().clickable {
-                                    mainViewModel.imageVisibleState.value = true
+                                    vm.imageVisibleState.value = true
                                 }.height(512.dp),
                                 contentDescription = "image",
-                                bitmap = if (mainViewModel.selectedObject.value != null) {
-                                    Image.Companion.makeFromEncoded(mainViewModel.selectedObject.value!!.image.bytes)
+                                bitmap = if (vm.selectedObject.value != null) {
+                                    Image.Companion.makeFromEncoded(vm.selectedObject.value!!.image.bytes)
                                         .toComposeImageBitmap()
                                 } else {
                                     ImageBitmap(800, 800)
@@ -363,7 +373,6 @@ object MainScreen : Screen {
     }
 
     @Composable
-    @OptIn(DelicateCoroutinesApi::class)
     private fun RighPanel(modifier: Modifier, vm: MainScreenViewModel, testViewModel: TestViewModel) {
         Card(modifier = modifier, elevation = 4.dp) {
             Column(
@@ -386,6 +395,7 @@ object MainScreen : Screen {
                                 modifier = Modifier.scale(2f).size(48.dp),
                                 colors = CheckboxDefaults.colors(MaterialTheme.colors.primary),
                                 state = vm.allCheckBoxesViu.value,
+                                enabled = vm.mutableStateIsRunning.value,
                                 onClick = {
                                     vm.onClickTriStateCheckbox(
                                         vm.allCheckBoxesViu,
@@ -404,6 +414,7 @@ object MainScreen : Screen {
                                 modifier = Modifier.scale(2f).size(48.dp),
                                 colors = CheckboxDefaults.colors(MaterialTheme.colors.primary),
                                 state = vm.allCheckBoxesMeger.value,
+                                enabled = vm.mutableStateIsRunning.value,
                                 onClick = {
                                     vm.onClickTriStateCheckbox(
                                         vm.allCheckBoxesMeger,
@@ -438,6 +449,7 @@ object MainScreen : Screen {
                             ) {
                                 Checkbox(
                                     checked = vm.listCheckBoxesViu[number].value,
+                                    enabled = vm.mutableStateIsRunning.value,
                                     colors = CheckboxDefaults.colors(MaterialTheme.colors.primary),
                                     onCheckedChange = { isChecked ->
                                         vm.listCheckBoxesViu[number].value = isChecked
@@ -467,6 +479,7 @@ object MainScreen : Screen {
                             ) {
                                 Checkbox(
                                     checked = vm.listCheckBoxesMeger[number].value,
+                                    enabled = vm.mutableStateIsRunning.value,
                                     colors = CheckboxDefaults.colors(MaterialTheme.colors.primary),
                                     onCheckedChange = { isChecked ->
                                         vm.listCheckBoxesMeger[number].value = isChecked
