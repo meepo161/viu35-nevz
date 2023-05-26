@@ -9,6 +9,9 @@ class AVEMModel : IDeviceModel {
     val RELAY_ON = "RELAY_ON"
     val RELAY_OFF = "RELAY_OFF"
     val RELAY_MODE = "RELAY_MODE"
+    val SHUNT_MODE = "SHUNT_MODE"
+    val PGA_MODE = "PGA_MODE"
+    val SERIAL_NUMBER = "SERIAL_NUMBER"
 
     override val registers: Map<String, DeviceRegister> = mapOf(
         U_TRMS to DeviceRegister(
@@ -31,6 +34,19 @@ class AVEMModel : IDeviceModel {
             0x113A,
             DeviceRegister.RegisterValueType.INT32
         ),
+        SHUNT_MODE to DeviceRegister(
+            0x11A0,
+            DeviceRegister.RegisterValueType.FLOAT
+        ),
+        PGA_MODE to DeviceRegister(
+            0x10C4,
+            DeviceRegister.RegisterValueType.INT32
+        ),
+        SERIAL_NUMBER to DeviceRegister(
+            0x1108,
+            DeviceRegister.RegisterValueType.INT32
+        )
+
     )
 
     override fun getRegisterById(idRegister: String) =

@@ -24,11 +24,12 @@ class MainScreenViewModel(val logScrollState: LazyListState) : ScreenModel {
 
     val listSerialNumbers = List(10) { mutableStateOf("") }
     val listCurrents = List(10) { mutableStateOf("") }
-    val listColorsCurrentTF = List(10) { mutableStateOf(Color.White) }
-    val listColorsRsTF = List(10) { mutableStateOf(Color.White) }
+    val listColorsCurrentTF = List(10) { mutableStateOf(Color.Transparent) }
+    val listColorsRsTF = List(10) { mutableStateOf(Color.Transparent) }
     val listRs = List(10) { mutableStateOf("") }
     val listProtections = List(10) { mutableStateOf("") }
     val listCheckBoxesViu = List(10) { mutableStateOf(false) }
+    val listViu = MutableList(10) { false }
     val mutableStateIsRunning = mutableStateOf(true)
     val listCheckBoxesMeger = List(10) { mutableStateOf(false) }
     val allCheckBoxesViu = mutableStateOf(ToggleableState.Off)

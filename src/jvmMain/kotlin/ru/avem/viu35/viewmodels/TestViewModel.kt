@@ -54,6 +54,9 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
     private var currentDoArn = false //токовая защита до АРН
 
     @Volatile
+    private var listMessagesLog = mutableListOf<String>()
+
+    @Volatile
     var cause: String = ""
         set(value) {
             if (value.isNotEmpty()) {
@@ -81,6 +84,7 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
         if (!DD2.isResponding) cause = "ПР102 не отвечает"
         if (isTestRunning) {
             with(DD2) {
+                needDevices.add(this)
                 offAllKMs()
                 init()
                 DevicePoller.addWritingRegister(name, model.CMD, 1.toShort())
@@ -89,22 +93,38 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
                 DevicePoller.startPoll(name, model.DI_01_16_TRIG) { value ->
                     val isStopPressed = value.toShort() and 0b100 != 0.toShort()
                     if (isStopPressed) cause = "Нажали кнопку СТОП на кнопочном посту"
-                    if (value.toShort() and 0b10000 != 0.toShort()) cause = "Превышен ток утечки ПОСТ 1"
-                    if (value.toShort() and 0b100000 != 0.toShort()) cause = "Превышен ток утечки ПОСТ 2"
-                    if (value.toShort() and 0b1000000 != 0.toShort()) cause = "Превышен ток утечки ПОСТ 3"
-                    if (value.toShort() and 0b10000000 != 0.toShort()) cause = "Превышен ток утечки ПОСТ 4"
-                    if (value.toShort() and 0b100000000 != 0.toShort()) cause = "Превышен ток утечки ПОСТ 5"
-                    if (value.toShort() and 0b1000000000 != 0.toShort()) cause = "Превышен ток утечки ПОСТ 6"
-                    if (value.toShort() and 0b10000000000 != 0.toShort()) cause = "Превышен ток утечки ПОСТ 7"
-                    if (value.toShort() and 0b100000000000 != 0.toShort()) cause = "Превышен ток утечки ПОСТ 8"
-                    if (value.toShort() and 0b1000000000000 != 0.toShort()) cause = "Превышен ток утечки ПОСТ 9"
-                    if (value.toShort() and 0b10000000000000 != 0.toShort()) cause = "Превышен ток утечки ПОСТ 10"
-                    if (value.toShort() and 0b100000000000000 != 0.toShort()) cause = "Превышен общий ток утечки ОИ"
+                }
+
+                DevicePoller.startPoll(name, model.DI_01_16_TRIG_INV) { value ->
+                    if (value.toShort() and 0b10000 != 0.toShort())
+                        if (mainViewModel.listCheckBoxesViu[0].value) protectionCurrent(1, "> 100 мА")//5
+                    if (value.toShort() and 0b100000 != 0.toShort())
+                        if (mainViewModel.listCheckBoxesViu[1].value) protectionCurrent(1, "> 100 мА")//5
+                    if (value.toShort() and 0b1000000 != 0.toShort())
+                        if (mainViewModel.listCheckBoxesViu[2].value) protectionCurrent(2, "> 100 мА")//6
+                    if (value.toShort() and 0b10000000 != 0.toShort())
+                        if (mainViewModel.listCheckBoxesViu[3].value) protectionCurrent(3, "> 100 мА")//7
+                    if (value.toShort() and 0b100000000 != 0.toShort())
+                        if (mainViewModel.listCheckBoxesViu[4].value) protectionCurrent(4, "> 100 мА")//8
+                    if (value.toShort() and 0b1000000000 != 0.toShort())
+                        if (mainViewModel.listCheckBoxesViu[5].value) protectionCurrent(5, "> 100 мА")//9
+                    if (value.toShort() and 0b10000000000 != 0.toShort())
+                        if (mainViewModel.listCheckBoxesViu[6].value) protectionCurrent(6, "> 100 мА")//10
+                    if (value.toShort() and 0b100000000000 != 0.toShort())
+                        if (mainViewModel.listCheckBoxesViu[7].value) protectionCurrent(7, "> 100 мА")//11
+                    if (value.toShort() and 0b1000000000000 != 0.toShort())
+                        if (mainViewModel.listCheckBoxesViu[8].value) protectionCurrent(8, "> 100 мА")//12
+                    if (value.toShort() and 0b10000000000000 != 0.toShort())
+                        if (mainViewModel.listCheckBoxesViu[9].value) protectionCurrent(9, "> 100 мА")//13
+//                    if (value.toShort() and 0b100000000000000 != 0.toShort()) protectionCurrent(index)
                 }
 
                 DevicePoller.startPoll(name, model.DI_01_16_RAW) { value ->
                     chopper = (value.toShort() and 0b1 != 0.toShort())
                     buttonPostStartPressed = (value.toShort() and 0b10 != 0.toShort())
+                    if (buttonPostStartPressed && !chopper) {
+                        cause = "Разомкнут рубильник во время испытания"
+                    }
                     if (value.toShort() and 0b1000 != 0.toShort()) appendOneMessageToLog("4")
                 }
 
@@ -144,6 +164,7 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
         }
         if (isTestRunning) DD2.onLightGround()
         if (isTestRunning) DD2.onDoorLockOper()
+        if (isTestRunning) DD2.onDoorLockIsp()
         if (isTestRunning) DD2.onLightTablo()
         if (isTestRunning) DD2.onLight()
     }
@@ -170,7 +191,7 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
                 needDevices.add(this)
                 DevicePoller.startPoll(name, model.U_TRMS) { value ->
                     mainViewModel.measuredU.value = value.toDouble().af()
-                    if (value.toDouble() > 380) cause = "Несоответствие коэффициента трансформации"
+                    if (value.toDouble() > 440) cause = "Несоответствие коэффициента трансформации"
                 }
             }
         }
@@ -187,6 +208,7 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
         if (isTestRunning) {
             listPA.forEachIndexed { index, aveM3 ->
                 if (mainViewModel.listCheckBoxesViu[index].value) {
+                    mainViewModel.listViu[index] = mainViewModel.listCheckBoxesViu[index].value
                     with(aveM3) {
                         needDevices.add(this)
                         DevicePoller.startPoll(name, model.U_TRMS) { value ->
@@ -196,15 +218,12 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
                                 var colorTF = (130 - 130 / specifiedI * value.toDouble()).toFloat()
                                 if (colorTF < 0) colorTF = 0f
                                 mainViewModel.listColorsCurrentTF[index].value = Color.hsv(colorTF, 0.7f, 1f)
-                                if (mainViewModel.listCheckBoxesViu.any { it.value }) {
+                                if (!mainViewModel.listViu.any { it }) {
                                     cause = "Превышение по току по всем выбранным Постам"
                                 }
                             }
-                            if (value.toDouble() > mainViewModel.specifiedI.value.toDouble()) {
-                                disassembleViu(index)
-                                mainViewModel.listColorsProtection[index].value = Color.Red
-                                listCurrentsState[index] = false
-                                appendOneMessageToLog("Пост ${index + 1}: Превышение по току")
+                            if (value.toDouble() > mainViewModel.specifiedI.value.toDouble() && listCurrentsState[index]) {
+                                protectionCurrent(index)
                             }
                         }
                     }
@@ -261,7 +280,14 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
         if (isTestRunning) {
             thread {
                 while (isTestRunning) {
-                    needDevices.forEach { it.checkResponsibilityAndNotify() }
+                    needDevices.forEach {
+                        if (isTestRunning) {
+                            it.checkResponsibilityAndNotify()
+                            if (!it.isResponding) {
+                                cause = "Возможно нажат аварийной стоп"
+                            }
+                        }
+                    }
                     wait(1)
                 }
             }
@@ -269,11 +295,19 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
         if (isTestRunning) fields.forEach(Field::poll)
     }
 
+    private fun protectionCurrent(index: Int, msg: String = "") {
+        disassembleViu(index)
+        mainViewModel.listColorsProtection[index].value = Color.Red
+        mainViewModel.listViu[index] = false
+        listCurrentsState[index] = false
+        appendOneMessageToLog("Пост ${index + 1}: Превышение по току $msg")
+    }
+
     fun start() {
         if (!isTestRunning && !checkTestSettings()) {
-            thread(isDaemon = true) {
-                appendOneMessageToLog("Инициализация стенда")
+            thread {
                 initTest()
+                appendOneMessageToLog("Инициализация стенда")
                 DD2.checkResponsibility()
                 if (!DD2.isResponding) cause = "ПР102 не отвечает"
                 mainViewModel.listColorsProtection.forEach {
@@ -283,6 +317,12 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
                 if (isTestRunning) DD4.offAll()
                 if (isTestRunning) appendOneMessageToLog("Инициализация ПР")
                 if (isTestRunning) initDD2()
+
+                thread(isDaemon = true) {
+                    if (isTestRunning) DD2.onSound()
+                    if (isTestRunning) sleep(6000)
+                    if (isTestRunning) DD2.offSound()
+                }
 
                 if (isTestRunning && mainViewModel.allCheckBoxesMeger.value != ToggleableState.Off) {
                     meger()
@@ -305,15 +345,18 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
     private fun meger() {
         if (isTestRunning) appendOneMessageToLog("Начало испытания МГР")
         if (isTestRunning) appendOneMessageToLog("Сбор схемы")
-
+        if (isTestRunning) DD2.onAVEM9()
         if (isTestRunning) sleep(100)
+        if (isTestRunning) DD2.offAVEM9()
+        if (isTestRunning) sleep(3000)
         if (isTestRunning) DD4.on(6) //ЗЕМЛЯ
         if (isTestRunning) DD2.offLightGround()
         if (isTestRunning) DD4.on(5) //Мегер
         if (isTestRunning) DD2.onLightMeger()
-        PR65.stopTest()
+        if (PR65.isResponding) PR65.stopTest()
         if (isTestRunning) {
             with(PR65) {
+                needDevices.add(this)
                 DevicePoller.startPoll(name, model.STATUS) { value ->
                     statusMGR = value.toInt()
                 }
@@ -327,54 +370,82 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
         }
         mainViewModel.listCheckBoxesMeger.forEachIndexed { index, state ->
             if (state.value) {
+                if (isTestRunning) appendOneMessageToLog("Испытание МГР Пост ${index + 1}")
                 if (isTestRunning) DD2.onKM2BP()
                 if (isTestRunning) assembleMgr(index)
                 if (isTestRunning) mainViewModel.listColorsProtection[index].value = Color.Green
                 if (isTestRunning) sleep(500)
                 if (isTestRunning) DD2.offKM2BP()
-                if (isTestRunning && mainViewModel.allCheckBoxesMeger.value != ToggleableState.Off) measure()
-                PR65.stopTest()
+
+
+
+                if (isTestRunning && mainViewModel.allCheckBoxesMeger.value != ToggleableState.Off) {
+                    with(PR65) {
+                        startMeasurement(
+                            AVEM9Model.MeasurementMode.Resistance, when {
+                                mainViewModel.specifiedUMeger.value.toInt() == 2500 -> {
+                                    AVEM9Model.SpecifiedVoltage.V2500
+                                }
+
+                                mainViewModel.specifiedUMeger.value.toInt() == 1000 -> {
+                                    AVEM9Model.SpecifiedVoltage.V1000
+                                }
+
+                                mainViewModel.specifiedUMeger.value.toInt() == 500 -> {
+                                    AVEM9Model.SpecifiedVoltage.V500
+                                }
+
+                                else -> {
+                                    AVEM9Model.SpecifiedVoltage.V500
+                                }
+                            }
+                        )
+                    }
+                }
+
+                if (isTestRunning) sleep(1000)
+                if (isTestRunning) mainViewModel.listRs[index].value = "Измерение"
+                thread(isDaemon = true) {
+                    var color = 0f
+                    var top = false
+                    var bot = true
+                    while (statusMGR != 4 && isTestRunning) {
+                        if (bot) {
+                            color += 0.1f
+                            if (color > 129.0f) {
+                                bot = false
+                                top = true
+                            }
+                        }
+                        if (top) {
+                            color -= 0.1f
+                            if (color < 0.2f) {
+                                bot = true
+                                top = false
+                            }
+                        }
+                        if (isTestRunning) mainViewModel.listColorsRsTF[index].value = Color.hsv(color, 0.7f, 1f)
+                        sleep(1)
+                    }
+                }
+
+                if (isTestRunning) sleep(3000)
+                var time = 30
+                while (isTestRunning && statusMGR != 4 && time-- > 0) {
+                    sleep(1000)
+                }
+                if (PR65.isResponding) PR65.stopTest()
                 if (isTestRunning) disassembleMgr(index)
                 if (isTestRunning) mainViewModel.listRs[index].value = if (r15 == 200000.0) ">100ГОм" else r15.af()
-
                 var colorTF = (130 / 10000.0 * r15).toFloat()
-                if (colorTF > 130f) colorTF = 130f
-                mainViewModel.listColorsRsTF[0].value = Color.hsv(colorTF, 0.7f, 1f)
+                if (isTestRunning) if (colorTF > 130f) colorTF = 130f
+                if (isTestRunning) mainViewModel.listColorsRsTF[index].value = Color.hsv(colorTF, 0.7f, 1f)
 
             }
         }
         if (isTestRunning) DD4.off(5) //Мегер
         if (isTestRunning) DD2.offLightMeger()
-        PR65.reset()
-    }
-
-    private fun measure() {
-        with(PR65) {
-            startMeasurement(
-                AVEM9Model.MeasurementMode.Resistance, when {
-                    mainViewModel.specifiedUMeger.value.toInt() == 2500 -> {
-                        AVEM9Model.SpecifiedVoltage.V2500
-                    }
-
-                    mainViewModel.specifiedUMeger.value.toInt() == 1000 -> {
-                        AVEM9Model.SpecifiedVoltage.V1000
-                    }
-
-                    mainViewModel.specifiedUMeger.value.toInt() == 500 -> {
-                        AVEM9Model.SpecifiedVoltage.V500
-                    }
-
-                    else -> {
-                        AVEM9Model.SpecifiedVoltage.V500
-                    }
-                }
-            )
-        }
-        if (isTestRunning) sleep(3000)
-        var time = 30
-        while (isTestRunning && statusMGR != 4 && time-- > 0) {
-            sleep(1000)
-        }
+        if (PR65.isResponding) PR65.reset()
     }
 
     private fun viu() {
@@ -391,6 +462,12 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
         }
         if (isTestRunning) sleep(3000)
         if (isTestRunning) DD2.offKM2BP()
+
+        mainViewModel.listCheckBoxesViu.forEachIndexed { index, state ->
+            if (mainViewModel.listColorsProtection[index].value != Color.Red) {
+                if (isTestRunning && state.value) setAVEMConfiguration(index)
+            }
+        }
 
         if (isTestRunning) appendOneMessageToLog("Инициализация устройств")
         if (isTestRunning) initDevices()
@@ -436,7 +513,7 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
                 sleep(10)
             }
             if (isTestRunning) mainViewModel.dialogVisibleState.value = false
-            sleep(3000)
+            if (isTestRunning) sleep(3000)
         }
 
         if (isTestRunning) DD2.onLightViu()
@@ -462,6 +539,7 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
         if (isTestRunning) sleep(3000)
 
         appendOneMessageToLog("Выставление заданного напряжения")
+
         repeat(3) {
             if (isTestRunning) voltageRegulation(mainViewModel.specifiedUViu.value.toDouble())
             if (isTestRunning) sleep(3000)
@@ -485,12 +563,28 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
         ATR240.resetLATR()
         ATR241.resetLATR()
 
-        timer = System.currentTimeMillis() + 300000
+        timer = System.currentTimeMillis() + 30000
         while (mainViewModel.measuredUViu.value.toDouble() > 500) {
             if (System.currentTimeMillis() > timer) {
                 cause = "Превышено время ожидания"
+                break
             }
             sleep(10)
+        }
+    }
+
+    private fun setAVEMConfiguration(index: Int) {
+        val avem = listPA[index]
+        val registerPGA = avem.getRegisterById(avem.model.PGA_MODE)
+        val registerSHUNT = avem.getRegisterById(avem.model.SHUNT_MODE)
+        avem.toggleProgrammingMode()
+        avem.readRegister(registerPGA)
+        if (registerPGA.value.toShort() != 0.toShort()) {
+            avem.writeRegister(registerPGA, 0.toShort())
+        }
+        avem.readRegister(registerSHUNT)
+        if (registerSHUNT.value.toFloat() != 10f) {
+            avem.writeRegister(registerSHUNT, 10f)
         }
     }
 
@@ -517,8 +611,13 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
     }
 
     private fun initTest() {
+        needDevices.clear()
+        listMessagesLog.clear()
         mainViewModel.listColorsCurrentTF.forEach {
-            it.value = Color.White
+            it.value = Color.Transparent
+        }
+        mainViewModel.listColorsRsTF.forEach {
+            it.value = Color.Transparent
         }
         for (listCurrent in listCurrentsState.indices) {
             listCurrentsState[listCurrent] = false
@@ -799,11 +898,10 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
     }
 
     private fun voltageRegulation(voltage: Double) {
-
         var deviation = if (voltage > 2000) 50 else 20
         var timer = 0L
-        val single = 500.0
-        val both = 1500.0
+        val single = 1500.0
+        val both = 5000.0
         var speedPerc = 35f
         var timePulsePerc = 20f
         val coefLatr2 = 1.0f
@@ -826,7 +924,7 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
             if (System.currentTimeMillis() - timer > 90000) cause = "Превышено время регулирования"
             ATR240.startUpLATRPulse(direction, speedPerc)
             ATR241.startUpLATRPulse(direction, speedPerc * coefLatr2)
-            sleep(500)
+            if (isTestRunning) sleep(500)
         }
         ATR240.stopLATR()
         ATR241.stopLATR()
@@ -842,7 +940,7 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
             if (System.currentTimeMillis() - timer > 60000) cause = "Превышено время регулирования"
             ATR240.startUpLATRPulse(direction, timePulsePerc)
             ATR241.startUpLATRPulse(direction, timePulsePerc * coefLatr2)
-            sleep(500)
+            if (isTestRunning) sleep(500)
         }
         ATR240.stopLATR()
         ATR241.stopLATR()
@@ -874,7 +972,7 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
                     }
                 }
             }
-            sleep(500)
+            if (isTestRunning) sleep(500)
         }
         if (System.currentTimeMillis() - timer > 60000) cause = "Превышено время регулирования"
         ATR240.stopLATR()
@@ -911,7 +1009,7 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
                 timePulsePerc = speedJumpDown
             }
             ATR240.startUpLATRPulse(direction, timePulsePerc)
-            sleep(500)
+            if (isTestRunning) sleep(500)
             ATR240.stopLATR()
         }
         if (System.currentTimeMillis() - timer > 60000) cause = "Превышено время регулирования"
@@ -919,6 +1017,7 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
     }
 
     fun appendMessageToLog(msg: String) {
+        listMessagesLog.add(msg)
         mainViewModel.logMessages.add("${SimpleDateFormat("HH:mm:ss").format(System.currentTimeMillis())} | $msg")
         scope.launch {
             mainViewModel.logScrollState.scrollToItem(mainViewModel.logMessages.lastIndex)
@@ -926,8 +1025,8 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
     }
 
     fun appendOneMessageToLog(msg: String) {
-        if (mainViewModel.logMessages.lastOrNull() != null) {
-            if (mainViewModel.logMessages.lastOrNull()!! != msg) {
+        if (listMessagesLog.lastOrNull() != null) {
+            if (!listMessagesLog.any { it == msg }) {
                 appendMessageToLog(msg)
             }
         } else {

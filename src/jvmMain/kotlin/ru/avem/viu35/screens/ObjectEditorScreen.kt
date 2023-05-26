@@ -533,12 +533,20 @@ class ObjectEditorScreen(private var mainViewModel: MainScreenViewModel) : Scree
                     )
                 }
                 Box(modifier = Modifier.weight(0.7f)) {
-                    OutlinedTextField(textStyle = TextStyle.Default.copy(
-                        fontSize = 20.sp, textAlign = TextAlign.Center
-                    ),
-                        isError = vm.uViuFieldErrorState.value,
-                        value = vm.uViuFieldState.value,
-                        onValueChange = { vm.uViuFieldState.value = it })
+                    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                        OutlinedTextField(textStyle = TextStyle.Default.copy(
+                            fontSize = 20.sp, textAlign = TextAlign.Center
+                        ),
+                            isError = vm.uViuFieldErrorState.value,
+                            value = vm.uViuFieldState.value,
+                            onValueChange = { vm.uViuFieldState.value = it })
+                        Text(
+                            modifier = Modifier.padding(start = 64.dp),
+                            text = "лимит: 500-15000 В",
+                            fontSize = 20.sp,
+                            textAlign = TextAlign.Center
+                        )
+                    }
                 }
             }
             Row(modifier = Modifier.fillMaxWidth().padding(end = 16.dp)) {
@@ -550,12 +558,20 @@ class ObjectEditorScreen(private var mainViewModel: MainScreenViewModel) : Scree
                     )
                 }
                 Box(modifier = Modifier.weight(0.7f)) {
-                    OutlinedTextField(textStyle = TextStyle.Default.copy(
-                        fontSize = 20.sp, textAlign = TextAlign.Center
-                    ),
-                        isError = vm.currentFieldErrorState.value,
-                        value = vm.currentFieldState.value,
-                        onValueChange = { vm.currentFieldState.value = it })
+                    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                        OutlinedTextField(textStyle = TextStyle.Default.copy(
+                            fontSize = 20.sp, textAlign = TextAlign.Center
+                        ),
+                            isError = vm.currentFieldErrorState.value,
+                            value = vm.currentFieldState.value,
+                            onValueChange = { vm.currentFieldState.value = it })
+                        Text(
+                            modifier = Modifier.padding(start = 64.dp),
+                            text = "лимит: 1-100 мА",
+                            fontSize = 20.sp,
+                            textAlign = TextAlign.Center
+                        )
+                    }
                 }
             }
             Row(modifier = Modifier.fillMaxWidth().padding(end = 16.dp)) {
@@ -567,12 +583,20 @@ class ObjectEditorScreen(private var mainViewModel: MainScreenViewModel) : Scree
                     )
                 }
                 Box(modifier = Modifier.weight(0.7f)) {
-                    OutlinedTextField(textStyle = TextStyle.Default.copy(
-                        fontSize = 20.sp, textAlign = TextAlign.Center
-                    ),
-                        isError = vm.timeFieldErrorState.value,
-                        value = vm.timeFieldState.value,
-                        onValueChange = { vm.timeFieldState.value = it })
+                    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                        OutlinedTextField(textStyle = TextStyle.Default.copy(
+                            fontSize = 20.sp, textAlign = TextAlign.Center
+                        ),
+                            isError = vm.timeFieldErrorState.value,
+                            value = vm.timeFieldState.value,
+                            onValueChange = { vm.timeFieldState.value = it })
+                        Text(
+                            modifier = Modifier.padding(start = 64.dp),
+                            text = "лимит: 1-600 сек",
+                            fontSize = 20.sp,
+                            textAlign = TextAlign.Center
+                        )
+                    }
                 }
             }
             Row(modifier = Modifier.fillMaxWidth().padding(end = 16.dp)) {
@@ -584,12 +608,20 @@ class ObjectEditorScreen(private var mainViewModel: MainScreenViewModel) : Scree
                     )
                 }
                 Box(modifier = Modifier.weight(0.7f)) {
-                    OutlinedTextField(textStyle = TextStyle.Default.copy(
-                        fontSize = 20.sp, textAlign = TextAlign.Center
-                    ),
-                        isError = vm.uMegerFieldErrorState.value,
-                        value = vm.uMegerFieldState.value,
-                        onValueChange = { vm.uMegerFieldState.value = it })
+                    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                        OutlinedTextField(textStyle = TextStyle.Default.copy(
+                            fontSize = 20.sp, textAlign = TextAlign.Center
+                        ),
+                            isError = vm.uMegerFieldErrorState.value,
+                            value = vm.uMegerFieldState.value,
+                            onValueChange = { vm.uMegerFieldState.value = it })
+                        Text(
+                            modifier = Modifier.padding(start = 64.dp),
+                            text = "лимит: 500, 1500, 2500 В",
+                            fontSize = 20.sp,
+                            textAlign = TextAlign.Center
+                        )
+                    }
                 }
             }
         }

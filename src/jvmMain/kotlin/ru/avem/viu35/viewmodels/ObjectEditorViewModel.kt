@@ -40,6 +40,7 @@ class ObjectEditorViewModel(private var mainViewModel: MainScreenViewModel) : Sc
     val uViuFieldState = mutableStateOf("")
     val timeFieldState = mutableStateOf("")
     val uMegerFieldState = mutableStateOf("")
+    var expandedUMeger = mutableStateOf(false)
     val currentFieldState = mutableStateOf("")
 
     val nameTestFieldErrorState = mutableStateOf(false)
@@ -159,11 +160,26 @@ class ObjectEditorViewModel(private var mainViewModel: MainScreenViewModel) : Sc
 
     fun createNewField() {
         nameTestFieldErrorState.value = nameTestFieldState.value.isEmpty()
-        uViuFieldErrorState.value = uViuFieldState.value.isEmpty() || uViuFieldState.value.toIntOrNull() == null
-        timeFieldErrorState.value = timeFieldState.value.isEmpty() || timeFieldState.value.toIntOrNull() == null
-        uMegerFieldErrorState.value = uMegerFieldState.value.isEmpty() || uMegerFieldState.value.toIntOrNull() == null
+        uViuFieldErrorState.value =
+            uViuFieldState.value.isEmpty()
+                    || uViuFieldState.value.toIntOrNull() == null
+                    || uViuFieldState.value.toIntOrNull()!! > 15000
+                    || uViuFieldState.value.toIntOrNull()!! < 500
+        timeFieldErrorState.value =
+            timeFieldState.value.isEmpty()
+                    || timeFieldState.value.toIntOrNull() == null
+                    || timeFieldState.value.toIntOrNull()!! > 600
+                    || timeFieldState.value.toIntOrNull()!! < 1
+        uMegerFieldErrorState.value = uMegerFieldState.value.isEmpty()
+                || uMegerFieldState.value.toIntOrNull() == null
+                || !(uMegerFieldState.value.toIntOrNull()!! == 2500
+                || uMegerFieldState.value.toIntOrNull()!! == 1000
+                || uMegerFieldState.value.toIntOrNull()!! == 500)
         currentFieldErrorState.value =
-            currentFieldState.value.isEmpty() || currentFieldState.value.toIntOrNull() == null
+            currentFieldState.value.isEmpty()
+                    || currentFieldState.value.toIntOrNull() == null
+                    || currentFieldState.value.toIntOrNull()!! > 100
+                    || currentFieldState.value.toIntOrNull()!! < 1
 
         if (!nameTestFieldErrorState.value
             && !uViuFieldErrorState.value
@@ -190,6 +206,9 @@ class ObjectEditorViewModel(private var mainViewModel: MainScreenViewModel) : Sc
                     }
                     mainViewModel.objectFields.add(newField)
                     mainViewModel.selectedField.value = mainViewModel.objectFields.lastOrNull()
+                    if (mainViewModel.selectedField.value != null) {
+                        mainViewModel.onTestObjectFieldSelected(mainViewModel.objectFields.last())
+                    }
                 }
                 closeNewFieldDialog()
             }
@@ -250,47 +269,68 @@ class ObjectEditorViewModel(private var mainViewModel: MainScreenViewModel) : Sc
     }
 
     fun editField() {
-        nameTestFieldErrorState.value = nameTestFieldState.value.isEmpty()
-        uViuFieldErrorState.value = uViuFieldState.value.isEmpty() || uViuFieldState.value.toIntOrNull() == null
-        timeFieldErrorState.value = timeFieldState.value.isEmpty() || timeFieldState.value.toIntOrNull() == null
-        uMegerFieldErrorState.value = uMegerFieldState.value.isEmpty() || uMegerFieldState.value.toIntOrNull() == null
-        currentFieldErrorState.value =
-            currentFieldState.value.isEmpty() || currentFieldState.value.toIntOrNull() == null
+        if (mainViewModel.selectedField.value != null) {
+            nameTestFieldErrorState.value = nameTestFieldState.value.isEmpty()
+            uViuFieldErrorState.value =
+                uViuFieldState.value.isEmpty()
+                        || uViuFieldState.value.toIntOrNull() == null
+                        || uViuFieldState.value.toIntOrNull()!! > 15000
+                        || uViuFieldState.value.toIntOrNull()!! < 500
+            timeFieldErrorState.value =
+                timeFieldState.value.isEmpty()
+                        || timeFieldState.value.toIntOrNull() == null
+                        || timeFieldState.value.toIntOrNull()!! > 600
+                        || timeFieldState.value.toIntOrNull()!! < 1
+            uMegerFieldErrorState.value = uMegerFieldState.value.isEmpty()
+                    || uMegerFieldState.value.toIntOrNull() == null
+                    || !(uMegerFieldState.value.toIntOrNull()!! == 2500
+                    || uMegerFieldState.value.toIntOrNull()!! == 1000
+                    || uMegerFieldState.value.toIntOrNull()!! == 500)
+            currentFieldErrorState.value =
+                currentFieldState.value.isEmpty()
+                        || currentFieldState.value.toIntOrNull() == null
+                        || currentFieldState.value.toIntOrNull()!! > 100
+                        || currentFieldState.value.toIntOrNull()!! < 1
 
-        if (!nameTestFieldErrorState.value
-            && !uViuFieldErrorState.value
-            && !timeFieldErrorState.value
-            && !uMegerFieldErrorState.value
-            && !currentFieldErrorState.value
-        ) {
-            scope.launch {
-                transaction {
-                    mainViewModel.selectedField.value?.uViu = uViuFieldState.value.toInt()
-                    mainViewModel.selectedField.value?.time = timeFieldState.value.toInt()
-                    mainViewModel.selectedField.value?.uMeger = uMegerFieldState.value.toInt()
-                    mainViewModel.selectedField.value?.current = currentFieldState.value.toInt()
-                    mainViewModel.objectFields.clear()
-                    mainViewModel.objectFields.addAll(mainViewModel.selectedObject.value!!.fieldsIterable.sortedBy { it.key }
-                        .toTypedArray())
-                    mainViewModel.selectedField.value = mainViewModel.objectFields.lastOrNull()
+            if (!nameTestFieldErrorState.value
+                && !uViuFieldErrorState.value
+                && !timeFieldErrorState.value
+                && !uMegerFieldErrorState.value
+                && !currentFieldErrorState.value
+            ) {
+                scope.launch {
+                    transaction {
+                        mainViewModel.selectedField.value?.uViu = uViuFieldState.value.toInt()
+                        mainViewModel.selectedField.value?.time = timeFieldState.value.toInt()
+                        mainViewModel.selectedField.value?.uMeger = uMegerFieldState.value.toInt()
+                        mainViewModel.selectedField.value?.current = currentFieldState.value.toInt()
+                        mainViewModel.objectFields.clear()
+                        mainViewModel.objectFields.addAll(mainViewModel.selectedObject.value!!.fieldsIterable.sortedBy { it.key }
+                            .toTypedArray())
+                        mainViewModel.selectedField.value = mainViewModel.objectFields.lastOrNull()
+                        if (mainViewModel.selectedField.value != null) {
+                            mainViewModel.onTestObjectFieldSelected(mainViewModel.objectFields.last())
+                        }
+                    }
+                    closeEditFieldDialog()
                 }
-                closeEditFieldDialog()
             }
         }
     }
 
     fun editFieldWindow() {
-
-        nameTestFieldState.value =
-            mainViewModel.selectedField.value!!.nameTest
-        uViuFieldState.value =
-            mainViewModel.selectedField.value!!.uViu.toString()
-        timeFieldState.value =
-            mainViewModel.selectedField.value!!.time.toString()
-        uMegerFieldState.value =
-            mainViewModel.selectedField.value!!.uMeger.toString()
-        currentFieldState.value =
-            mainViewModel.selectedField.value!!.current.toString()
-        editFieldVisibleState.value = true
+        if (mainViewModel.selectedField.value != null) {
+            nameTestFieldState.value =
+                mainViewModel.selectedField.value!!.nameTest
+            uViuFieldState.value =
+                mainViewModel.selectedField.value!!.uViu.toString()
+            timeFieldState.value =
+                mainViewModel.selectedField.value!!.time.toString()
+            uMegerFieldState.value =
+                mainViewModel.selectedField.value!!.uMeger.toString()
+            currentFieldState.value =
+                mainViewModel.selectedField.value!!.current.toString()
+            editFieldVisibleState.value = true
+        }
     }
 }

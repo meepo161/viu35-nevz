@@ -9,6 +9,7 @@ import ru.avem.kserialpooler.utils.allocateOrderedByteBuffer
 import ru.avem.library.polling.DeviceController
 import ru.avem.library.polling.DeviceRegister
 import java.nio.ByteBuffer
+import java.nio.ByteOrder
 
 class AVEM(
     override val name: String,
@@ -131,4 +132,22 @@ class AVEM(
     override fun getRegisterById(idRegister: String) = model.getRegisterById(idRegister)
 
     override fun writeRequest(request: String) {}
+
+    fun toggleProgrammingMode() {
+        val serialNumberRegister = getRegisterById(model.SERIAL_NUMBER)
+        readRegister(serialNumberRegister)
+        val serialNumber = serialNumberRegister.value.toInt()
+        val bb = ByteBuffer.allocate(4).putInt(serialNumber).order(ByteOrder.BIG_ENDIAN)
+        val registers = listOf(ModbusRegister(bb.getShort(2)), ModbusRegister(bb.getShort(0)))
+        try {
+            transactionWithAttempts {
+                protocolAdapter.presetMultipleRegisters(
+                    id,
+                    getRegisterById(model.SERIAL_NUMBER).address,
+                    registers
+                )
+            }
+        } catch (_: Exception) {
+        }
+    }
 }
