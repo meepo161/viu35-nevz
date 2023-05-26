@@ -1,5 +1,6 @@
 package ru.avem.viu35.io.hpmont
 
+
 import ru.avem.kserialpooler.adapters.modbusrtu.ModbusRTUAdapter
 import ru.avem.kserialpooler.adapters.utils.ModbusRegister
 import ru.avem.kserialpooler.utils.TransportException

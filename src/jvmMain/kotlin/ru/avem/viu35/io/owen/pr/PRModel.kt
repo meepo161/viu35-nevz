@@ -16,6 +16,10 @@ class PRModel : IDeviceModel {
     val DI_17_32_RST = "DI_17_32_RST"
     val DI_33_48_RST = "DI_33_48_RST"
 
+    val DI_01_16_RAW = "DI_01_16_RAW"
+    val DI_17_32_RAW = "DI_17_32_RAW"
+    val DI_33_48_RAW = "DI_33_48_RAW"
+
     val DI_01_16_TRIG = "DI_01_16_TRIG"
     val DI_17_32_TRIG = "DI_17_32_TRIG"
     val DI_33_48_TRIG = "DI_33_48_TRIG"
@@ -69,6 +73,10 @@ class PRModel : IDeviceModel {
         WD_TIMEOUT to DeviceRegister(573, DeviceRegister.RegisterValueType.SHORT),
         CMD to DeviceRegister(574, DeviceRegister.RegisterValueType.SHORT),
         STATE to DeviceRegister(575, DeviceRegister.RegisterValueType.SHORT),
+
+        DI_01_16_RAW to DeviceRegister(516, DeviceRegister.RegisterValueType.SHORT),
+        DI_17_32_RAW to DeviceRegister(520, DeviceRegister.RegisterValueType.SHORT),
+        DI_33_48_RAW to DeviceRegister(524, DeviceRegister.RegisterValueType.SHORT),
 
         DI_01_16_RST to DeviceRegister(517, DeviceRegister.RegisterValueType.SHORT),
         DI_17_32_RST to DeviceRegister(521, DeviceRegister.RegisterValueType.SHORT),

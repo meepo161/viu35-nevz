@@ -46,7 +46,6 @@ fun main() = application {
 
 fun onExit() {
     isTestRunning = false
-    DevicePoller.DD3.offAll()
     exitProcess(0)
 }
 

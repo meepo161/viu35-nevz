@@ -1,5 +1,6 @@
 package ru.avem.viu35.io.rele
 
+
 import ru.avem.kserialpooler.adapters.modbusrtu.ModbusRTUAdapter
 import ru.avem.kserialpooler.adapters.utils.ModbusRegister
 import ru.avem.kserialpooler.utils.TransportException
@@ -7,6 +8,8 @@ import ru.avem.kserialpooler.utils.TypeByteOrder
 import ru.avem.kserialpooler.utils.allocateOrderedByteBuffer
 import ru.avem.library.polling.DeviceController
 import ru.avem.library.polling.DeviceRegister
+import ru.avem.viu35.io.megaohmmeter.cs02021.CS02021
+import java.lang.Thread.sleep
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
@@ -26,19 +29,20 @@ class ReleController(
             transactionWithAttempts {
                 when (register.valueType) {
                     DeviceRegister.RegisterValueType.SHORT -> {
-                        val value = protocolAdapter.readHoldingRegisters(id, register.address, 1).first().toShort()
+                        val value =
+                            protocolAdapter.readHoldingRegisters(id, register.address, 1, 9600).first().toShort()
                         register.value = value
                     }
 
                     DeviceRegister.RegisterValueType.FLOAT -> {
-                        val modbusRegister =
-                            protocolAdapter.readHoldingRegisters(id, register.address, 2).map(ModbusRegister::toShort)
+                        val modbusRegister = protocolAdapter.readHoldingRegisters(id, register.address, 2, 9600)
+                            .map(ModbusRegister::toShort)
                         register.value = allocateOrderedByteBuffer(modbusRegister, TypeByteOrder.LITTLE_ENDIAN, 4).float
                     }
 
                     DeviceRegister.RegisterValueType.INT32 -> {
-                        val modbusRegister =
-                            protocolAdapter.readHoldingRegisters(id, register.address, 2).map(ModbusRegister::toShort)
+                        val modbusRegister = protocolAdapter.readHoldingRegisters(id, register.address, 2, 9600)
+                            .map(ModbusRegister::toShort)
                         register.value = allocateOrderedByteBuffer(modbusRegister, TypeByteOrder.LITTLE_ENDIAN, 4).int
                     }
                 }
@@ -62,7 +66,7 @@ class ReleController(
                     val bb = ByteBuffer.allocate(4).putFloat(value).order(ByteOrder.LITTLE_ENDIAN)
                     val registers = listOf(ModbusRegister(bb.getShort(2)), ModbusRegister(bb.getShort(0)))
                     transactionWithAttempts {
-                        protocolAdapter.presetMultipleRegisters(id, register.address, registers)
+                        protocolAdapter.presetMultipleRegisters(id, register.address, registers, 9600)
                     }
                 }
 
@@ -70,13 +74,13 @@ class ReleController(
                     val bb = ByteBuffer.allocate(4).putInt(value).order(ByteOrder.LITTLE_ENDIAN)
                     val registers = listOf(ModbusRegister(bb.getShort(2)), ModbusRegister(bb.getShort(0)))
                     transactionWithAttempts {
-                        protocolAdapter.presetMultipleRegisters(id, register.address, registers)
+                        protocolAdapter.presetMultipleRegisters(id, register.address, registers, 9600)
                     }
                 }
 
                 is Short -> {
                     transactionWithAttempts {
-                        protocolAdapter.presetSingleRegister(id, register.address, ModbusRegister(value))
+                        protocolAdapter.presetSingleRegister(id, register.address, ModbusRegister(value), 9600)
                     }
                 }
 
@@ -93,7 +97,7 @@ class ReleController(
     override fun writeRegisters(register: DeviceRegister, values: List<Short>) {
         val registers = values.map { ModbusRegister(it) }
         transactionWithAttempts {
-            protocolAdapter.presetMultipleRegisters(id, register.address, registers)
+            protocolAdapter.presetMultipleRegisters(id, register.address, registers, 9600)
         }
     }
 
@@ -103,7 +107,9 @@ class ReleController(
 
     override fun checkResponsibility() {
         try {
-            readRegister(model.getRegisterById(ReleModel.R2))
+            model.registers.values.firstOrNull()?.let {
+                readRegister(it)
+            }
         } catch (ignored: TransportException) {
         }
     }

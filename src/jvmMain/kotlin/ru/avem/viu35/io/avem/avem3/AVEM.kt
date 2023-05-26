@@ -1,4 +1,4 @@
-package ru.avem.viu35.io.avem.ikas10
+package ru.avem.viu35.io.avem.avem3
 
 
 import ru.avem.kserialpooler.adapters.modbusrtu.ModbusRTUAdapter
@@ -8,18 +8,14 @@ import ru.avem.kserialpooler.utils.TypeByteOrder
 import ru.avem.kserialpooler.utils.allocateOrderedByteBuffer
 import ru.avem.library.polling.DeviceController
 import ru.avem.library.polling.DeviceRegister
-import ru.avem.viu35.io.avem.ikas10.IKAS10Model.Companion.CFG_SCHEME
-import ru.avem.viu35.io.avem.ikas10.IKAS10Model.Companion.START_STOP
-import java.lang.Thread.sleep
 import java.nio.ByteBuffer
 
-
-class IKAS10(
+class AVEM(
     override val name: String,
     override val protocolAdapter: ModbusRTUAdapter,
     override val id: Byte
 ) : DeviceController() {
-    val model = IKAS10Model()
+    val model = AVEMModel()
     override var requestTotalCount = 0
     override var requestSuccessCount = 0
     override val pollingRegisters = mutableListOf<DeviceRegister>()
@@ -29,23 +25,33 @@ class IKAS10(
     override fun readRegister(register: DeviceRegister) {
         isResponding = try {
             transactionWithAttempts {
-                register.value = when (register.valueType) {
+                when (register.valueType) {
                     DeviceRegister.RegisterValueType.SHORT -> {
-                        protocolAdapter.readInputRegisters(id, register.address, 1).map(ModbusRegister::toShort).first()
+                        val modbusRegister =
+                            protocolAdapter.readInputRegisters(id, register.address, 1).map(ModbusRegister::toShort)
+                        register.value = modbusRegister.first().toDouble()
                     }
 
                     DeviceRegister.RegisterValueType.FLOAT -> {
                         val modbusRegister =
                             protocolAdapter.readInputRegisters(id, register.address, 2).map(ModbusRegister::toShort)
-                        ByteBuffer.allocate(4).putShort(modbusRegister.first()).putShort(modbusRegister.second())
-                            .also { it.flip() }.float
+                        register.value =
+                            allocateOrderedByteBuffer(
+                                modbusRegister,
+                                TypeByteOrder.BIG_ENDIAN,
+                                4
+                            ).float.toDouble()
                     }
 
                     DeviceRegister.RegisterValueType.INT32 -> {
                         val modbusRegister =
                             protocolAdapter.readInputRegisters(id, register.address, 2).map(ModbusRegister::toShort)
-                        ByteBuffer.allocate(4).putShort(modbusRegister.first()).putShort(modbusRegister.second())
-                            .also { it.flip() }.int
+                        register.value =
+                            allocateOrderedByteBuffer(
+                                modbusRegister,
+                                TypeByteOrder.BIG_ENDIAN,
+                                4
+                            ).int.toDouble()
                     }
                 }
             }
@@ -53,6 +59,13 @@ class IKAS10(
         } catch (e: TransportException) {
             false
         }
+    }
+
+    private fun <T> List<T>.second(): T {
+        if (isEmpty() && size < 2) {
+            throw NoSuchElementException("List invalid size.")
+        }
+        return this[1]
     }
 
     override fun readAllRegisters() {
@@ -109,34 +122,13 @@ class IKAS10(
         }
     }
 
-    override fun writeRequest(request: String) {}
-
     override fun checkResponsibility() {
-        readRegister(model.registers.values.first())
+        model.registers.values.firstOrNull()?.let {
+            readRegister(it)
+        }
     }
 
     override fun getRegisterById(idRegister: String) = model.getRegisterById(idRegister)
 
-    fun startMeasuringAB() {
-        writeRegister(getRegisterById(CFG_SCHEME), IKAS10Model.Scheme.AB.value)
-        writeRegister(getRegisterById(START_STOP), 1.toShort())
-        sleep(2000)
-    }
-
-    fun startMeasuringBC() {
-        writeRegister(getRegisterById(CFG_SCHEME), IKAS10Model.Scheme.BC.value)
-        writeRegister(getRegisterById(START_STOP), 1.toShort())
-        sleep(2000)
-    }
-
-    fun startMeasuringCA() {
-        writeRegister(getRegisterById(CFG_SCHEME), IKAS10Model.Scheme.CA.value)
-        writeRegister(getRegisterById(START_STOP), 1.toShort())
-        sleep(2000)
-    }
-
-    private fun <T> List<T>.second(): T {
-        if (size < 2) throw NoSuchElementException("List invalid size.")
-        return this[1]
-    }
+    override fun writeRequest(request: String) {}
 }

@@ -1,5 +1,6 @@
 package ru.avem.viu35.io.owen.pr
 
+
 import ru.avem.kserialpooler.adapters.modbusrtu.ModbusRTUAdapter
 import ru.avem.kserialpooler.adapters.utils.ModbusRegister
 import ru.avem.kserialpooler.utils.TransportException
@@ -30,12 +31,12 @@ class PR(
 
         resetTriggers()
 
-        writeRegister(getRegisterById(model.DO_01_16_ERROR_S1_MASK_0), 0xFFFF.toShort())
+        writeRegister(getRegisterById(model.DO_01_16_ERROR_S1_MASK_0), 0xFFFD.toShort())
         writeRegister(getRegisterById(model.DO_01_16_ERROR_S1_MASK_1), 0x0000.toShort())
         writeRegister(getRegisterById(model.DO_17_32_ERROR_S1_MASK_0), 0xFFFF.toShort())
         writeRegister(getRegisterById(model.DO_17_32_ERROR_S1_MASK_1), 0x0000.toShort())
         writeRegister(getRegisterById(model.DO_ERROR_S1_TIME), 0.toShort())
-        writeRegister(getRegisterById(model.DO_01_16_ERROR_S2_MASK_0), 0x0000.toShort())
+        writeRegister(getRegisterById(model.DO_01_16_ERROR_S2_MASK_0), 0x0002.toShort())
         writeRegister(getRegisterById(model.DO_01_16_ERROR_S2_MASK_1), 0x0000.toShort())
         writeRegister(getRegisterById(model.DO_17_32_ERROR_S2_MASK_0), 0x0000.toShort())
         writeRegister(getRegisterById(model.DO_17_32_ERROR_S2_MASK_1), 0x0000.toShort())
@@ -51,8 +52,8 @@ class PR(
         writeRegister(getRegisterById(model.DO_17_32_ERROR_S4_MASK_1), 0x0000.toShort())
         writeRegister(getRegisterById(model.DO_ERROR_S4_TIME), 1500.toShort())
 
-        writeRegister(getRegisterById(model.DI_01_16_ERROR_MASK_1), 0x0001.toShort())
-        writeRegister(getRegisterById(model.DI_01_16_ERROR_MASK_0), 0x0074.toShort())
+        writeRegister(getRegisterById(model.DI_01_16_ERROR_MASK_1), 0x0000.toShort())
+        writeRegister(getRegisterById(model.DI_01_16_ERROR_MASK_0), 0x0000.toShort())
         writeRegister(getRegisterById(model.DI_17_32_ERROR_MASK_1), 0x0000.toShort())
         writeRegister(getRegisterById(model.DI_17_32_ERROR_MASK_0), 0x0000.toShort())
         writeRegister(getRegisterById(model.DI_33_48_ERROR_MASK_1), 0x0000.toShort())
@@ -180,77 +181,112 @@ class PR(
 
     override fun writeRequest(request: String) {}
 
-    fun onStart() {
+    fun onAllowStart() {
         onOutput01To16(1)
     }
-
-    fun offStart() {
+    fun offAllowStart() {
         offOutput01To16(1)
     }
 
-    fun onCurrentStage() {
+    fun onNull() {
         onOutput01To16(2)
     }
 
-    fun offCurrentStage() {
+    fun offNull() {
         offOutput01To16(2)
     }
 
-    fun onHV() {
-        onOutput01To16(4)
+    fun onKM2BP() {
+        onOutput01To16(3)
+    }
+    fun offKM2BP() {
+        offOutput01To16(3)
     }
 
-    fun offHV() {
+    fun onLight() {
+        onOutput01To16(4)
+    }
+    fun offLight() {
         offOutput01To16(4)
     }
 
-    fun onMGR() {
-        onOutput01To16(6)
+    fun onDoorLockIsp() {
+        onOutput01To16(5)
+    }
+    fun offDoorLockIsp() {
+        offOutput01To16(5)
     }
 
-    fun offMGR() {
+    fun onDoorLockOper() {
+        onOutput01To16(6)
+    }
+    fun offDoorLockOper() {
         offOutput01To16(6)
     }
 
-    fun lightSignalize() {
+    fun onAVEM9() {
         onOutput01To16(7)
     }
+    fun offAVEM9() {
+        offOutput01To16(7)
+    }
 
-    fun soundSignalize() {
+    fun onSound() {
         onOutput01To16(8)
     }
-
-    fun onIKASa() {
-        onOutput01To16(9)
+    fun offSound() {
+        offOutput01To16(8)
     }
 
-    fun offIKASa() {
+    fun onLightViu() {
+        onOutput01To16(9)
+    }
+    fun offLightViu() {
         offOutput01To16(9)
     }
 
-    fun onIKASbc() {
+    fun onLightGround() {
         onOutput01To16(10)
     }
-
-    fun offIKASbc() {
+    fun offLightGround() {
         offOutput01To16(10)
     }
 
-    fun onIKASba() {
+    fun onLightMeger() {
         onOutput01To16(11)
     }
-
-    fun offIKASba() {
+    fun offLightMeger() {
         offOutput01To16(11)
     }
 
-    fun onIKASc() {
+    fun onLightDoorZone() {
         onOutput01To16(12)
     }
-
-    fun offIKASc() {
+    fun offLightDoorZone() {
         offOutput01To16(12)
     }
+
+    fun onLightDoorSCO() {
+        onOutput01To16(13)
+    }
+    fun offLightDoorSCO() {
+        offOutput01To16(13)
+    }
+
+    fun onLightTablo() {
+        onOutput01To16(14)
+    }
+    fun offLightTablo() {
+        offOutput01To16(14)
+    }
+
+    fun onLightPost10() {
+        onOutput01To16(15)
+    }
+    fun offLightPost10() {
+        offOutput01To16(15)
+    }
+
 
     fun offAllKMs() {
         outMask01To16 = 0

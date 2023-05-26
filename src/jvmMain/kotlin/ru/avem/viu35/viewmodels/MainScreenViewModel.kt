@@ -1,8 +1,7 @@
 package ru.avem.viu35.viewmodels
 
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.state.ToggleableState
 import cafe.adriel.voyager.core.model.ScreenModel
@@ -15,8 +14,8 @@ import ru.avem.viu35.database.entities.TestItemField
 import ru.avem.viu35.database.getAllTestItems
 import java.io.File
 
-class MainScreenViewModel : ScreenModel {
-    var selectedMeasurement = mutableStateOf<Boolean>(false)
+class MainScreenViewModel(val logScrollState: LazyListState) : ScreenModel {
+    var selectedMeasurement = mutableStateOf(false)
     val scope = CoroutineScope(Dispatchers.Default)
 
     val imageVisibleState = mutableStateOf(false)
@@ -25,6 +24,8 @@ class MainScreenViewModel : ScreenModel {
 
     val listSerialNumbers = List(10) { mutableStateOf("") }
     val listCurrents = List(10) { mutableStateOf("") }
+    val listColorsCurrentTF = List(10) { mutableStateOf(Color.White) }
+    val listColorsRsTF = List(10) { mutableStateOf(Color.White) }
     val listRs = List(10) { mutableStateOf("") }
     val listProtections = List(10) { mutableStateOf("") }
     val listCheckBoxesViu = List(10) { mutableStateOf(false) }
@@ -40,12 +41,23 @@ class MainScreenViewModel : ScreenModel {
 
     val measuredUViu = mutableStateOf("")
     val measuredTime = mutableStateOf("")
+    val measuredI = mutableStateOf("")
+    val measuredU = mutableStateOf("")
+
+    val storedListCurrents = mutableListOf<Double>()
+    val storedListRs = mutableListOf<Double>()
+    val storedListResults = mutableListOf<Double>()
 
     val dot1 = mutableStateOf("")
     val dot2 = mutableStateOf("")
 
+    val isTestRunningState = mutableStateOf(false)
+    val logState = mutableStateOf(false)
+    val logMessages = mutableStateListOf<String>()
+
     val listColorsProtection = List(10) { mutableStateOf(Color(0xFF0071bb)) }
     val colorZone = mutableStateOf(Color(0xFF0071bb))
+    val colorSCO = mutableStateOf(Color(0xFF0071bb))
     val colorCurrent = mutableStateOf(Color(0xFF0071bb))
 
     val objects = mutableStateListOf(*getAllTestItems().sortedBy { it.name }.toTypedArray())

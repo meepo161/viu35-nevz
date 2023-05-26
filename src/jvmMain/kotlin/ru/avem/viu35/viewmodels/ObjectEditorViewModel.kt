@@ -60,6 +60,14 @@ class ObjectEditorViewModel(private var mainViewModel: MainScreenViewModel) : Sc
         }
     }
 
+    fun editTestObject() {
+        if (mainViewModel.selectedObject.value != null) {
+            nameObjectState.value = mainViewModel.selectedObject.value!!.name
+            typeObjectState.value = mainViewModel.selectedObject.value!!.type
+            editObjectVisibleState.value = true
+        }
+    }
+
     fun copyTestObject() {
         if (mainViewModel.selectedObject.value != null) {
             scope.launch {
@@ -269,5 +277,20 @@ class ObjectEditorViewModel(private var mainViewModel: MainScreenViewModel) : Sc
                 closeEditFieldDialog()
             }
         }
+    }
+
+    fun editFieldWindow() {
+
+        nameTestFieldState.value =
+            mainViewModel.selectedField.value!!.nameTest
+        uViuFieldState.value =
+            mainViewModel.selectedField.value!!.uViu.toString()
+        timeFieldState.value =
+            mainViewModel.selectedField.value!!.time.toString()
+        uMegerFieldState.value =
+            mainViewModel.selectedField.value!!.uMeger.toString()
+        currentFieldState.value =
+            mainViewModel.selectedField.value!!.current.toString()
+        editFieldVisibleState.value = true
     }
 }

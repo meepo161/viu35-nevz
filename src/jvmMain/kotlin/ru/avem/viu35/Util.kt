@@ -8,8 +8,6 @@ const val PASSWORD = "123"
 fun Number.af() = with(abs(String.format(Locale.US, "%.4f", toDouble()).toDouble())) {
     val format = when {
         this.isNaN() -> return ""
-        this < 1.0 -> "%.4f"
-        this < 10 -> "%.3f"
         this < 100.0 -> "%.2f"
         this < 1000.0 -> "%.1f"
         else -> "%.0f"

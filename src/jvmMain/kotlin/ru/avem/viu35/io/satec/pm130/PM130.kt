@@ -1,8 +1,11 @@
 package ru.avem.viu35.io.satec.pm130
 
+
 import ru.avem.kserialpooler.adapters.modbusrtu.ModbusRTUAdapter
 import ru.avem.kserialpooler.adapters.utils.ModbusRegister
 import ru.avem.kserialpooler.utils.TransportException
+import ru.avem.kserialpooler.utils.TypeByteOrder
+import ru.avem.kserialpooler.utils.allocateOrderedByteBuffer
 import ru.avem.library.polling.DeviceController
 import ru.avem.library.polling.DeviceRegister
 

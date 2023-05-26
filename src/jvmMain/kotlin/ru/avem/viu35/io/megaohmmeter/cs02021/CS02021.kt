@@ -1,9 +1,9 @@
 package ru.avem.viu35.io.megaohmmeter.cs02021
 
 import mu.KotlinLogging
-import ru.avem.kserialpooler.adapters.serial.SerialAdapter
 import ru.avem.library.polling.DeviceController
 import ru.avem.library.polling.DeviceRegister
+import ru.avem.viu35.io.adapters.serial.SerialAdapter
 import java.lang.Thread.sleep
 import java.nio.ByteBuffer
 
@@ -12,7 +12,7 @@ class CS02021(
     override val protocolAdapter: SerialAdapter,
     override val id: Byte
 ) : DeviceController() {
-    val model = CS020201Model()
+    private val model = CS020201Model()
     override var requestTotalCount = 0
     override var requestSuccessCount = 0
     override val pollingRegisters = mutableListOf<DeviceRegister>()
@@ -130,10 +130,6 @@ class CS02021(
         return model.registers[CS020201Model.RESPONDING_PARAM]!!
     }
 
-    override fun checkResponsibility() {
-        isResponding
-    }
-
     override fun readAllRegisters() {}
 
     override fun readRegister(register: DeviceRegister) {}
@@ -143,4 +139,8 @@ class CS02021(
     override fun writeRegisters(register: DeviceRegister, values: List<Short>) {}
 
     override fun writeRequest(request: String) {}
+
+    override fun checkResponsibility() {
+        isResponding
+    }
 }

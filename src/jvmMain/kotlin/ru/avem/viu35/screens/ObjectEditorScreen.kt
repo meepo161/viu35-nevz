@@ -25,15 +25,11 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.darkrockstudios.libraries.mpfilepicker.FilePicker
-import org.bouncycastle.math.raw.Mod
-import org.jetbrains.exposed.sql.statements.api.ExposedBlob
 import org.jetbrains.skia.Image
 import ru.avem.viu35.composables.*
 import ru.avem.viu35.database.entities.TestItemField
 import ru.avem.viu35.viewmodels.MainScreenViewModel
 import ru.avem.viu35.viewmodels.ObjectEditorViewModel
-import java.nio.file.Files
-import java.nio.file.Paths
 
 class ObjectEditorScreen(private var mainViewModel: MainScreenViewModel) : Screen {
 
@@ -44,7 +40,7 @@ class ObjectEditorScreen(private var mainViewModel: MainScreenViewModel) : Scree
         val isExpandedDropDownMenu = mutableStateOf(false)
         val vm = rememberScreenModel { ObjectEditorViewModel(mainViewModel) }
 
-        val fileType = "jpg"
+        val fileType = "*"
         MaterialTheme {
             Scaffold(topBar = {
                 TopAppBar(title = { Text("База данных испытываемых аппаратов") }, navigationIcon = {
@@ -338,11 +334,7 @@ class ObjectEditorScreen(private var mainViewModel: MainScreenViewModel) : Scree
                                     }
                                 }
                                 Button(
-                                    onClick = {
-                                        vm.nameObjectState.value = mainViewModel.selectedObject.value!!.name
-                                        vm.typeObjectState.value = mainViewModel.selectedObject.value!!.type
-                                        vm.editObjectVisibleState.value = true
-                                    },
+                                    onClick = { vm.editTestObject() },
                                     modifier = Modifier.fillMaxWidth(),
                                     elevation = ButtonDefaults.elevation(
                                         defaultElevation = 10.dp, pressedElevation = 15.dp, disabledElevation = 0.dp
@@ -379,7 +371,7 @@ class ObjectEditorScreen(private var mainViewModel: MainScreenViewModel) : Scree
                                         selectedItem = mainViewModel.selectedField.value,
                                         items = mainViewModel.objectFields,
                                         columns = listOf(
-                                            TestItemField::key,
+//                                            TestItemField::key,
                                             TestItemField::nameTest,
                                             TestItemField::uViu,
                                             TestItemField::time,
@@ -387,7 +379,7 @@ class ObjectEditorScreen(private var mainViewModel: MainScreenViewModel) : Scree
                                             TestItemField::current,
                                         ),
                                         columnNames = listOf(
-                                            "№",
+//                                            "№",
                                             "Наименование",
                                             "U ВИУ, В",
                                             "Время, с",
@@ -403,17 +395,7 @@ class ObjectEditorScreen(private var mainViewModel: MainScreenViewModel) : Scree
                                         contextMenuContent = {
                                             DropdownMenuItem(onClick = {
                                                 isExpandedDropDownMenu.value = false
-                                                vm.nameTestFieldState.value =
-                                                    mainViewModel.selectedField.value!!.nameTest
-                                                vm.uViuFieldState.value =
-                                                    mainViewModel.selectedField.value!!.uViu.toString()
-                                                vm.timeFieldState.value =
-                                                    mainViewModel.selectedField.value!!.time.toString()
-                                                vm.uMegerFieldState.value =
-                                                    mainViewModel.selectedField.value!!.uMeger.toString()
-                                                vm.currentFieldState.value =
-                                                    mainViewModel.selectedField.value!!.current.toString()
-                                                vm.editFieldVisibleState.value = true
+                                                vm.editFieldWindow()
                                             }) {
                                                 Text("Редактировать")
                                             }
@@ -452,17 +434,7 @@ class ObjectEditorScreen(private var mainViewModel: MainScreenViewModel) : Scree
                                     }
                                     Button(
                                         onClick = {
-                                            vm.nameTestFieldState.value =
-                                                mainViewModel.selectedField.value!!.nameTest
-                                            vm.uViuFieldState.value =
-                                                mainViewModel.selectedField.value!!.uViu.toString()
-                                            vm.timeFieldState.value =
-                                                mainViewModel.selectedField.value!!.time.toString()
-                                            vm.uMegerFieldState.value =
-                                                mainViewModel.selectedField.value!!.uMeger.toString()
-                                            vm.currentFieldState.value =
-                                                mainViewModel.selectedField.value!!.current.toString()
-                                            vm.editFieldVisibleState.value = true
+                                            vm.editFieldWindow()
                                         },
                                         modifier = Modifier.weight(0.25f).height(72.dp),
                                         elevation = ButtonDefaults.elevation(
@@ -521,6 +493,13 @@ class ObjectEditorScreen(private var mainViewModel: MainScreenViewModel) : Scree
                         }
                     }
                 }
+            }
+            if (mainViewModel.dialogVisibleState.value) {
+                ConfirmDialog(
+                    mainViewModel.titleDialog.value,
+                    mainViewModel.textDialog.value,
+                    { mainViewModel.dialogVisibleState.value = false },
+                    { mainViewModel.dialogVisibleState.value = false })
             }
         }
     }

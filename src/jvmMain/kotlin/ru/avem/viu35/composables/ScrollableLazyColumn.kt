@@ -10,6 +10,7 @@ import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.material.MaterialTheme
@@ -23,9 +24,9 @@ import kotlinx.coroutines.launch
 @Composable
 fun ScrollableLazyColumn(
     modifier: Modifier = Modifier,
+    scrollState: LazyListState = rememberLazyListState(),
     content: LazyListScope.() -> Unit
 ) {
-    val scrollState = rememberLazyListState()
     val scope = rememberCoroutineScope()
 
     Box(modifier) {

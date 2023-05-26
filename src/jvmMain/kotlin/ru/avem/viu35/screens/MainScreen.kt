@@ -2,6 +2,7 @@ package ru.avem.viu35.screens
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -15,7 +16,6 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.PointerButton
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -28,10 +28,7 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import isTestRunning
 import kotlinx.coroutines.launch
 import org.jetbrains.skia.Image
-import ru.avem.viu35.composables.HomeScreenDrawer
-import ru.avem.viu35.composables.ComboBox
-import ru.avem.viu35.composables.ConfirmDialog
-import ru.avem.viu35.composables.MainScreenActionBar
+import ru.avem.viu35.composables.*
 import ru.avem.viu35.viewmodels.MainScreenViewModel
 import ru.avem.viu35.viewmodels.TestViewModel
 import java.awt.Dimension
@@ -41,14 +38,15 @@ import javax.imageio.ImageIO
 
 @Suppress("FunctionName")
 object MainScreen : Screen {
-    @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterialApi::class)
+    @OptIn(ExperimentalFoundationApi::class)
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
         val scaffoldState = rememberScaffoldState()
         val scope = rememberCoroutineScope()
-        val vm = rememberScreenModel { MainScreenViewModel() }
-        val testViewModel = rememberScreenModel { TestViewModel(vm) }
+        val logScrollState = rememberLazyListState()
+        val vm = rememberScreenModel { MainScreenViewModel(logScrollState) }
+        val testViewModel = rememberScreenModel { TestViewModel(vm, scope) }
 
         val size = Dimension(800, 600)
         val img = BufferedImage(size.width, size.height, BufferedImage.TYPE_INT_RGB)
@@ -167,40 +165,7 @@ object MainScreen : Screen {
                             text = "Заданные параметры:"
                         )
                         Row(modifier = Modifier.fillMaxWidth()) {
-                            Row(modifier = Modifier.fillMaxWidth().weight(0.5f).padding(end = 16.dp)) {
-                                Box(
-                                    modifier = Modifier.weight(0.7f).height(48.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = "Ток утечки, мА", fontSize = 20.sp, textAlign = TextAlign.Center
-                                    )
-                                }
-                                Box(modifier = Modifier.weight(0.3f)) {
-                                    OutlinedTextField(textStyle = TextStyle.Default.copy(
-                                        fontSize = 20.sp, textAlign = TextAlign.Center
-                                    ), value = vm.specifiedI.value, onValueChange = {})
-                                }
-                            }
-                            Row(modifier = Modifier.fillMaxWidth().weight(0.5f).padding(end = 16.dp)) {
-                                Box(
-                                    modifier = Modifier.weight(0.7f).height(48.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = "Напряжение Мегер, В",
-                                        fontSize = 20.sp,
-                                        textAlign = TextAlign.Center
-                                    )
-                                }
-                                Box(modifier = Modifier.weight(0.3f)) {
-                                    OutlinedTextField(textStyle = TextStyle.Default.copy(
-                                        fontSize = 20.sp, textAlign = TextAlign.Center
-                                    ), value = vm.specifiedUMeger.value, onValueChange = {})
-                                }
-                            }
-                        }
-                        Row(modifier = Modifier.fillMaxWidth()) {
+
                             Row(modifier = Modifier.fillMaxWidth().weight(0.5f).padding(end = 16.dp)) {
                                 Box(
                                     modifier = Modifier.weight(0.7f).height(48.dp),
@@ -224,6 +189,40 @@ object MainScreen : Screen {
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Text(
+                                        text = "Напряжение МГР, В",
+                                        fontSize = 20.sp,
+                                        textAlign = TextAlign.Center
+                                    )
+                                }
+                                Box(modifier = Modifier.weight(0.3f)) {
+                                    OutlinedTextField(textStyle = TextStyle.Default.copy(
+                                        fontSize = 20.sp, textAlign = TextAlign.Center
+                                    ), value = vm.specifiedUMeger.value, onValueChange = {})
+                                }
+                            }
+                        }
+                        Row(modifier = Modifier.fillMaxWidth()) {
+                            Row(modifier = Modifier.fillMaxWidth().weight(0.5f).padding(end = 16.dp)) {
+                                Box(
+                                    modifier = Modifier.weight(0.7f).height(48.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "Ток утечки, мА", fontSize = 20.sp, textAlign = TextAlign.Center
+                                    )
+                                }
+                                Box(modifier = Modifier.weight(0.3f)) {
+                                    OutlinedTextField(textStyle = TextStyle.Default.copy(
+                                        fontSize = 20.sp, textAlign = TextAlign.Center
+                                    ), value = vm.specifiedI.value, onValueChange = {})
+                                }
+                            }
+                            Row(modifier = Modifier.fillMaxWidth().weight(0.5f).padding(end = 16.dp)) {
+                                Box(
+                                    modifier = Modifier.weight(0.7f).height(48.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
                                         text = "Время, сек", fontSize = 20.sp, textAlign = TextAlign.Center
                                     )
                                 }
@@ -234,6 +233,13 @@ object MainScreen : Screen {
                                 }
                             }
                         }
+                    }
+                }
+                Card(elevation = 4.dp) {
+
+                    Column(
+                        modifier = Modifier.padding(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
                         Text(
                             modifier = Modifier.fillMaxWidth().padding(8.dp),
                             textAlign = TextAlign.Center,
@@ -247,7 +253,24 @@ object MainScreen : Screen {
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Text(
-                                        text = "Напряжение ВИУ, В",
+                                        text = "Напряжение входное, В",
+                                        fontSize = 20.sp,
+                                        textAlign = TextAlign.Center
+                                    )
+                                }
+                                Box(modifier = Modifier.weight(0.3f)) {
+                                    OutlinedTextField(textStyle = TextStyle.Default.copy(
+                                        fontSize = 20.sp, textAlign = TextAlign.Center
+                                    ), value = vm.measuredU.value, onValueChange = {})
+                                }
+                            }
+                            Row(modifier = Modifier.fillMaxWidth().weight(0.5f).padding(end = 16.dp)) {
+                                Box(
+                                    modifier = Modifier.weight(0.7f).height(48.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "Напряжение ОИ, В",
                                         fontSize = 20.sp,
                                         textAlign = TextAlign.Center
                                     )
@@ -256,6 +279,25 @@ object MainScreen : Screen {
                                     OutlinedTextField(textStyle = TextStyle.Default.copy(
                                         fontSize = 20.sp, textAlign = TextAlign.Center
                                     ), value = vm.measuredUViu.value, onValueChange = {})
+                                }
+                            }
+                        }
+                        Row(modifier = Modifier.fillMaxWidth()) {
+                            Row(modifier = Modifier.fillMaxWidth().weight(0.5f).padding(end = 16.dp)) {
+                                Box(
+                                    modifier = Modifier.weight(0.7f).height(48.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "Общий ток утечки, мА",
+                                        fontSize = 20.sp,
+                                        textAlign = TextAlign.Center
+                                    )
+                                }
+                                Box(modifier = Modifier.weight(0.3f)) {
+                                    OutlinedTextField(textStyle = TextStyle.Default.copy(
+                                        fontSize = 20.sp, textAlign = TextAlign.Center
+                                    ), value = vm.measuredI.value, onValueChange = {})
                                 }
                             }
                             Row(modifier = Modifier.fillMaxWidth().weight(0.5f).padding(end = 16.dp)) {
@@ -276,15 +318,14 @@ object MainScreen : Screen {
                                 }
                             }
                         }
-
                         Row(modifier = Modifier.fillMaxWidth()) {
-                            Row(modifier = Modifier.fillMaxWidth().weight(0.5f).padding(end = 16.dp)) {
+                            Row(modifier = Modifier.fillMaxWidth().weight(0.33f).padding(end = 16.dp)) {
                                 Box(
                                     modifier = Modifier.weight(0.7f).height(48.dp),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Text(
-                                        text = "Защита токовая",
+                                        text = "Токовая защита",
                                         fontSize = 20.sp,
                                         textAlign = TextAlign.Center
                                     )
@@ -293,13 +334,13 @@ object MainScreen : Screen {
                                     Circle(vm.colorCurrent.value)
                                 }
                             }
-                            Row(modifier = Modifier.fillMaxWidth().weight(0.5f).padding(end = 16.dp)) {
+                            Row(modifier = Modifier.fillMaxWidth().weight(0.33f).padding(end = 16.dp)) {
                                 Box(
                                     modifier = Modifier.weight(0.7f).height(48.dp),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Text(
-                                        text = "Защита дверей",
+                                        text = "Дверь зоны",
                                         fontSize = 20.sp,
                                         textAlign = TextAlign.Center
                                     )
@@ -308,63 +349,86 @@ object MainScreen : Screen {
                                     Circle(vm.colorZone.value)
                                 }
                             }
+                            Row(modifier = Modifier.fillMaxWidth().weight(0.33f).padding(end = 16.dp)) {
+                                Box(
+                                    modifier = Modifier.weight(0.7f).height(48.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "Дверь ШСО",
+                                        fontSize = 20.sp,
+                                        textAlign = TextAlign.Center
+                                    )
+                                }
+                                Box(modifier = Modifier.weight(0.3f), contentAlignment = Alignment.Center) {
+                                    Circle(vm.colorSCO.value)
+                                }
+                            }
                         }
                     }
                 }
                 Card(elevation = 4.dp) {
-                    Column(
-                        modifier = Modifier.padding(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Row(modifier = Modifier.fillMaxWidth()) {
-                            Column(
-                                modifier = Modifier.weight(0.5f),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Text(
-                                    text = "Точка 1, №",
-                                )
-                                OutlinedTextField(
-                                    modifier = Modifier.padding(8.dp).fillMaxWidth(),
-                                    textStyle = TextStyle.Default.copy(
-                                        fontSize = 20.sp, textAlign = TextAlign.Center
-                                    ),
-                                    value = vm.dot1.value,
-                                    onValueChange = { vm.dot1.value = it },
-                                    enabled = vm.mutableStateIsRunning.value
-                                )
-                            }
-                            Column(
-                                modifier = Modifier.weight(0.5f),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Text(
-                                    text = "Точка 2, №",
-                                )
-                                OutlinedTextField(
-                                    modifier = Modifier.padding(8.dp).fillMaxWidth(),
-                                    textStyle = TextStyle.Default.copy(
-                                        fontSize = 20.sp, textAlign = TextAlign.Center
-                                    ),
-                                    value = vm.dot2.value,
-                                    onValueChange = { vm.dot2.value = it },
-                                    enabled = vm.mutableStateIsRunning.value
-                                )
-                            }
-                        }
-                        if (vm.selectedObject.value != null) {
-                            println(vm.selectedObject.value!!.image.bytes) //TODO без этого не работает
-                            Image(
-                                modifier = Modifier.fillMaxWidth().clickable {
-                                    vm.imageVisibleState.value = true
-                                }.height(512.dp),
-                                contentDescription = "image",
-                                bitmap = if (vm.selectedObject.value != null) {
-                                    Image.Companion.makeFromEncoded(vm.selectedObject.value!!.image.bytes)
-                                        .toComposeImageBitmap()
-                                } else {
-                                    ImageBitmap(800, 800)
+                    if (vm.logState.value) {
+                        LogText(
+                            modifier = Modifier.padding(8.dp).fillMaxSize(),
+                            vm.logMessages,
+                            vm.logScrollState
+                        )
+                    } else {
+                        Column(
+                            modifier = Modifier.padding(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Row(modifier = Modifier.fillMaxWidth()) {
+                                Column(
+                                    modifier = Modifier.weight(0.5f),
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Text(
+                                        text = "Точка 1, №",
+                                    )
+                                    OutlinedTextField(
+                                        modifier = Modifier.padding(8.dp).fillMaxWidth(),
+                                        textStyle = TextStyle.Default.copy(
+                                            fontSize = 20.sp, textAlign = TextAlign.Center
+                                        ),
+                                        value = vm.dot1.value,
+                                        onValueChange = { vm.dot1.value = it },
+                                        enabled = vm.mutableStateIsRunning.value
+                                    )
                                 }
-                            )
+                                Column(
+                                    modifier = Modifier.weight(0.5f),
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Text(
+                                        text = "Точка 2, №",
+                                    )
+                                    OutlinedTextField(
+                                        modifier = Modifier.padding(8.dp).fillMaxWidth(),
+                                        textStyle = TextStyle.Default.copy(
+                                            fontSize = 20.sp, textAlign = TextAlign.Center
+                                        ),
+                                        value = vm.dot2.value,
+                                        onValueChange = { vm.dot2.value = it },
+                                        enabled = vm.mutableStateIsRunning.value
+                                    )
+                                }
+                            }
+                            if (vm.selectedObject.value != null) {
+                                println(vm.selectedObject.value!!.image.bytes) //TODO без этого не работает
+                                Image(
+                                    modifier = Modifier.fillMaxWidth().clickable {
+                                        vm.imageVisibleState.value = true
+                                    }.height(512.dp),
+                                    contentDescription = "image",
+                                    bitmap = if (vm.selectedObject.value != null) {
+                                        Image.makeFromEncoded(vm.selectedObject.value!!.image.bytes)
+                                            .toComposeImageBitmap()
+                                    } else {
+                                        ImageBitmap(800, 800)
+                                    }
+                                )
+                            }
                         }
                     }
                 }
@@ -409,7 +473,7 @@ object MainScreen : Screen {
                             modifier = Modifier.width(96.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Text(text = "Мегер", fontSize = 20.sp)
+                            Text(text = "МГР", fontSize = 20.sp)
                             TriStateCheckbox(
                                 modifier = Modifier.scale(2f).size(48.dp),
                                 colors = CheckboxDefaults.colors(MaterialTheme.colors.primary),
@@ -424,6 +488,7 @@ object MainScreen : Screen {
                             )
                         }
                         TextH5("R, МОм", modifier = Modifier.padding(8.dp).width(140.dp))
+                        TextH5("Статус", modifier = Modifier.padding(8.dp).fillMaxWidth())
                     }
                 }
                 repeat(10) { number ->
@@ -468,7 +533,8 @@ object MainScreen : Screen {
                                     modifier = Modifier.scale(2f).size(48.dp)
                                 )
                             }
-                            OutlinedTextField(modifier = Modifier.padding(8.dp).width(140.dp),
+                            OutlinedTextField(modifier = Modifier.padding(8.dp).width(140.dp)
+                                .background(vm.listColorsCurrentTF[number].value),
                                 textStyle = TextStyle.Default.copy(
                                     fontSize = 20.sp, textAlign = TextAlign.Center
                                 ),
@@ -499,7 +565,8 @@ object MainScreen : Screen {
                                     modifier = Modifier.scale(2f).size(48.dp)
                                 )
                             }
-                            OutlinedTextField(modifier = Modifier.padding(8.dp).width(140.dp),
+                            OutlinedTextField(modifier = Modifier.padding(8.dp).width(140.dp)
+                                .background(vm.listColorsRsTF[number].value),
                                 textStyle = TextStyle.Default.copy(
                                     fontSize = 20.sp, textAlign = TextAlign.Center
                                 ),
@@ -514,27 +581,8 @@ object MainScreen : Screen {
                     horizontalArrangement = Arrangement.spacedBy(64.dp)
                 ) {
                     Button(
-                        modifier = Modifier.weight(1 / 3f).height(128.dp),
-                        onClick = {},
-                        elevation = ButtonDefaults.elevation(
-                            defaultElevation = 10.dp, pressedElevation = 15.dp, disabledElevation = 0.dp
-                        )
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(16.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.Backspace,
-                                contentDescription = null,
-                                modifier = Modifier.size(48.dp)
-                            )
-                            Text(text = "Сброс", fontSize = 28.sp, fontWeight = FontWeight.Bold)
-                        }
-                    }
-                    Button(
-                        modifier = Modifier.weight(1 / 3f).height(128.dp), onClick = {
-                            testViewModel.start()
+                        modifier = Modifier.weight(1 / 2f).height(128.dp), onClick = {
+                            vm.logState.value = !vm.logState.value
                         }, elevation = ButtonDefaults.elevation(
                             defaultElevation = 10.dp, pressedElevation = 15.dp, disabledElevation = 0.dp
                         )
@@ -543,35 +591,48 @@ object MainScreen : Screen {
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
-                            Icon(
-                                imageVector = Icons.Filled.PriorityHigh,
-                                contentDescription = null,
-                                modifier = Modifier.size(48.dp)
+                            Text(
+                                text = if (vm.logState.value) "Показать чертеж" else "Показать лог",
+                                fontSize = 28.sp,
+                                fontWeight = FontWeight.Bold
                             )
+                        }
+                    }
+                    Button(
+                        modifier = Modifier.weight(1 / 2f).height(128.dp), onClick = {
+                            testViewModel.start()
+                        }, elevation = ButtonDefaults.elevation(
+                            defaultElevation = 10.dp, pressedElevation = 15.dp, disabledElevation = 0.dp
+                        ), enabled = !vm.isTestRunningState.value
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
                             Text(text = "Старт", fontSize = 28.sp, fontWeight = FontWeight.Bold)
                             Icon(
-                                imageVector = Icons.Filled.PriorityHigh,
+                                imageVector = Icons.Filled.PlayArrow,
                                 contentDescription = null,
                                 modifier = Modifier.size(48.dp)
                             )
                         }
                     }
                     Button(
-                        modifier = Modifier.weight(1 / 3f).height(128.dp),
+                        modifier = Modifier.weight(1 / 2f).height(128.dp),
                         onClick = {
                             testViewModel.stop()
                         },
                         elevation = ButtonDefaults.elevation(
                             defaultElevation = 10.dp, pressedElevation = 15.dp, disabledElevation = 0.dp
-                        )
+                        ), enabled = vm.isTestRunningState.value
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
-                            Text(text = "Конец", fontSize = 28.sp, fontWeight = FontWeight.Bold)
+                            Text(text = "Стоп", fontSize = 28.sp, fontWeight = FontWeight.Bold)
                             Icon(
-                                imageVector = Icons.Filled.ArrowForward,
+                                imageVector = Icons.Filled.Stop,
                                 contentDescription = null,
                                 modifier = Modifier.size(48.dp)
                             )
