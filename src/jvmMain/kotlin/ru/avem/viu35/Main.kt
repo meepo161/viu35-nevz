@@ -10,9 +10,8 @@ import androidx.compose.ui.window.WindowPlacement
 import androidx.compose.ui.window.application
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.transitions.FadeTransition
-import ru.avem.viu35.database.validateDB
-import ru.avem.viu35.io.DevicePoller
-import ru.avem.viu35.screens.MainScreen
+import ru.avem.viu35.database.DBManager
+import ru.avem.viu35.screens.auth.LoginScreen
 import kotlin.system.exitProcess
 
 var isTestRunning = false
@@ -30,14 +29,14 @@ fun App() {
         }
     ) {
 //        Navigator(Test1Screen) {
-        Navigator(MainScreen) {
+        Navigator(LoginScreen()) {
             FadeTransition(it)
         }
     }
 }
 
 fun main() = application {
-    validateDB()
+    DBManager
     Window(onCloseRequest = { onExit() }, undecorated = true, resizable = false) {
         window.placement = WindowPlacement.Maximized
         App()

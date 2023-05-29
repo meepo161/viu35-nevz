@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -45,7 +46,7 @@ class ObjectEditorScreen(private var mainViewModel: MainScreenViewModel) : Scree
             Scaffold(topBar = {
                 TopAppBar(title = { Text("База данных испытываемых аппаратов") }, navigationIcon = {
                     IconButton(onClick = {
-                        navigator.popUntilRoot()
+                        navigator.pop()
                     }) {
                         Icon(Icons.Filled.ArrowBack, contentDescription = null)
                     }
@@ -506,7 +507,11 @@ class ObjectEditorScreen(private var mainViewModel: MainScreenViewModel) : Scree
 
     @Composable
     private fun DialogField(vm: ObjectEditorViewModel) {
-        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
             Row(modifier = Modifier.fillMaxWidth().padding(end = 16.dp)) {
                 Box(
                     modifier = Modifier.weight(0.3f).height(48.dp), contentAlignment = Alignment.Center
@@ -533,19 +538,21 @@ class ObjectEditorScreen(private var mainViewModel: MainScreenViewModel) : Scree
                     )
                 }
                 Box(modifier = Modifier.weight(0.7f)) {
-                    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.Center) {
                         OutlinedTextField(textStyle = TextStyle.Default.copy(
                             fontSize = 20.sp, textAlign = TextAlign.Center
                         ),
                             isError = vm.uViuFieldErrorState.value,
                             value = vm.uViuFieldState.value,
                             onValueChange = { vm.uViuFieldState.value = it })
-                        Text(
-                            modifier = Modifier.padding(start = 64.dp),
-                            text = "лимит: 500-15000 В",
-                            fontSize = 20.sp,
-                            textAlign = TextAlign.Center
-                        )
+                        if (vm.uViuFieldErrorState.value) {
+                            Text(
+                                modifier = Modifier.padding(start = 64.dp),
+                                text = "*500-15000 В",
+                                fontSize = 20.sp,
+                                textAlign = TextAlign.Center
+                            )
+                        }
                     }
                 }
             }
@@ -558,19 +565,21 @@ class ObjectEditorScreen(private var mainViewModel: MainScreenViewModel) : Scree
                     )
                 }
                 Box(modifier = Modifier.weight(0.7f)) {
-                    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.Center) {
                         OutlinedTextField(textStyle = TextStyle.Default.copy(
                             fontSize = 20.sp, textAlign = TextAlign.Center
                         ),
                             isError = vm.currentFieldErrorState.value,
                             value = vm.currentFieldState.value,
                             onValueChange = { vm.currentFieldState.value = it })
-                        Text(
-                            modifier = Modifier.padding(start = 64.dp),
-                            text = "лимит: 1-100 мА",
-                            fontSize = 20.sp,
-                            textAlign = TextAlign.Center
-                        )
+                        if (vm.currentFieldErrorState.value) {
+                            Text(
+                                modifier = Modifier.padding(start = 64.dp),
+                                text = "*1-100 мА",
+                                fontSize = 20.sp,
+                                textAlign = TextAlign.Center
+                            )
+                        }
                     }
                 }
             }
@@ -583,19 +592,21 @@ class ObjectEditorScreen(private var mainViewModel: MainScreenViewModel) : Scree
                     )
                 }
                 Box(modifier = Modifier.weight(0.7f)) {
-                    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.Center) {
                         OutlinedTextField(textStyle = TextStyle.Default.copy(
                             fontSize = 20.sp, textAlign = TextAlign.Center
                         ),
                             isError = vm.timeFieldErrorState.value,
                             value = vm.timeFieldState.value,
                             onValueChange = { vm.timeFieldState.value = it })
-                        Text(
-                            modifier = Modifier.padding(start = 64.dp),
-                            text = "лимит: 1-600 сек",
-                            fontSize = 20.sp,
-                            textAlign = TextAlign.Center
-                        )
+                        if (vm.timeFieldErrorState.value) {
+                            Text(
+                                modifier = Modifier.padding(start = 64.dp),
+                                text = "*1-600 сек",
+                                fontSize = 20.sp,
+                                textAlign = TextAlign.Center
+                            )
+                        }
                     }
                 }
             }
@@ -609,17 +620,15 @@ class ObjectEditorScreen(private var mainViewModel: MainScreenViewModel) : Scree
                 }
                 Box(modifier = Modifier.weight(0.7f)) {
                     Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                        OutlinedTextField(textStyle = TextStyle.Default.copy(
-                            fontSize = 20.sp, textAlign = TextAlign.Center
-                        ),
-                            isError = vm.uMegerFieldErrorState.value,
-                            value = vm.uMegerFieldState.value,
-                            onValueChange = { vm.uMegerFieldState.value = it })
-                        Text(
-                            modifier = Modifier.padding(start = 64.dp),
-                            text = "лимит: 500, 1500, 2500 В",
-                            fontSize = 20.sp,
-                            textAlign = TextAlign.Center
+                        val uMegerState = remember { mutableStateOf("500") }
+                        ComboBox(
+                            modifier = Modifier.width(280.dp),
+                            selectedItem = uMegerState,
+                            items = listOf("500", "1500", "2500"),
+                            onDismissState = {},
+                            selectedValue = {
+                                vm.uMegerFieldState.value = uMegerState.value
+                            }
                         )
                     }
                 }

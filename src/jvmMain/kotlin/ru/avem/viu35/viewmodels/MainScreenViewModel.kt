@@ -9,9 +9,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.jetbrains.exposed.sql.transactions.transaction
+import ru.avem.viu35.database.DBManager.getAllTestItems
 import ru.avem.viu35.database.entities.TestItem
 import ru.avem.viu35.database.entities.TestItemField
-import ru.avem.viu35.database.getAllTestItems
 import java.io.File
 
 class MainScreenViewModel(val logScrollState: LazyListState) : ScreenModel {

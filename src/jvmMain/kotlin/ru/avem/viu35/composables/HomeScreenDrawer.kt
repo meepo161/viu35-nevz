@@ -24,6 +24,8 @@ import isDarkTheme
 import onExit
 import ru.avem.composables.DrawerMenuItem
 import ru.avem.viu35.screens.ObjectEditorScreen
+import ru.avem.viu35.screens.ProtocolsScreen
+import ru.avem.viu35.screens.auth.LoginScreen
 import ru.avem.viu35.viewmodels.MainScreenViewModel
 
 @Composable
@@ -59,11 +61,11 @@ fun HomeScreenDrawer(mainViewModel: MainScreenViewModel, isClickable: MutableSta
             }
         }
         DrawerMenuItem(painterResource("icons/baseline_storage_24.xml"), "База данных протоколов") {
-//        navigator.push(ProtocolsScreen)
+        navigator.push(ProtocolsScreen())
         }
-        DrawerMenuItem(Icons.Filled.SettingsRemote, "Состояние защит") {
+//        DrawerMenuItem(Icons.Filled.SettingsRemote, "Состояние защит") {
 //        navigator.push(SettingsScreen)
-        }
+//        }
         DrawerMenuItem(
             if (isDarkTheme.value) {
                 Icons.Filled.DarkMode
@@ -76,6 +78,11 @@ fun HomeScreenDrawer(mainViewModel: MainScreenViewModel, isClickable: MutableSta
             }
         }
         Divider()
+        DrawerMenuItem(Icons.Filled.People, "Сменить пользователя") {
+            if (isClickable.value) {
+                navigator.push(LoginScreen())
+            }
+        }
         DrawerMenuItem(Icons.Filled.ExitToApp, "Выход") {
             if (isClickable.value) {
                 onExit()

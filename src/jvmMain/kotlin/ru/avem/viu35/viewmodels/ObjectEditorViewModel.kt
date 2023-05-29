@@ -9,11 +9,11 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.statements.api.ExposedBlob
 import org.jetbrains.exposed.sql.transactions.transaction
+import ru.avem.viu35.database.DBManager.getAllTestItems
 import ru.avem.viu35.database.entities.TestItem
 import ru.avem.viu35.database.entities.TestItemField
 import ru.avem.viu35.database.entities.TestItemFields
 import ru.avem.viu35.database.entities.TestItems
-import ru.avem.viu35.database.getAllTestItems
 import java.nio.file.Files
 import java.nio.file.Paths
 

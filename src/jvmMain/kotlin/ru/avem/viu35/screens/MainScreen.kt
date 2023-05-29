@@ -136,7 +136,7 @@ object MainScreen : Screen {
                             text = "Имя и тип аппарата"
                         )
                         ComboBox(selectedItem = vm.selectedObject,
-                            modifier = Modifier.fillMaxWidth().padding(8.dp),
+                            modifier = Modifier.width(1000.dp).padding(8.dp),
                             isEditable = vm.mutableStateIsRunning.value,
                             onDismissState = {},
                             items = vm.objects,
@@ -145,7 +145,7 @@ object MainScreen : Screen {
                             })
 
                         ComboBox(selectedItem = vm.selectedField,
-                            modifier = Modifier.fillMaxWidth().padding(8.dp),
+                            modifier = Modifier.width(1000.dp).padding(8.dp),
                             isEditable = vm.selectedObject.value != null && vm.mutableStateIsRunning.value,
                             onDismissState = {},
                             items = vm.objectFields,

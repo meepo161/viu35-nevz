@@ -377,8 +377,6 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
                 if (isTestRunning) sleep(500)
                 if (isTestRunning) DD2.offKM2BP()
 
-
-
                 if (isTestRunning && mainViewModel.allCheckBoxesMeger.value != ToggleableState.Off) {
                     with(PR65) {
                         startMeasurement(
@@ -542,7 +540,7 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
 
         repeat(3) {
             if (isTestRunning) voltageRegulation(mainViewModel.specifiedUViu.value.toDouble())
-            if (isTestRunning) sleep(3000)
+            if (isTestRunning) sleep(1000)
         }
 
         if (isTestRunning) appendOneMessageToLog("Выдержка напряжения")
@@ -640,6 +638,9 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
         DevicePoller.clearWritingRegisters()
         mainViewModel.mutableStateIsRunning.value = true
         mainViewModel.dialogVisibleState.value = false
+        mainViewModel.listColorsProtection.forEach {
+            if (it.value == Color.Green) it.value = Color(0xFF0071bb)
+        }
         if (cause.isNotEmpty()) {
             if (isTestRunning) mainViewModel.titleDialog.value = "Ошибка"
             if (isTestRunning) mainViewModel.textDialog.value = cause
