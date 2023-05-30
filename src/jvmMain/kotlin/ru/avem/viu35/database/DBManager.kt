@@ -55,7 +55,6 @@ object DBManager {
                     result        = "result"
                     time        = "time"
                 }
-                saveProtocolAsWorkbook(listOf(protocol1))
             }
             if (TestItem.all().empty()) {
                 TestItem.new {

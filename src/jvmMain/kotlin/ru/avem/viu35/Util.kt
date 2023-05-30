@@ -1,9 +1,7 @@
 package ru.avem.viu35
 
-import java.io.File
-import java.io.FileNotFoundException
-import java.io.FileOutputStream
-import java.io.InputStream
+import java.awt.Desktop
+import java.io.*
 import java.util.*
 import kotlin.math.abs
 
@@ -27,6 +25,13 @@ fun <T : Number> limit(min: T, value: T, max: T): T = when {
     else -> value
 }
 
+fun openFile(file: File) {
+    try {
+        Desktop.getDesktop().open(file)
+    } catch (e: IOException) {
+        e.printStackTrace()
+    }
+}
 fun String.num() = toDoubleOrNull() ?: 0.0
 
 fun <C : S, S> C.addTo(list: MutableList<S>): C {
@@ -50,8 +55,8 @@ fun <T> List<T>.second(): T {
     return this[1]
 }
 
-fun copyFileFromStream(_inputStream: InputStream, dest: File) {
-    _inputStream.use { inputStream ->
+fun copyFileFromStream(inputStream: InputStream, dest: File) {
+    inputStream.use { inputStream ->
         try {
             val fileOutputStream = FileOutputStream(dest)
             val buffer = ByteArray(1024)
