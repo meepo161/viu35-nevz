@@ -7,7 +7,6 @@ import org.jetbrains.exposed.sql.statements.api.ExposedBlob
 import org.jetbrains.exposed.sql.transactions.TransactionManager
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.avem.viu35.database.entities.*
-import ru.avem.viu35.protocol.saveProtocolAsWorkbook
 import java.sql.Connection
 
 object DBManager {
@@ -55,7 +54,6 @@ object DBManager {
                     result        = "result"
                     time        = "time"
                 }
-                saveProtocolAsWorkbook(listOf(protocol1))
             }
             if (TestItem.all().empty()) {
                 TestItem.new {

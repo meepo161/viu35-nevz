@@ -6,8 +6,10 @@ import cafe.adriel.voyager.core.model.ScreenModel
 import isTestRunning
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import org.jetbrains.exposed.sql.transactions.transaction
 import ru.avem.library.polling.IDeviceController
 import ru.avem.viu35.af
+import ru.avem.viu35.database.entities.Protocol
 import ru.avem.viu35.io.DevicePoller
 import ru.avem.viu35.io.DevicePoller.ATR240
 import ru.avem.viu35.io.DevicePoller.ATR241
@@ -671,13 +673,31 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
             if (it.value == Color.Green) it.value = Color(0xFF0071bb)
         }
         if (cause.isNotEmpty()) {
-            if (isTestRunning) mainViewModel.titleDialog.value = "Ошибка"
-            if (isTestRunning) mainViewModel.textDialog.value = cause
-            if (isTestRunning) mainViewModel.dialogVisibleState.value = true
+            mainViewModel.titleDialog.value = "Ошибка"
+            mainViewModel.textDialog.value = cause
+            mainViewModel.dialogVisibleState.value = true
         }
         if (isTestRunning) appendOneMessageToLog("Испытание завершено")
+
         mainViewModel.isTestRunningState.value = false
-        appendOneMessageToLog(cause)
+
+        transaction {
+            repeat(10) {
+                Protocol.new {
+                    serial = mainViewModel.listSerialNumbers[it].value
+                    operator = "Тестовый оператор"
+                    itemName = mainViewModel.selectedObject.value!!.name
+                    pointsName = mainViewModel.selectedField.value!!.nameTest
+                    uViu = "uViu"
+                    iViu = "iViu"
+                    uMgr = "uMgr"
+                    rMgr = "rMgr"
+                    date = "date"
+                    result = "result"
+                    time = "time"
+                }
+            }
+        }
     }
 
     fun stop() {

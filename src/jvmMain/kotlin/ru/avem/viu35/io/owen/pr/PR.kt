@@ -246,10 +246,10 @@ class PR(
     }
 
     fun onLightGround() {
-        onOutput01To16(10)
+        offOutput01To16(10)
     }
     fun offLightGround() {
-        offOutput01To16(10)
+        onOutput01To16(10)
     }
 
     fun onLightMeger() {
