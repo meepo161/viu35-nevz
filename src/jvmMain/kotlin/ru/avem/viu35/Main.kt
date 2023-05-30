@@ -14,6 +14,7 @@ import ru.avem.viu35.database.DBManager
 import ru.avem.viu35.screens.auth.LoginScreen
 import kotlin.system.exitProcess
 
+var operator = ""
 var isTestRunning = false
 var isDarkTheme = mutableStateOf(false)
 

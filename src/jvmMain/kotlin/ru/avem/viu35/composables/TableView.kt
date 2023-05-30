@@ -21,6 +21,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.memberProperties
 
@@ -34,22 +35,23 @@ fun <T> TableView(
     onItemPrimaryPressed: (Int) -> Unit,
     onItemSecondaryPressed: (Int) -> Unit,
     contextMenuContent: @Composable () -> Unit,
-    isExpandedDropdownMenu: MutableState<Boolean>
+    isExpandedDropdownMenu: MutableState<Boolean>,
 ) {
     var hoveredItem by remember { mutableStateOf(selectedItem) }
+    var listWeight = listOf(0.6f, 0.1f, 0.1f, 0.1f, 0.16f, 0.1f)
 
     Column(modifier = Modifier.fillMaxWidth()) {
         Row {
             if (columnNames.size == columns.size) {
-                columnNames.forEach {
+                columnNames.forEachIndexed { index, columnNames ->
                     Box(
                         modifier = Modifier.border(
                             width = 1.dp, color = MaterialTheme.colors.surface, shape = RoundedCornerShape(8.dp)
-                        ).weight(0.3f).height(64.dp).clip(RoundedCornerShape(8.dp))
+                        ).weight(listWeight[index]).height(64.dp).clip(RoundedCornerShape(8.dp))
                             .background(MaterialTheme.colors.primary), contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            it,
+                            columnNames,
                             style = TextStyle(fontWeight = FontWeight.Bold, color = MaterialTheme.colors.background)
                         )
                     }
@@ -88,24 +90,25 @@ fun <T> TableView(
                         } else {
                             MaterialTheme.colors.background
                         }
-                    ).pointerMoveFilter( //TODO Deprecated
+                    ).pointerMoveFilter(
                         onMove = { _ ->
                             hoveredItem = items[it]
                             false
                         })
                 ) {
-                    columns.forEach { column ->
+                    columns.forEachIndexed { index, column ->
+
                         val field = items[it]!!.getField<Any>(column.name)!!.toString()
                         Box(
                             modifier = Modifier.border(
                                 width = 1.dp, color = MaterialTheme.colors.primary, shape = RoundedCornerShape(4.dp)
-                            ).weight(0.3f).height(48.dp), contentAlignment = Alignment.Center
+                            ).weight(listWeight[index]).height(48.dp), contentAlignment = Alignment.Center
                         ) {
                             Text(
                                 text = field,
                                 modifier = Modifier.padding(4.dp),
                                 textAlign = TextAlign.Center,
-//                                fontSize = 30.sp,
+                                fontSize = 28.sp,
                                 color = if (selectedItem == items[it])
                                     MaterialTheme.colors.secondary else MaterialTheme.colors.primary
                             )

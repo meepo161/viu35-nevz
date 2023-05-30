@@ -26,6 +26,12 @@ object DBManager {
                     name = "admin"
                     password = "avem"
                 }
+                repeat(100){
+                    User.new {
+                        name = it.toString()
+                        password = it.toString()
+                    }
+                }
             }
             if (Protocol.all().empty()) {
                 var protocol1 = Protocol.new {

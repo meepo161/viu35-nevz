@@ -44,12 +44,6 @@ fun saveProtocolAsWorkbook(listProtocols: List<Protocol>, path: String = "cfg/la
                                 "#serial#" -> cell.setCellValue(listProtocols.last().serial)
                                 "#operator#" -> cell.setCellValue(listProtocols.last().operator)
                                 "#itemName#" -> cell.setCellValue(listProtocols.last().itemName)
-//                                "#pointsName#" -> cell.setCellValue(listProtocols.last().pointsName)
-//                                "#uViu#" -> cell.setCellValue(listProtocols.last().uViu)
-//                                "#iViu#" -> cell.setCellValue(listProtocols.last().iViu)
-//                                "#uMgr#" -> cell.setCellValue(listProtocols.last().uMgr)
-//                                "#rMgr#" -> cell.setCellValue(listProtocols.last().rMgr)
-//                                "#result#" -> cell.setCellValue(listProtocols.last().result)
                                 "#pointsName#" -> pointsName = cell
                                 "#uViu#" -> uViu = cell
                                 "#iViu#" -> iViu = cell
@@ -74,16 +68,10 @@ fun saveProtocolAsWorkbook(listProtocols: List<Protocol>, path: String = "cfg/la
             outStream.close()
         }
     } catch (e: FileNotFoundException) {
-//        errorNotification(
-//            "Ошибка",
-//            "Не удалось сохранить протокол на диск",
-//            Pos.BOTTOM_CENTER
-//        )
     }
 }
 
 fun fillData(listProtocols: List<Protocol>) {
-//    try {
     listProtocols.forEachIndexed { index, d ->
         pointsName.sheet.getRow(pointsName.address.row + index).createCell(pointsName.address.column)
             .setCellValue(d.pointsName)
@@ -92,14 +80,5 @@ fun fillData(listProtocols: List<Protocol>) {
         uMgr.sheet.getRow(uMgr.address.row + index).createCell(uMgr.address.column).setCellValue(d.uMgr)
         rMgr.sheet.getRow(rMgr.address.row + index).createCell(rMgr.address.column).setCellValue(d.rMgr)
         result.sheet.getRow(result.address.row + index).createCell(result.address.column).setCellValue(d.result)
-//        pointsName.setCellValue(d.pointsName)
-//        uViu.setCellValue(d.uViu)
-//        iViu.setCellValue(d.iViu)
-//        uMgr.setCellValue(d.uMgr)
-//        rMgr.setCellValue(d.rMgr)
-//        result.setCellValue(d.result)
     }
-//    } catch (e: Exception) {
-//        println(e)
-//    }
 }

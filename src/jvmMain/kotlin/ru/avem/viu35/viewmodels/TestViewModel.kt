@@ -464,6 +464,8 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
                 if (isTestRunning) if (colorTF > 130f) colorTF = 130f
                 if (isTestRunning) mainViewModel.listColorsRsTF[index].value = Color.hsv(colorTF, 0.7f, 1f)
             }
+            if (!isTestRunning) mainViewModel.listRs[index].value = ""
+            if (!isTestRunning) mainViewModel.listColorsRsTF[index].value = Color.Transparent
         }
         if (isTestRunning) DD4.off(5) //Мегер
         if (isTestRunning) DD2.offLightMeger()
@@ -578,6 +580,8 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
         }
         mainViewModel.measuredTime.value = "%.1f".format(Locale.ENGLISH, 0.0)
 
+        mainViewModel.storedUViu = mainViewModel.measuredUViu.value
+
         for (listCurrent in listCurrentsState.indices) {
             listCurrentsState[listCurrent] = false
         }
@@ -637,6 +641,7 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
     private fun initTest() {
         needDevices.clear()
         listMessagesLog.clear()
+        mainViewModel.storedUViu = ""
         mainViewModel.measuredI.value = ""
         mainViewModel.measuredUViu.value = ""
         mainViewModel.measuredU.value = ""
@@ -656,6 +661,10 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
         mainViewModel.listRs.forEach {
             it.value = ""
         }
+
+        mainViewModel.listColorsProtection.forEach {
+            it.value = Color(0xFF0071bb)
+        }
         cause = ""
         isTestRunning = true
         mainViewModel.mutableStateIsRunning.value = false
@@ -669,35 +678,45 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
         DevicePoller.clearWritingRegisters()
         mainViewModel.mutableStateIsRunning.value = true
         mainViewModel.dialogVisibleState.value = false
-        mainViewModel.listColorsProtection.forEach {
-            if (it.value == Color.Green) it.value = Color(0xFF0071bb)
-        }
         if (cause.isNotEmpty()) {
             mainViewModel.titleDialog.value = "Ошибка"
             mainViewModel.textDialog.value = cause
             mainViewModel.dialogVisibleState.value = true
         }
         if (isTestRunning) appendOneMessageToLog("Испытание завершено")
-
-        mainViewModel.isTestRunningState.value = false
-
         transaction {
             repeat(10) {
-                Protocol.new {
-                    serial = mainViewModel.listSerialNumbers[it].value
-                    operator = "Тестовый оператор"
-                    itemName = mainViewModel.selectedObject.value!!.name
-                    pointsName = mainViewModel.selectedField.value!!.nameTest
-                    uViu = "uViu"
-                    iViu = "iViu"
-                    uMgr = "uMgr"
-                    rMgr = "rMgr"
-                    date = "date"
-                    result = "result"
-                    time = "time"
+                if (mainViewModel.listColorsProtection[it].value != Color(0xFF0071bb)) {
+                    Protocol.new {
+                        serial = mainViewModel.listSerialNumbers[it].value
+                        operator = "Тестовый оператор"
+                        itemName = mainViewModel.selectedObject.value!!.name
+                        pointsName = mainViewModel.selectedField.value!!.nameTest
+                        uViu = mainViewModel.storedUViu
+                        iViu = mainViewModel.listCurrents[it].value
+                        uMgr = mainViewModel.specifiedUMeger.value
+                        rMgr = mainViewModel.listRs[it].value
+                        date =  SimpleDateFormat("dd.MM.y").format(System.currentTimeMillis()).toString()
+                        time = SimpleDateFormat("HH:mm:ss").format(System.currentTimeMillis()).toString()
+                        result = when (mainViewModel.listColorsProtection[it].value) {
+                            Color.Red -> "Неуспешно"
+                            Color.Green -> "Успешно"
+                            else -> "Неизвестно"
+                        }
+                    }
+
                 }
             }
         }
+        mainViewModel.listColorsProtection.forEach {
+            if (it.value == Color.Green) it.value = Color(0xFF0071bb)
+        }
+        mainViewModel.isTestRunningState.value = false
+        mainViewModel.measuredUViu.value = ""
+        mainViewModel.measuredTime.value = ""
+        mainViewModel.measuredI.value = ""
+        mainViewModel.measuredU.value = ""
+
     }
 
     fun stop() {
@@ -1027,43 +1046,6 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
         if (System.currentTimeMillis() - timer > 60000) cause = "Превышено время регулирования"
         ATR240.stopLATR()
         ATR241.stopLATR()
-    }
-
-    private fun voltageRegulationSingle(voltage: Double) {
-        appendOneMessageToLog("Точная регулировка")
-        var timer = 0L
-        var timePulsePerc = 20f
-        val up = 300f
-        val down = 1f
-        var direction: Float
-        val speedJumpUp = 100f
-        val speedJumpDown = 100f
-        timer = System.currentTimeMillis()
-        while (abs(mainViewModel.measuredUViu.value.toDouble() - voltage) > 100 && isTestRunning) {
-            if (mainViewModel.measuredUViu.value.toDouble() < voltage) {
-                direction = up
-                timePulsePerc = speedJumpUp
-            } else {
-                direction = down
-                timePulsePerc = speedJumpDown
-            }
-            ATR240.startUpLATRPulse(direction, timePulsePerc)
-        }
-        ATR240.stopLATR()
-        while (abs(mainViewModel.measuredUViu.value.toDouble() - voltage) > 10 && isTestRunning) {
-            if (mainViewModel.measuredUViu.value.toDouble() < voltage) {
-                direction = up
-                timePulsePerc = speedJumpUp
-            } else {
-                direction = down
-                timePulsePerc = speedJumpDown
-            }
-            ATR240.startUpLATRPulse(direction, timePulsePerc)
-            if (isTestRunning) sleep(500)
-            ATR240.stopLATR()
-        }
-        if (System.currentTimeMillis() - timer > 60000) cause = "Превышено время регулирования"
-        ATR240.stopLATR()
     }
 
     fun appendMessageToLog(msg: String) {

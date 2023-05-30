@@ -48,6 +48,8 @@ class MainScreenViewModel(val logScrollState: LazyListState) : ScreenModel {
     val measuredI = mutableStateOf("")
     val measuredU = mutableStateOf("")
 
+    var storedUViu = ""
+
     val storedListCurrents = mutableListOf<Double>()
     val storedListRs = mutableListOf<Double>()
     val storedListResults = mutableListOf<Double>()

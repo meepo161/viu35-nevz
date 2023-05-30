@@ -10,7 +10,6 @@ import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import org.jetbrains.exposed.sql.transactions.transaction
 import ru.avem.viu35.composables.ComboBox
 import ru.avem.viu35.composables.EnabledTextButton
 import ru.avem.viu35.database.DBManager
@@ -43,11 +42,11 @@ class ProtocolsScreen : Screen {
                     navigator.pop()
                 }
                 EnabledTextButton("Открыть") {
-                    saveProtocolAsWorkbook(DBManager.getAllProtocols())
+                    saveProtocolAsWorkbook(listOf(selectedProtocol.value))
                     openFile(File("cfg/lastOpened.xlsx"))
                 }
                 EnabledTextButton("Сохранить") {
-                    saveProtocolAsWorkbook(DBManager.getAllProtocols())
+                    saveProtocolAsWorkbook(listOf(selectedProtocol.value))
                 }
             }
         }

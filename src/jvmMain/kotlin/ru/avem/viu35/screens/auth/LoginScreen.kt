@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import operator
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.avem.viu35.composables.ComboBox
@@ -58,6 +59,7 @@ class LoginScreen : Screen {
 
 
         fun authorize() {
+            operator = login.value
             localNavigator.push(MainScreen)
         }
 
@@ -169,17 +171,6 @@ class LoginScreen : Screen {
                         },
                         colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.primary)
                     )
-                    Spacer(Modifier.size(16.dp))
-                    TextButton(onClick = {
-                        localNavigator.push(RegistrationScreen())
-                    }) {
-                        Text(
-                            text = "Регистрация",
-                            color = MaterialTheme.colors.primary,
-                            fontSize = 28.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
                 }
             })
     }

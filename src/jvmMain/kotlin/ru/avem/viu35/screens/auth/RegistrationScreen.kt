@@ -30,11 +30,15 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.jetbrains.exposed.sql.transactions.transaction
+import ru.avem.viu35.composables.ConfirmDialog
+import ru.avem.viu35.database.DBManager
 import ru.avem.viu35.database.entities.User
 import ru.avem.viu35.utils.keyEventNext
 import ru.avem.viu35.utils.keyboardActionNext
+import ru.avem.viu35.viewmodels.UserEditorViewModel
 
-class RegistrationScreen : Screen {
+class RegistrationScreen(private var vm: UserEditorViewModel) : Screen {
+
     @Composable
     override fun Content() {
         val localNavigator = LocalNavigator.currentOrThrow
@@ -50,8 +54,19 @@ class RegistrationScreen : Screen {
         var passwordErrorState by remember { mutableStateOf(false) }
         var confirmPasswordErrorState by remember { mutableStateOf(false) }
 
+        val dialogVisibleState = mutableStateOf(false)
+        val titleDialog = mutableStateOf("")
+        val textDialog = mutableStateOf("")
+
         Scaffold(
             content = {
+                if (dialogVisibleState.value) {
+                    ConfirmDialog(
+                        titleDialog.value,
+                        textDialog.value,
+                        { dialogVisibleState.value = false },
+                        { dialogVisibleState.value = false })
+                }
                 Column(
                     modifier = Modifier.padding(32.dp).fillMaxSize(),
                     verticalArrangement = Arrangement.Center,
@@ -195,15 +210,22 @@ class RegistrationScreen : Screen {
                                 }
 
                                 else -> {
-                                    scope.launch {
-                                        transaction {
-                                            User.new {
-                                                this.name = name.text
-                                                this.password = password.text
+                                    if (DBManager.getAllUsers().any { it.name == name.text }) {
+                                        titleDialog.value = "Ошибка"
+                                        textDialog.value = "Такой пользователь уже существует"
+                                        dialogVisibleState.value = true
+                                    } else {
+                                        scope.launch {
+                                            transaction {
+                                                User.new {
+                                                    this.name = name.text
+                                                    this.password = password.text
+                                                }
                                             }
+                                            vm.allUsers.value = DBManager.getAllUsers()
                                         }
+                                        localNavigator.pop()
                                     }
-                                    localNavigator.pop()
                                 }
                             }
                         },
@@ -220,7 +242,7 @@ class RegistrationScreen : Screen {
                     Spacer(Modifier.size(16.dp))
                     Row(horizontalArrangement = Arrangement.Center) {
                         TextButton(onClick = {
-                            localNavigator.push(LoginScreen())
+                            localNavigator.pop()
                         }) {
                             Text(
                                 text = "Назад",

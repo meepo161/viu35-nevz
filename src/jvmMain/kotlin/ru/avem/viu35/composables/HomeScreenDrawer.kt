@@ -12,19 +12,19 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import isDarkTheme
 import onExit
+import operator
 import ru.avem.composables.DrawerMenuItem
 import ru.avem.viu35.screens.ObjectEditorScreen
 import ru.avem.viu35.screens.ProtocolsScreen
+import ru.avem.viu35.screens.UserEditorScreen
 import ru.avem.viu35.screens.auth.LoginScreen
 import ru.avem.viu35.viewmodels.MainScreenViewModel
 
@@ -55,17 +55,31 @@ fun HomeScreenDrawer(mainViewModel: MainScreenViewModel, isClickable: MutableSta
         }
         Divider()
         DrawerMenuItem(Icons.Filled.Settings, "База данных испытываемых аппаратов") {
-//        navigator.push(PasswordScreen(ObjectEditorScreen))
-            if (isClickable.value) {
-                navigator.push(ObjectEditorScreen(mainViewModel))
+            if (operator == "admin") {
+                if (isClickable.value) {
+                    navigator.push(ObjectEditorScreen(mainViewModel))
+                }
+            } else {
+                mainViewModel.titleDialog.value = "Внимание"
+                mainViewModel.textDialog.value = "Редактирование доступно только для администратора"
+                mainViewModel.dialogVisibleState.value = true
             }
         }
         DrawerMenuItem(painterResource("icons/baseline_storage_24.xml"), "База данных протоколов") {
-        navigator.push(ProtocolsScreen())
+            navigator.push(ProtocolsScreen())
         }
-//        DrawerMenuItem(Icons.Filled.SettingsRemote, "Состояние защит") {
-//        navigator.push(SettingsScreen)
-//        }
+        DrawerMenuItem(Icons.Filled.PersonAdd, "База данных пользователей") {
+            if (operator == "admin") {
+                if (isClickable.value) {
+                    navigator.push(UserEditorScreen())
+                }
+            } else {
+                mainViewModel.titleDialog.value = "Внимание"
+                mainViewModel.textDialog.value = "Редактирование доступно только для администратора"
+                mainViewModel.dialogVisibleState.value = true
+            }
+        }
+        Divider()
         DrawerMenuItem(
             if (isDarkTheme.value) {
                 Icons.Filled.DarkMode
