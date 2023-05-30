@@ -1,9 +1,13 @@
 package ru.avem.viu35
 
+import java.io.File
+import java.io.FileNotFoundException
+import java.io.FileOutputStream
+import java.io.InputStream
 import java.util.*
 import kotlin.math.abs
 
-const val PASSWORD = "123"
+val sp = File.separatorChar
 
 fun Number.af() = with(abs(String.format(Locale.US, "%.4f", toDouble()).toDouble())) {
     val format = when {
@@ -44,4 +48,19 @@ fun <T> List<T>.second(): T {
         throw NoSuchElementException("List invalid size.")
     }
     return this[1]
+}
+
+fun copyFileFromStream(_inputStream: InputStream, dest: File) {
+    _inputStream.use { inputStream ->
+        try {
+            val fileOutputStream = FileOutputStream(dest)
+            val buffer = ByteArray(1024)
+            var length = inputStream.read(buffer)
+            while (length > 0) {
+                fileOutputStream.write(buffer, 0, length)
+                length = inputStream.read(buffer)
+            }
+        } catch (_: FileNotFoundException) {
+        }
+    }
 }

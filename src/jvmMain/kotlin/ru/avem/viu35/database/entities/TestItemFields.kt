@@ -4,7 +4,6 @@ import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
-import ru.avem.viu35.database.entities.TestItemField
 
 object TestItemFields : IntIdTable() {
     var testItem = reference("testItem", TestItems)
@@ -13,6 +12,7 @@ object TestItemFields : IntIdTable() {
     var uViu = integer("uViu")
     var time = integer("time")
     var uMeger = integer("uMeger")
+    var rMeger = varchar("rMeger", 128)
     var current = integer("current")
 }
 
@@ -26,6 +26,7 @@ class TestItemField(id: EntityID<Int>) : IntEntity(id) {
     var uViu by TestItemFields.uViu
     var time by TestItemFields.time
     var uMeger by TestItemFields.uMeger
+    var rMeger by TestItemFields.rMeger
     var current by TestItemFields.current
 
     override fun toString() = "${nameTest}"

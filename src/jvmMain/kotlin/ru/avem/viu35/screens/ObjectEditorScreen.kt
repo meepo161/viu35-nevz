@@ -377,6 +377,7 @@ class ObjectEditorScreen(private var mainViewModel: MainScreenViewModel) : Scree
                                             TestItemField::uViu,
                                             TestItemField::time,
                                             TestItemField::uMeger,
+                                            TestItemField::rMeger,
                                             TestItemField::current,
                                         ),
                                         columnNames = listOf(
@@ -385,6 +386,7 @@ class ObjectEditorScreen(private var mainViewModel: MainScreenViewModel) : Scree
                                             "U ВИУ, В",
                                             "Время, с",
                                             "U мегер, В",
+                                            "R изоляции, МОм",
                                             "Ток утечки, мА"
                                         ),
                                         onItemPrimaryPressed = {
@@ -624,12 +626,39 @@ class ObjectEditorScreen(private var mainViewModel: MainScreenViewModel) : Scree
                         ComboBox(
                             modifier = Modifier.width(280.dp),
                             selectedItem = uMegerState,
-                            items = listOf("500", "1500", "2500"),
+                            items = listOf("500", "1000", "2500"),
                             onDismissState = {},
                             selectedValue = {
                                 vm.uMegerFieldState.value = uMegerState.value
                             }
                         )
+                    }
+                }
+            }
+            Row(modifier = Modifier.fillMaxWidth().padding(end = 16.dp)) {
+                Box(
+                    modifier = Modifier.weight(0.3f).height(48.dp), contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "R изоляции, МОм", fontSize = 20.sp, textAlign = TextAlign.Center
+                    )
+                }
+                Box(modifier = Modifier.weight(0.7f)) {
+                    Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.Center) {
+                        OutlinedTextField(textStyle = TextStyle.Default.copy(
+                            fontSize = 20.sp, textAlign = TextAlign.Center
+                        ),
+                            isError = vm.rMegerFieldErrorState.value,
+                            value = vm.rMegerFieldState.value,
+                            onValueChange = { vm.rMegerFieldState.value = it })
+                        if (vm.rMegerFieldErrorState.value) {
+                            Text(
+                                modifier = Modifier.padding(start = 64.dp),
+                                text = "0.1-100000 МОм",
+                                fontSize = 20.sp,
+                                textAlign = TextAlign.Center
+                            )
+                        }
                     }
                 }
             }

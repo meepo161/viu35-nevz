@@ -36,7 +36,7 @@ fun App() {
 }
 
 fun main() = application {
-    DBManager
+    DBManager.validateDB()
     Window(onCloseRequest = { onExit() }, undecorated = true, resizable = false) {
         window.placement = WindowPlacement.Maximized
         App()

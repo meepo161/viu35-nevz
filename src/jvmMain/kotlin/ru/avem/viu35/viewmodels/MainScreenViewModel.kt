@@ -1,7 +1,9 @@
 package ru.avem.viu35.viewmodels
 
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.runtime.*
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.state.ToggleableState
 import cafe.adriel.voyager.core.model.ScreenModel
@@ -37,6 +39,7 @@ class MainScreenViewModel(val logScrollState: LazyListState) : ScreenModel {
 
     val specifiedUViu = mutableStateOf("")
     val specifiedUMeger = mutableStateOf("")
+    val specifiedRMeger = mutableStateOf("")
     val specifiedI = mutableStateOf("")
     val specifiedTime = mutableStateOf("")
 
@@ -89,6 +92,7 @@ class MainScreenViewModel(val logScrollState: LazyListState) : ScreenModel {
                 selectedField.value = testItemField
                 specifiedUViu.value = selectedField.value!!.uViu.toString()
                 specifiedUMeger.value = selectedField.value!!.uMeger.toString()
+                specifiedRMeger.value = selectedField.value!!.rMeger.toString()
                 specifiedI.value = selectedField.value!!.current.toString()
                 specifiedTime.value = selectedField.value!!.time.toString()
             }

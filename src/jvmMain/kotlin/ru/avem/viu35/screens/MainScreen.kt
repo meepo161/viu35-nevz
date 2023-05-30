@@ -5,8 +5,12 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Stop
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
@@ -20,7 +24,10 @@ import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.*
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -454,25 +461,6 @@ object MainScreen : Screen {
                             modifier = Modifier.width(96.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Text(text = "ВИУ", fontSize = 20.sp)
-                            TriStateCheckbox(
-                                modifier = Modifier.scale(2f).size(48.dp),
-                                colors = CheckboxDefaults.colors(MaterialTheme.colors.primary),
-                                state = vm.allCheckBoxesViu.value,
-                                enabled = vm.mutableStateIsRunning.value,
-                                onClick = {
-                                    vm.onClickTriStateCheckbox(
-                                        vm.allCheckBoxesViu,
-                                        vm.listCheckBoxesViu
-                                    )
-                                },
-                            )
-                        }
-                        TextH5(text = "I, мА", modifier = Modifier.padding(8.dp).width(140.dp))
-                        Column(
-                            modifier = Modifier.width(96.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
                             Text(text = "МГР", fontSize = 20.sp)
                             TriStateCheckbox(
                                 modifier = Modifier.scale(2f).size(48.dp),
@@ -488,6 +476,25 @@ object MainScreen : Screen {
                             )
                         }
                         TextH5("R, МОм", modifier = Modifier.padding(8.dp).width(140.dp))
+                        Column(
+                            modifier = Modifier.width(96.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(text = "ВИУ", fontSize = 20.sp)
+                            TriStateCheckbox(
+                                modifier = Modifier.scale(2f).size(48.dp),
+                                colors = CheckboxDefaults.colors(MaterialTheme.colors.primary),
+                                state = vm.allCheckBoxesViu.value,
+                                enabled = vm.mutableStateIsRunning.value,
+                                onClick = {
+                                    vm.onClickTriStateCheckbox(
+                                        vm.allCheckBoxesViu,
+                                        vm.listCheckBoxesViu
+                                    )
+                                },
+                            )
+                        }
+                        TextH5(text = "I, мА", modifier = Modifier.padding(8.dp).width(140.dp))
                         TextH5("Статус", modifier = Modifier.padding(8.dp).fillMaxWidth())
                     }
                 }
@@ -508,38 +515,6 @@ object MainScreen : Screen {
                                 ),
                                 value = vm.listSerialNumbers[number].value,
                                 onValueChange = { vm.listSerialNumbers[number].value = it })
-
-                            Box(
-                                modifier = Modifier.width(96.dp), contentAlignment = Alignment.Center
-                            ) {
-                                Checkbox(
-                                    checked = vm.listCheckBoxesViu[number].value,
-                                    enabled = vm.mutableStateIsRunning.value,
-                                    colors = CheckboxDefaults.colors(MaterialTheme.colors.primary),
-                                    onCheckedChange = { isChecked ->
-                                        vm.listCheckBoxesViu[number].value = isChecked
-                                        var selectedCheckBox = 0
-                                        vm.listCheckBoxesViu.forEach {
-                                            if (it.value) selectedCheckBox++
-                                        }
-                                        if (selectedCheckBox == vm.listCheckBoxesViu.size) {
-                                            vm.allCheckBoxesViu.value = ToggleableState.On
-                                        } else if (selectedCheckBox > 0) {
-                                            vm.allCheckBoxesViu.value = ToggleableState.Indeterminate
-                                        } else {
-                                            vm.allCheckBoxesViu.value = ToggleableState.Off
-                                        }
-                                    },
-                                    modifier = Modifier.scale(2f).size(48.dp)
-                                )
-                            }
-                            OutlinedTextField(modifier = Modifier.padding(8.dp).width(140.dp)
-                                .background(vm.listColorsCurrentTF[number].value),
-                                textStyle = TextStyle.Default.copy(
-                                    fontSize = 20.sp, textAlign = TextAlign.Center
-                                ),
-                                value = vm.listCurrents[number].value,
-                                onValueChange = {})
                             Box(
                                 modifier = Modifier.width(96.dp), contentAlignment = Alignment.Center
                             ) {
@@ -571,6 +546,37 @@ object MainScreen : Screen {
                                     fontSize = 20.sp, textAlign = TextAlign.Center
                                 ),
                                 value = vm.listRs[number].value,
+                                onValueChange = {})
+                            Box(
+                                modifier = Modifier.width(96.dp), contentAlignment = Alignment.Center
+                            ) {
+                                Checkbox(
+                                    checked = vm.listCheckBoxesViu[number].value,
+                                    enabled = vm.mutableStateIsRunning.value,
+                                    colors = CheckboxDefaults.colors(MaterialTheme.colors.primary),
+                                    onCheckedChange = { isChecked ->
+                                        vm.listCheckBoxesViu[number].value = isChecked
+                                        var selectedCheckBox = 0
+                                        vm.listCheckBoxesViu.forEach {
+                                            if (it.value) selectedCheckBox++
+                                        }
+                                        if (selectedCheckBox == vm.listCheckBoxesViu.size) {
+                                            vm.allCheckBoxesViu.value = ToggleableState.On
+                                        } else if (selectedCheckBox > 0) {
+                                            vm.allCheckBoxesViu.value = ToggleableState.Indeterminate
+                                        } else {
+                                            vm.allCheckBoxesViu.value = ToggleableState.Off
+                                        }
+                                    },
+                                    modifier = Modifier.scale(2f).size(48.dp)
+                                )
+                            }
+                            OutlinedTextField(modifier = Modifier.padding(8.dp).width(140.dp)
+                                .background(vm.listColorsCurrentTF[number].value),
+                                textStyle = TextStyle.Default.copy(
+                                    fontSize = 20.sp, textAlign = TextAlign.Center
+                                ),
+                                value = vm.listCurrents[number].value,
                                 onValueChange = {})
                             Circle(color = vm.listColorsProtection[number].value, modifier = modifier.width(140.dp))
                         }

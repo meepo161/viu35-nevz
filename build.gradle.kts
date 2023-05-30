@@ -5,6 +5,8 @@ plugins {
     id("org.jetbrains.compose") version ("1.3.0")
 }
 
+apply(plugin = "java")
+
 group = "ru.avem"
 version = "1.0-SNAPSHOT"
 
@@ -17,10 +19,17 @@ repositories {
     }
 }
 
+tasks.withType<Jar> {
+    manifest {
+        attributes["Main-Class"] = "ru.avem.viu35.MainKt"
+    }
+}
+
 val exposedVersion = "0.41.1"
 
 kotlin {
     jvm {
+        jvmToolchain(17)
         compilations.all {
             kotlinOptions.jvmTarget = "17"
         }
@@ -72,9 +81,14 @@ compose.desktop {
     application {
         mainClass = "MainKt"
         nativeDistributions {
+            windows {
+                iconFile.set(project.file("icon.ico"))
+            }
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "viu35-nevz"
             packageVersion = "1.0.0"
+            includeAllModules = true
+//            appResourcesRootDir.set(project.layout.projectDirectory.dir("resources"))
         }
     }
 }

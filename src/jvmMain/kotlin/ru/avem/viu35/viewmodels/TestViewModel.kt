@@ -48,10 +48,16 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
     private var r15 = 0.0
 
     @Volatile
-    private var chopper = false //рубильник
+    private var chopper = false
 
     @Volatile
-    private var currentDoArn = false //токовая защита до АРН
+    private var isMgrRunning = false
+
+    @Volatile
+    private var isViuRunning = false
+
+    @Volatile
+    private var currentDoArn = false
 
     @Volatile
     private var listMessagesLog = mutableListOf<String>()
@@ -170,22 +176,25 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
     }
 
     fun initDevices() {
-//        if (isTestRunning) {
-//            with(DD3) {
-//                checkResponsibility()
-//                if (!isResponding){
-//                    cause = "$name не отвечает"
-//                }
-//            }
-//        }
-//        if (isTestRunning) {
-//            with(DD4) {
-//                checkResponsibility()
-//                if (!isResponding){
-//                    cause = "$name не отвечает"
-//                }
-//            }
-//        }
+
+        if (isTestRunning) {
+            with(DD3) {
+                checkResponsibility()
+                if (!isResponding) {
+                    cause = "$name не отвечает"
+                }
+            }
+        }
+
+        if (isTestRunning) {
+            with(DD4) {
+                checkResponsibility()
+                if (!isResponding) {
+                    cause = "$name не отвечает"
+                }
+            }
+        }
+
         if (isTestRunning) {
             with(PV22) {
                 needDevices.add(this)
@@ -200,7 +209,9 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
             with(PV23) {
                 needDevices.add(this)
                 DevicePoller.startPoll(name, model.U_TRMS) { value ->
-                    mainViewModel.measuredUViu.value = (value.toDouble() * 1000).af()
+                    if (isViuRunning) {
+                        mainViewModel.measuredUViu.value = (value.toDouble() * 1000).af()
+                    }
                 }
             }
         }
@@ -343,6 +354,7 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
     }
 
     private fun meger() {
+        isMgrRunning = true
         if (isTestRunning) appendOneMessageToLog("Начало испытания МГР")
         if (isTestRunning) appendOneMessageToLog("Сбор схемы")
         if (isTestRunning) DD2.onAVEM9()
@@ -364,7 +376,9 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
                     r15 = value.toDouble()
                 }
                 DevicePoller.startPoll(name, model.VOLTAGE) { value ->
-                    mainViewModel.measuredUViu.value = value.toDouble().af()
+                    if (isMgrRunning) {
+                        mainViewModel.measuredUViu.value = value.toDouble().af()
+                    }
                 }
             }
         }
@@ -434,19 +448,28 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
                 }
                 if (PR65.isResponding) PR65.stopTest()
                 if (isTestRunning) disassembleMgr(index)
-                if (isTestRunning) mainViewModel.listRs[index].value = if (r15 == 200000.0) ">100ГОм" else r15.af()
-                var colorTF = (130 / 10000.0 * r15).toFloat()
+                if (isTestRunning) mainViewModel.listRs[index].value =
+                    if (r15 == 200000.0) ">200000" else if (r15 < 0.3) "<0.2" else r15.af()
+                if (r15 < 0.3) {
+                    if (isTestRunning) mainViewModel.listColorsProtection[index].value = Color.Red
+                    if (isTestRunning) mainViewModel.listCheckBoxesViu[index].value = false
+                    if (isTestRunning) mainViewModel.listViu[index] = false
+                    if (isTestRunning && !mainViewModel.listCheckBoxesViu.any { it.value }) {
+                        mainViewModel.allCheckBoxesViu.value = ToggleableState.Off
+                    }
+                }
+                var colorTF = (130 / mainViewModel.specifiedRMeger.value.toDouble() * r15).toFloat()
                 if (isTestRunning) if (colorTF > 130f) colorTF = 130f
                 if (isTestRunning) mainViewModel.listColorsRsTF[index].value = Color.hsv(colorTF, 0.7f, 1f)
-
             }
         }
         if (isTestRunning) DD4.off(5) //Мегер
         if (isTestRunning) DD2.offLightMeger()
-        if (PR65.isResponding) PR65.reset()
+        isMgrRunning = false
     }
 
     private fun viu() {
+        isViuRunning = true
         if (isTestRunning) appendOneMessageToLog("Начало испытания ВИУ")
         if (isTestRunning) appendOneMessageToLog("Сбор схемы")
         if (isTestRunning) DD2.onKM2BP()
@@ -569,6 +592,7 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
             }
             sleep(10)
         }
+        isViuRunning = false
     }
 
     private fun setAVEMConfiguration(index: Int) {
@@ -611,6 +635,10 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
     private fun initTest() {
         needDevices.clear()
         listMessagesLog.clear()
+        mainViewModel.measuredI.value = ""
+        mainViewModel.measuredUViu.value = ""
+        mainViewModel.measuredU.value = ""
+        mainViewModel.measuredTime.value = ""
         mainViewModel.listColorsCurrentTF.forEach {
             it.value = Color.Transparent
         }
@@ -634,6 +662,7 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
 
     private fun finalizeTest() {
         isTestRunning = false
+        if (PR65.isResponding) PR65.reset()
         DevicePoller.clearPollingRegisters()
         DevicePoller.clearWritingRegisters()
         mainViewModel.mutableStateIsRunning.value = true

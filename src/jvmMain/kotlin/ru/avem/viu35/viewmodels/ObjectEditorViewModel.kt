@@ -40,6 +40,7 @@ class ObjectEditorViewModel(private var mainViewModel: MainScreenViewModel) : Sc
     val uViuFieldState = mutableStateOf("")
     val timeFieldState = mutableStateOf("")
     val uMegerFieldState = mutableStateOf("")
+    val rMegerFieldState = mutableStateOf("")
     var expandedUMeger = mutableStateOf(false)
     val currentFieldState = mutableStateOf("")
 
@@ -47,6 +48,7 @@ class ObjectEditorViewModel(private var mainViewModel: MainScreenViewModel) : Sc
     val uViuFieldErrorState = mutableStateOf(false)
     val timeFieldErrorState = mutableStateOf(false)
     val uMegerFieldErrorState = mutableStateOf(false)
+    val rMegerFieldErrorState = mutableStateOf(false)
     val currentFieldErrorState = mutableStateOf(false)
 
     val imageVisibleState = mutableStateOf(false)
@@ -86,6 +88,7 @@ class ObjectEditorViewModel(private var mainViewModel: MainScreenViewModel) : Sc
                                 uViu = it.uViu
                                 time = it.time
                                 uMeger = it.uMeger
+                                rMeger = it.rMeger
                                 current = it.current
                             }
                         }
@@ -175,6 +178,10 @@ class ObjectEditorViewModel(private var mainViewModel: MainScreenViewModel) : Sc
                 || !(uMegerFieldState.value.toIntOrNull()!! == 2500
                 || uMegerFieldState.value.toIntOrNull()!! == 1000
                 || uMegerFieldState.value.toIntOrNull()!! == 500)
+        rMegerFieldErrorState.value = rMegerFieldState.value.isEmpty()
+                || rMegerFieldState.value.replace(",", ".").toDoubleOrNull() == null
+                || rMegerFieldState.value.replace(",", ".").toDoubleOrNull()!! > 100000
+                || rMegerFieldState.value.replace(",", ".").toDoubleOrNull()!! < 0.1
         currentFieldErrorState.value =
             currentFieldState.value.isEmpty()
                     || currentFieldState.value.toIntOrNull() == null
@@ -185,6 +192,7 @@ class ObjectEditorViewModel(private var mainViewModel: MainScreenViewModel) : Sc
             && !uViuFieldErrorState.value
             && !timeFieldErrorState.value
             && !uMegerFieldErrorState.value
+            && !rMegerFieldErrorState.value
             && !currentFieldErrorState.value
         ) {
             scope.launch {
@@ -202,8 +210,10 @@ class ObjectEditorViewModel(private var mainViewModel: MainScreenViewModel) : Sc
                         uViu = uViuFieldState.value.toInt()
                         time = timeFieldState.value.toInt()
                         uMeger = uMegerFieldState.value.toInt()
+                        rMeger = rMegerFieldState.value.replace(",", ".").toDouble().toString()
                         current = currentFieldState.value.toInt()
                     }
+                    rMegerFieldState.value = rMegerFieldState.value.replace(",", ".")
                     mainViewModel.objectFields.add(newField)
                     mainViewModel.selectedField.value = mainViewModel.objectFields.lastOrNull()
                     if (mainViewModel.selectedField.value != null) {
@@ -230,6 +240,7 @@ class ObjectEditorViewModel(private var mainViewModel: MainScreenViewModel) : Sc
         uViuFieldState.value = ""
         timeFieldState.value = ""
         uMegerFieldState.value = ""
+        rMegerFieldState.value = ""
         currentFieldState.value = ""
     }
 
@@ -249,6 +260,7 @@ class ObjectEditorViewModel(private var mainViewModel: MainScreenViewModel) : Sc
                     uViu = mainViewModel.selectedField.value!!.uViu
                     time = mainViewModel.selectedField.value!!.time
                     uMeger = mainViewModel.selectedField.value!!.uMeger
+                    rMeger = mainViewModel.selectedField.value!!.rMeger
                     current = mainViewModel.selectedField.value!!.current
                 }
                 mainViewModel.objectFields.add(newField)
@@ -286,6 +298,10 @@ class ObjectEditorViewModel(private var mainViewModel: MainScreenViewModel) : Sc
                     || !(uMegerFieldState.value.toIntOrNull()!! == 2500
                     || uMegerFieldState.value.toIntOrNull()!! == 1000
                     || uMegerFieldState.value.toIntOrNull()!! == 500)
+            rMegerFieldErrorState.value = rMegerFieldState.value.isEmpty()
+                    || rMegerFieldState.value.replace(",", ".").toDoubleOrNull() == null
+                    || rMegerFieldState.value.replace(",", ".").toDoubleOrNull()!! > 100000
+                    || rMegerFieldState.value.replace(",", ".").toDoubleOrNull()!! < 0.1
             currentFieldErrorState.value =
                 currentFieldState.value.isEmpty()
                         || currentFieldState.value.toIntOrNull() == null
@@ -296,6 +312,7 @@ class ObjectEditorViewModel(private var mainViewModel: MainScreenViewModel) : Sc
                 && !uViuFieldErrorState.value
                 && !timeFieldErrorState.value
                 && !uMegerFieldErrorState.value
+                && !rMegerFieldErrorState.value
                 && !currentFieldErrorState.value
             ) {
                 scope.launch {
@@ -303,6 +320,8 @@ class ObjectEditorViewModel(private var mainViewModel: MainScreenViewModel) : Sc
                         mainViewModel.selectedField.value?.uViu = uViuFieldState.value.toInt()
                         mainViewModel.selectedField.value?.time = timeFieldState.value.toInt()
                         mainViewModel.selectedField.value?.uMeger = uMegerFieldState.value.toInt()
+                        mainViewModel.selectedField.value?.rMeger =
+                            rMegerFieldState.value.replace(",", ".").toDouble().toString()
                         mainViewModel.selectedField.value?.current = currentFieldState.value.toInt()
                         mainViewModel.objectFields.clear()
                         mainViewModel.objectFields.addAll(mainViewModel.selectedObject.value!!.fieldsIterable.sortedBy { it.key }
@@ -328,6 +347,8 @@ class ObjectEditorViewModel(private var mainViewModel: MainScreenViewModel) : Sc
                 mainViewModel.selectedField.value!!.time.toString()
             uMegerFieldState.value =
                 mainViewModel.selectedField.value!!.uMeger.toString()
+            rMegerFieldState.value =
+                mainViewModel.selectedField.value!!.rMeger.toString()
             currentFieldState.value =
                 mainViewModel.selectedField.value!!.current.toString()
             editFieldVisibleState.value = true

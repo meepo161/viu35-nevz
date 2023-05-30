@@ -12,12 +12,13 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import ru.avem.viu35.composables.ComboBox
 import ru.avem.viu35.composables.EnabledTextButton
-import ru.avem.viu35.protocol.ProtocolManager
+import ru.avem.viu35.database.DBManager
 
 class ProtocolsScreen : Screen {
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
+        var selectedProtocol = mutableStateOf(DBManager.getAllProtocols().first())
 
         Column(
             modifier = Modifier.fillMaxSize().padding(8.dp),
@@ -27,21 +28,21 @@ class ProtocolsScreen : Screen {
             Text("Выберите протокол для просмотра:")
             ComboBox(
                 modifier = Modifier.width(1800.dp),
-                selectedItem = mutableStateOf(ProtocolManager.all.first()),
-                items = ProtocolManager.all,
+                selectedItem = selectedProtocol,
+                items = DBManager.getAllProtocols(),
                 selectedValue = {
-                    ProtocolManager.selectedProtocol = it
+                    selectedProtocol.value = it
                 }
             )
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally)) {
-                EnabledTextButton("К начальному меню") {
+                EnabledTextButton("Назад") {
                     navigator.pop()
                 }
                 EnabledTextButton("Открыть") {
-                    ProtocolManager.open(ProtocolManager.save())
+                    
                 }
                 EnabledTextButton("Сохранить") {
-                    ProtocolManager.save()
+
                 }
             }
         }

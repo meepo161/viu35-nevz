@@ -10,11 +10,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.focusTarget
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
@@ -29,7 +30,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.jetbrains.exposed.sql.transactions.transaction
-import ru.avem.viu35.database.entities.TestItemField
 import ru.avem.viu35.database.entities.User
 import ru.avem.viu35.utils.keyEventNext
 import ru.avem.viu35.utils.keyboardActionNext
@@ -42,7 +42,6 @@ class RegistrationScreen : Screen {
 
         val scope = CoroutineScope(Dispatchers.Default)
         var name by remember { mutableStateOf(TextFieldValue()) }
-        var login by remember { mutableStateOf(TextFieldValue()) }
         var password by remember { mutableStateOf(TextFieldValue()) }
         var confirmPassword by remember { mutableStateOf(TextFieldValue()) }
 
@@ -54,7 +53,7 @@ class RegistrationScreen : Screen {
         Scaffold(
             content = {
                 Column(
-                    modifier = Modifier.padding(16.dp).fillMaxSize(),
+                    modifier = Modifier.padding(32.dp).fillMaxSize(),
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
@@ -67,6 +66,9 @@ class RegistrationScreen : Screen {
                     }, fontSize = 30.sp)
                     Spacer(Modifier.size(16.dp))
                     OutlinedTextField(
+                        textStyle = TextStyle.Default.copy(
+                            fontSize = 20.sp
+                        ),
                         value = name,
                         onValueChange = {
                             if (nameErrorState) {
@@ -89,34 +91,12 @@ class RegistrationScreen : Screen {
                         Text(text = "Обязательно", color = MaterialTheme.colors.error)
                     }
                     Spacer(Modifier.size(16.dp))
-
-                    OutlinedTextField(
-                        value = login,
-                        onValueChange = {
-                            if (loginErrorState) {
-                                loginErrorState = false
-                            }
-                            login = it
-                        },
-
-                        modifier = Modifier.focusTarget().onPreviewKeyEvent {
-                            keyEventNext(it, focusManager)
-                        },
-                        isError = loginErrorState,
-                        label = {
-                            Text(text = "Логин*")
-                        },
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                        keyboardActions = keyboardActionNext(focusManager)
-                    )
-                    if (loginErrorState) {
-                        Text(text = "Обязательно", color = MaterialTheme.colors.error)
-                    }
-
-                    Spacer(Modifier.size(16.dp))
                     var passwordVisibility by remember { mutableStateOf(true) }
                     var cPasswordVisibility by remember { mutableStateOf(true) }
                     OutlinedTextField(
+                        textStyle = TextStyle.Default.copy(
+                            fontSize = 20.sp
+                        ),
                         value = password,
                         onValueChange = {
                             if (passwordErrorState) {
@@ -153,6 +133,9 @@ class RegistrationScreen : Screen {
 
                     Spacer(Modifier.size(16.dp))
                     OutlinedTextField(
+                        textStyle = TextStyle.Default.copy(
+                            fontSize = 20.sp
+                        ),
                         value = confirmPassword,
                         onValueChange = {
                             if (confirmPasswordErrorState) {
@@ -199,10 +182,6 @@ class RegistrationScreen : Screen {
                                     nameErrorState = true
                                 }
 
-                                login.text.isEmpty() -> {
-                                    loginErrorState = true
-                                }
-
                                 password.text.isEmpty() -> {
                                     passwordErrorState = true
                                 }
@@ -220,7 +199,6 @@ class RegistrationScreen : Screen {
                                         transaction {
                                             User.new {
                                                 this.name = name.text
-                                                this.login = login.text
                                                 this.password = password.text
                                             }
                                         }
@@ -230,7 +208,12 @@ class RegistrationScreen : Screen {
                             }
                         },
                         content = {
-                            Text(text = "Зарегистрироваться", color = MaterialTheme.colors.surface)
+                            Text(
+                                text = "Зарегистрироваться",
+                                color = MaterialTheme.colors.surface,
+                                fontSize = 28.sp,
+                                fontWeight = FontWeight.Bold
+                            )
                         },
                         colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.primary)
                     )
@@ -239,7 +222,12 @@ class RegistrationScreen : Screen {
                         TextButton(onClick = {
                             localNavigator.push(LoginScreen())
                         }) {
-                            Text(text = "Назад", color = MaterialTheme.colors.primary)
+                            Text(
+                                text = "Назад",
+                                color = MaterialTheme.colors.primary,
+                                fontSize = 28.sp,
+                                fontWeight = FontWeight.Bold
+                            )
                         }
                     }
                 }

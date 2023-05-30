@@ -7,15 +7,13 @@ import org.jetbrains.exposed.dao.id.IntIdTable
 
 object Users : IntIdTable() {
     val name = varchar("name", 256)
-    val login = varchar("login", 256)
     val password = varchar("password", 256)
 }
 
 class User(id: EntityID<Int>) : IntEntity(id) {
     companion object : IntEntityClass<User>(Users)
     var name by Users.name
-    var login by Users.login
     var password by Users.password
 
-    override fun toString() = login
+    override fun toString() = name
 }

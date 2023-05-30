@@ -1,14 +1,13 @@
 package ru.avem.viu35.database
 
+import androidx.compose.ui.res.useResource
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.statements.api.ExposedBlob
 import org.jetbrains.exposed.sql.transactions.TransactionManager
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.avem.viu35.database.entities.*
-import java.io.File
-import java.nio.file.Files
-import java.nio.file.Paths
+import ru.avem.viu35.protocol.saveProtocolAsWorkbook
 import java.sql.Connection
 
 object DBManager {
@@ -23,25 +22,49 @@ object DBManager {
         transaction {
             SchemaUtils.create(TestItems, TestItemFields, Users, Protocols)
 
-            if (Protocol.all().empty()) {
-                Protocol.new {
-                    template = "template       "
-                    serial = "serial       "
-                    testItemType = "testItemType "
-                    testItemField = "testItemField"
-                    point1Name = "point1Name   "
-                    point2Name = "point2Name   "
-                    date = "date"
-                    time = "time"
-                    result = "result"
+            if (User.all().empty()) {
+                User.new {
+                    name = "admin"
+                    password = "avem"
                 }
+            }
+            if (Protocol.all().empty()) {
+                var protocol1 = Protocol.new {
+                    serial      = "serial"
+                    operator    = "operator"
+                    itemName    = "itemName"
+                    pointsName  = "pointsName"
+                    uViu        = "uViu"
+                    iViu        = "iViu"
+                    uMgr        = "uMgr"
+                    rMgr        = "rMgr"
+                    date        = "date"
+                    result        = "result"
+                    time        = "time"
+                }
+                var protocol2 = Protocol.new {
+                    serial      = "serial"
+                    operator    = "operator2"
+                    itemName    = "itemName2"
+                    pointsName  = "pointsName2"
+                    uViu        = "uViu2"
+                    iViu        = "iViu2"
+                    uMgr        = "uMgr2"
+                    rMgr        = "rMgr2"
+                    date        = "date2"
+                    result        = "result"
+                    time        = "time"
+                }
+                saveProtocolAsWorkbook(listOf(protocol1))
             }
             if (TestItem.all().empty()) {
                 TestItem.new {
                     name = "Резистор токоограничивающий РТ-45"
                     type = "6TC.277.045"
-                    image =
-                        ExposedBlob(Files.readAllBytes(Paths.get("${File("").absolutePath}/src/jvmMain/resources/unnamed.jpg")))
+                    useResource("image1.png") {
+                        image =
+                            ExposedBlob(it.readAllBytes())
+                    }
                 }.also { ti ->
                     TestItemField.new {
                         testItem = ti
@@ -50,7 +73,8 @@ object DBManager {
                         uViu = 7000
                         time = 60
                         uMeger = 2500
-                        current = 150
+                        rMeger = "100000"
+                        current = 50
                     }
                     TestItemField.new {
                         testItem = ti
@@ -59,15 +83,18 @@ object DBManager {
                         uViu = 9500
                         time = 60
                         uMeger = 2500
-                        current = 150
+                        rMeger = "100000"
+                        current = 50
                     }
                 }
 
                 TestItem.new {
                     name = "Блок резисторов высоковольтной цепи БРВЦ-46"
                     type = "6TC.277.046"
-                    image =
-                        ExposedBlob(Files.readAllBytes(Paths.get("${File("").absolutePath}/src/jvmMain/resources/unnamed2.jpg")))
+                    useResource("image2.png") {
+                        image =
+                            ExposedBlob(it.readAllBytes())
+                    }
                 }.also { ti ->
                     TestItemField.new {
                         testItem = ti
@@ -76,7 +103,8 @@ object DBManager {
                         uViu = 7000
                         time = 60
                         uMeger = 2500
-                        current = 150
+                        rMeger = "100000"
+                        current = 50
                     }
                     TestItemField.new {
                         testItem = ti
@@ -85,7 +113,8 @@ object DBManager {
                         uViu = 9500
                         time = 60
                         uMeger = 2500
-                        current = 150
+                        rMeger = "100000"
+                        current = 50
                     }
                     TestItemField.new {
                         testItem = ti
@@ -94,7 +123,8 @@ object DBManager {
                         uViu = 4500
                         time = 60
                         uMeger = 2500
-                        current = 150
+                        rMeger = "100000"
+                        current = 50
                     }
                 }
             }
@@ -103,5 +133,6 @@ object DBManager {
 
     fun getAllTestItems() = transaction { TestItem.all().toList() }
     fun getAllProtocols() = transaction { Protocol.all().toList() }
+    fun getAllUsers() = transaction { User.all().toList() }
 }
 

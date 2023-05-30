@@ -35,6 +35,7 @@ fun <T> ComboBox(
     items: List<T>,
     selectedValue: (T) -> Unit = {},
     isEditable: Boolean = true,
+    textAlign: TextAlign = TextAlign.Center
 ) {
     var expandedState by remember {
         if (selectedItem.value != null) {
@@ -63,7 +64,7 @@ fun <T> ComboBox(
                 },
                 fontSize = 20.sp,
                 softWrap = false,
-                textAlign = TextAlign.Center,
+                textAlign = textAlign,
                 modifier = Modifier.padding(16.dp).weight(0.9f),
             )
             Icon(Icons.Filled.ArrowDropDown, contentDescription = null, modifier = Modifier.weight(0.1f))
