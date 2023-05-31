@@ -28,10 +28,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import cafe.adriel.voyager.core.lifecycle.LifecycleEffect
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import operator
+import operatorLogin
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.avem.viu35.composables.ComboBox
@@ -50,16 +51,20 @@ class LoginScreen : Screen {
         val localNavigator = LocalNavigator.currentOrThrow
         val focusManager = LocalFocusManager.current
 
-        var login = mutableStateOf("")
-        var password = mutableStateOf("")
+        val login = remember { mutableStateOf("") }
+        val password = remember { mutableStateOf("") }
         var loginErrorState by remember { mutableStateOf(false) }
         var passwordErrorState by remember { mutableStateOf(false) }
-        lateinit var users: List<User>
-        var selectedLogin = mutableStateOf(DBManager.getAllUsers().first())
+        var users = remember { mutableStateListOf<User>() }
+        val selectedLogin = remember { mutableStateOf(DBManager.getAllUsers().first()) }
+        var passwordVisibility by remember { mutableStateOf(true) }
 
+        LifecycleEffect(onStarted = {
+            users.addAll(DBManager.getAllUsers())
+        })
 
         fun authorize() {
-            operator = login.value
+            operatorLogin = login.value
             localNavigator.push(MainScreen)
         }
 
@@ -75,12 +80,12 @@ class LoginScreen : Screen {
                 }
 
                 else -> {
-                    transaction {
-                        users = User.find {
-                            (Users.name eq login.value) and (Users.password eq password.value)
-                        }.toList()
-                    }
-                    if (users.isEmpty()) {
+                    if (
+                        transaction {
+                            User.find {
+                                (Users.name eq login.value) and (Users.password eq password.value)
+                            }.toList()
+                        }.isEmpty()) {
                         loginErrorState = true
                         passwordErrorState = true
                     } else {
@@ -107,14 +112,13 @@ class LoginScreen : Screen {
                     ComboBox(
                         modifier = Modifier.width(280.dp),
                         selectedItem = selectedLogin,
-                        items = DBManager.getAllUsers(),
+                        items = users,
                         selectedValue = {
                             selectedLogin.value = it
                         },
                         textAlign = TextAlign.Start
                     )
                     Spacer(Modifier.size(16.dp))
-                    var passwordVisibility by remember { mutableStateOf(true) }
                     OutlinedTextField(
                         textStyle = TextStyle.Default.copy(
                             fontSize = 20.sp

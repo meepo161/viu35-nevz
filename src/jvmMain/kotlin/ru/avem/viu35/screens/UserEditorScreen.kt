@@ -47,25 +47,16 @@ class UserEditorScreen : Screen {
                         { vm.dialogVisibleState.value = false },
                         { vm.dialogVisibleState.value = false })
                 }
-
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Column(modifier = Modifier.width(800.dp).padding(16.dp), verticalArrangement = Arrangement.Center) {
+                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.Center) {
                         Box(modifier = Modifier.weight(0.9f)) {
                             TableView(
                                 selectedItem = vm.selectedUser.value,
                                 items = vm.allUsers.value,
-                                columns = listOf(
-                                    User::name
-                                ),
-                                columnNames = listOf(
-                                    "Фамилия Имя Отчество"
-                                ),
-                                onItemPrimaryPressed = {
-                                    vm.selectedUser.value = vm.allUsers.value[it]
-                                },
-                                onItemSecondaryPressed = {
-                                    vm.selectedUser.value = vm.allUsers.value[it]
-                                },
+                                columns = listOf(User::name),
+                                columnNames = listOf("Фамилия Имя Отчество"),
+                                onItemPrimaryPressed = { vm.selectedUser.value = vm.allUsers.value[it] },
+                                onItemSecondaryPressed = { vm.selectedUser.value = vm.allUsers.value[it] },
                                 contextMenuContent = {
                                     DropdownMenuItem(onClick = {
                                         vm.deleteUser()

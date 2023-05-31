@@ -56,6 +56,7 @@ class ObjectEditorViewModel(private var mainViewModel: MainScreenViewModel) : Sc
     fun onObjectSelected(testItem: TestItem) {
         scope.launch {
             mainViewModel.selectedObject.value = testItem
+            mainViewModel.selectedField.value = null
             mainViewModel.objectFields.clear()
             transaction {
                 mainViewModel.objectFields.addAll(testItem.fieldsIterable.sortedBy { it.key }.toTypedArray())
@@ -107,7 +108,8 @@ class ObjectEditorViewModel(private var mainViewModel: MainScreenViewModel) : Sc
                     TestItems.deleteWhere { TestItems.id eq mainViewModel.selectedObject.value!!.id }
                 }
                 mainViewModel.objects.remove(mainViewModel.selectedObject.value)
-                mainViewModel.selectedObject.value = mainViewModel.objects.firstOrNull()
+                mainViewModel.objects.firstOrNull()?.let { onObjectSelected(it) }
+//                mainViewModel.selectedObject.value = mainViewModel.objects.firstOrNull()
             }
         }
     }

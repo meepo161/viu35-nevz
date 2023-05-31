@@ -5,7 +5,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.mouseClickable
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -13,7 +12,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.pointer.isPrimaryPressed
 import androidx.compose.ui.input.pointer.isSecondaryPressed
 import androidx.compose.ui.input.pointer.pointerMoveFilter
@@ -36,19 +34,19 @@ fun <T> TableView(
     onItemSecondaryPressed: (Int) -> Unit,
     contextMenuContent: @Composable () -> Unit,
     isExpandedDropdownMenu: MutableState<Boolean>,
+    listWeight: List<Float> = listOf(0.6f, 0.1f, 0.1f, 0.1f, 0.16f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f)
 ) {
     var hoveredItem by remember { mutableStateOf(selectedItem) }
-    var listWeight = listOf(0.6f, 0.1f, 0.1f, 0.1f, 0.16f, 0.1f)
 
     Column(modifier = Modifier.fillMaxWidth()) {
         Row {
             if (columnNames.size == columns.size) {
                 columnNames.forEachIndexed { index, columnNames ->
                     Box(
-                        modifier = Modifier.border(
-                            width = 1.dp, color = MaterialTheme.colors.surface, shape = RoundedCornerShape(8.dp)
-                        ).weight(listWeight[index]).height(64.dp).clip(RoundedCornerShape(8.dp))
-                            .background(MaterialTheme.colors.primary), contentAlignment = Alignment.Center
+                        modifier = Modifier.border(width = 3.dp, color = MaterialTheme.colors.onBackground)
+                            .background(MaterialTheme.colors.primary)
+                            .weight(listWeight[index]).height(64.dp),
+                        contentAlignment = Alignment.Center
                     ) {
                         Text(
                             columnNames,
@@ -59,12 +57,12 @@ fun <T> TableView(
             } else {
                 columns.forEach {
                     Box(
-                        modifier = Modifier.clip(RoundedCornerShape(10.dp)).weight(0.3f).height(64.dp)
-                            .background(MaterialTheme.colors.background), contentAlignment = Alignment.Center
+                        modifier = Modifier.weight(0.3f).height(64.dp),
+                        contentAlignment = Alignment.Center
                     ) {
                         Text(
                             it.name,
-                            style = TextStyle(fontWeight = FontWeight.Bold, color = MaterialTheme.colors.background)
+                            style = TextStyle(fontWeight = FontWeight.Bold)
                         )
                     }
                 }
@@ -80,37 +78,45 @@ fun <T> TableView(
                             onItemSecondaryPressed(it)
                             isExpandedDropdownMenu.value = true
                         }
-                    }).background(
-                        if (!isExpandedDropdownMenu.value) {
-                            if (hoveredItem == items[it]) {
-                                MaterialTheme.colors.secondary.copy(alpha = 0.2f)
+                    })
+                        .background(
+                            if (!isExpandedDropdownMenu.value) {
+                                if (selectedItem == items[it]) {
+                                    MaterialTheme.colors.onBackground.copy(alpha = 0.4f)
+                                } else if (hoveredItem == items[it]) {
+                                    MaterialTheme.colors.onBackground.copy(alpha = 0.2f)
+                                } else {
+                                    MaterialTheme.colors.background
+                                }
                             } else {
                                 MaterialTheme.colors.background
                             }
-                        } else {
-                            MaterialTheme.colors.background
-                        }
-                    ).pointerMoveFilter(
-                        onMove = { _ ->
-                            hoveredItem = items[it]
-                            false
-                        })
+                        )
+                        .pointerMoveFilter(
+                            onMove = { _ ->
+                                hoveredItem = items[it]
+                                false
+                            },
+                            onExit = {
+                                hoveredItem = null
+                                false
+                            })
                 ) {
                     columns.forEachIndexed { index, column ->
 
                         val field = items[it]!!.getField<Any>(column.name)!!.toString()
                         Box(
-                            modifier = Modifier.border(
-                                width = 1.dp, color = MaterialTheme.colors.primary, shape = RoundedCornerShape(4.dp)
-                            ).weight(listWeight[index]).height(48.dp), contentAlignment = Alignment.Center
+                            modifier = Modifier
+                                .border(
+                                    width = 1.dp,
+                                    color = MaterialTheme.colors.onBackground
+                                ).weight(listWeight[index]).height(48.dp), contentAlignment = Alignment.Center
                         ) {
                             Text(
                                 text = field,
                                 modifier = Modifier.padding(4.dp),
                                 textAlign = TextAlign.Center,
-                                fontSize = 28.sp,
-                                color = if (selectedItem == items[it])
-                                    MaterialTheme.colors.secondary else MaterialTheme.colors.primary
+                                fontSize = 28.sp
                             )
                         }
                     }
@@ -126,7 +132,6 @@ fun <T> TableView(
         }
     }
 }
-
 
 @Throws(IllegalAccessException::class, ClassCastException::class)
 inline fun <reified T> Any.getField(fieldName: String): T? {

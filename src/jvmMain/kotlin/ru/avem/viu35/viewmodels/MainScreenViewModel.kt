@@ -11,7 +11,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.jetbrains.exposed.sql.transactions.transaction
+import ru.avem.viu35.database.DBManager
 import ru.avem.viu35.database.DBManager.getAllTestItems
+import ru.avem.viu35.database.entities.Protocol
 import ru.avem.viu35.database.entities.TestItem
 import ru.avem.viu35.database.entities.TestItemField
 import java.io.File
@@ -46,7 +48,7 @@ class MainScreenViewModel(val logScrollState: LazyListState) : ScreenModel {
     val measuredUViu = mutableStateOf("")
     val measuredTime = mutableStateOf("")
     val measuredI = mutableStateOf("")
-    val measuredU = mutableStateOf("")
+    val measuredUMeger = mutableStateOf("")
 
     var storedUViu = ""
 
@@ -54,17 +56,11 @@ class MainScreenViewModel(val logScrollState: LazyListState) : ScreenModel {
     val storedListRs = mutableListOf<Double>()
     val storedListResults = mutableListOf<Double>()
 
-    val dot1 = mutableStateOf("")
-    val dot2 = mutableStateOf("")
-
     val isTestRunningState = mutableStateOf(false)
     val logState = mutableStateOf(false)
     val logMessages = mutableStateListOf<String>()
 
-    val listColorsProtection = List(10) { mutableStateOf(Color(0xFF0071bb)) }
-    val colorZone = mutableStateOf(Color(0xFF0071bb))
-    val colorSCO = mutableStateOf(Color(0xFF0071bb))
-    val colorCurrent = mutableStateOf(Color(0xFF0071bb))
+    val listColorsProtection = List(10) { mutableStateOf(Color(0xFF6200EE)) }
 
     val objects = mutableStateListOf(*getAllTestItems().sortedBy { it.name }.toTypedArray())
     val selectedObject = mutableStateOf<TestItem?>(null)
@@ -73,6 +69,9 @@ class MainScreenViewModel(val logScrollState: LazyListState) : ScreenModel {
 
     val titleDialog = mutableStateOf("")
     val textDialog = mutableStateOf("")
+
+    var selectedProtocol = mutableStateOf<Protocol?>(null)
+    var allProtocols = mutableStateOf(DBManager.getAllProtocols())
 
 
     fun onTestObjectSelected(testItem: TestItem) {

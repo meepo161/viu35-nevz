@@ -20,8 +20,9 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import isDarkTheme
 import onExit
-import operator
+import operatorLogin
 import ru.avem.composables.DrawerMenuItem
+import ru.avem.viu35.database.DBManager
 import ru.avem.viu35.screens.ObjectEditorScreen
 import ru.avem.viu35.screens.ProtocolsScreen
 import ru.avem.viu35.screens.UserEditorScreen
@@ -55,7 +56,7 @@ fun HomeScreenDrawer(mainViewModel: MainScreenViewModel, isClickable: MutableSta
         }
         Divider()
         DrawerMenuItem(Icons.Filled.Settings, "База данных испытываемых аппаратов") {
-            if (operator == "admin") {
+            if (operatorLogin == "admin") {
                 if (isClickable.value) {
                     navigator.push(ObjectEditorScreen(mainViewModel))
                 }
@@ -66,10 +67,11 @@ fun HomeScreenDrawer(mainViewModel: MainScreenViewModel, isClickable: MutableSta
             }
         }
         DrawerMenuItem(painterResource("icons/baseline_storage_24.xml"), "База данных протоколов") {
-            navigator.push(ProtocolsScreen())
+            mainViewModel.allProtocols.value = DBManager.getAllProtocols()
+            navigator.push(ProtocolsScreen(mainViewModel))
         }
         DrawerMenuItem(Icons.Filled.PersonAdd, "База данных пользователей") {
-            if (operator == "admin") {
+            if (operatorLogin == "admin") {
                 if (isClickable.value) {
                     navigator.push(UserEditorScreen())
                 }

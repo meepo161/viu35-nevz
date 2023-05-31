@@ -140,10 +140,11 @@ object MainScreen : Screen {
                             modifier = Modifier.fillMaxWidth().padding(8.dp),
                             textAlign = TextAlign.Center,
                             fontSize = 20.sp,
-                            text = "Имя и тип аппарата"
+                            text = "Тип аппарата и номер чертежа"
                         )
                         ComboBox(selectedItem = vm.selectedObject,
                             modifier = Modifier.width(1000.dp).padding(8.dp),
+                            textAlign = TextAlign.Start,
                             isEditable = vm.mutableStateIsRunning.value,
                             onDismissState = {},
                             items = vm.objects,
@@ -153,6 +154,7 @@ object MainScreen : Screen {
 
                         ComboBox(selectedItem = vm.selectedField,
                             modifier = Modifier.width(1000.dp).padding(8.dp),
+                            textAlign = TextAlign.Start,
                             isEditable = vm.selectedObject.value != null && vm.mutableStateIsRunning.value,
                             onDismissState = {},
                             items = vm.objectFields,
@@ -163,215 +165,108 @@ object MainScreen : Screen {
                 }
                 Card(elevation = 4.dp) {
                     Column(
-                        modifier = Modifier.padding(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)
+                        modifier = Modifier.weight(0.5f).padding(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Text(
-                            modifier = Modifier.fillMaxWidth().padding(8.dp),
-                            textAlign = TextAlign.Center,
-                            fontSize = 20.sp,
-                            text = "Заданные параметры:"
-                        )
                         Row(modifier = Modifier.fillMaxWidth()) {
+                            Text(
+                                modifier = Modifier.weight(0.5f).padding(8.dp),
+                                textAlign = TextAlign.Center,
+                                fontSize = 20.sp,
+                                text = "Заданные параметры:"
+                            )
 
-                            Row(modifier = Modifier.fillMaxWidth().weight(0.5f).padding(end = 16.dp)) {
-                                Box(
-                                    modifier = Modifier.weight(0.7f).height(48.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = "Напряжение ВИУ, В",
-                                        fontSize = 20.sp,
-                                        textAlign = TextAlign.Center
-                                    )
-                                }
-                                Box(modifier = Modifier.weight(0.3f)) {
-                                    OutlinedTextField(textStyle = TextStyle.Default.copy(
-                                        fontSize = 20.sp, textAlign = TextAlign.Center
-                                    ), value = vm.specifiedUViu.value, onValueChange = {})
-                                }
-                            }
-                            Row(modifier = Modifier.fillMaxWidth().weight(0.5f).padding(end = 16.dp)) {
-                                Box(
-                                    modifier = Modifier.weight(0.7f).height(48.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = "Напряжение МГР, В",
-                                        fontSize = 20.sp,
-                                        textAlign = TextAlign.Center
-                                    )
-                                }
-                                Box(modifier = Modifier.weight(0.3f)) {
-                                    OutlinedTextField(textStyle = TextStyle.Default.copy(
-                                        fontSize = 20.sp, textAlign = TextAlign.Center
-                                    ), value = vm.specifiedUMeger.value, onValueChange = {})
-                                }
-                            }
+                            Text(
+                                modifier = Modifier.weight(0.5f).padding(8.dp),
+                                textAlign = TextAlign.Center,
+                                fontSize = 20.sp,
+                                text = "Измеренные параметры:"
+                            )
                         }
-                        Row(modifier = Modifier.fillMaxWidth()) {
-                            Row(modifier = Modifier.fillMaxWidth().weight(0.5f).padding(end = 16.dp)) {
-                                Box(
-                                    modifier = Modifier.weight(0.7f).height(48.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = "Ток утечки, мА", fontSize = 20.sp, textAlign = TextAlign.Center
-                                    )
-                                }
-                                Box(modifier = Modifier.weight(0.3f)) {
-                                    OutlinedTextField(textStyle = TextStyle.Default.copy(
-                                        fontSize = 20.sp, textAlign = TextAlign.Center
-                                    ), value = vm.specifiedI.value, onValueChange = {})
-                                }
+                        Row(modifier = Modifier.fillMaxWidth().padding(start = 96.dp, end = 96.dp)) {
+                            Box(modifier = Modifier.weight(0.3f)) {
+                                OutlinedTextField(textStyle = TextStyle.Default.copy(
+                                    fontSize = 20.sp, textAlign = TextAlign.Center
+                                ), value = vm.specifiedUViu.value, onValueChange = {})
                             }
-                            Row(modifier = Modifier.fillMaxWidth().weight(0.5f).padding(end = 16.dp)) {
-                                Box(
-                                    modifier = Modifier.weight(0.7f).height(48.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = "Время, сек", fontSize = 20.sp, textAlign = TextAlign.Center
-                                    )
-                                }
-                                Box(modifier = Modifier.weight(0.3f)) {
-                                    OutlinedTextField(textStyle = TextStyle.Default.copy(
-                                        fontSize = 20.sp, textAlign = TextAlign.Center
-                                    ), value = vm.specifiedTime.value, onValueChange = {})
-                                }
+                            Box(
+                                modifier = Modifier.weight(0.4f).height(48.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "Напряжение ВИУ, В",
+                                    fontSize = 20.sp,
+                                    textAlign = TextAlign.Center
+                                )
                             }
-                        }
-                    }
-                }
-                Card(elevation = 4.dp) {
-
-                    Column(
-                        modifier = Modifier.padding(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Text(
-                            modifier = Modifier.fillMaxWidth().padding(8.dp),
-                            textAlign = TextAlign.Center,
-                            fontSize = 20.sp,
-                            text = "Измеренные параметры:"
-                        )
-                        Row(modifier = Modifier.fillMaxWidth()) {
-                            Row(modifier = Modifier.fillMaxWidth().weight(0.5f).padding(end = 16.dp)) {
-                                Box(
-                                    modifier = Modifier.weight(0.7f).height(48.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = "Напряжение входное, В",
-                                        fontSize = 20.sp,
-                                        textAlign = TextAlign.Center
-                                    )
-                                }
-                                Box(modifier = Modifier.weight(0.3f)) {
-                                    OutlinedTextField(textStyle = TextStyle.Default.copy(
-                                        fontSize = 20.sp, textAlign = TextAlign.Center
-                                    ), value = vm.measuredU.value, onValueChange = {})
-                                }
+                            Box(modifier = Modifier.weight(0.3f)) {
+                                OutlinedTextField(textStyle = TextStyle.Default.copy(
+                                    fontSize = 20.sp, textAlign = TextAlign.Center
+                                ), value = vm.measuredUViu.value, onValueChange = {})
                             }
-                            Row(modifier = Modifier.fillMaxWidth().weight(0.5f).padding(end = 16.dp)) {
-                                Box(
-                                    modifier = Modifier.weight(0.7f).height(48.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = "Напряжение ОИ, В",
-                                        fontSize = 20.sp,
-                                        textAlign = TextAlign.Center
-                                    )
-                                }
-                                Box(modifier = Modifier.weight(0.3f)) {
-                                    OutlinedTextField(textStyle = TextStyle.Default.copy(
-                                        fontSize = 20.sp, textAlign = TextAlign.Center
-                                    ), value = vm.measuredUViu.value, onValueChange = {})
-                                }
+                        } //U ВИУ
+                        Row(modifier = Modifier.fillMaxWidth().padding(start = 96.dp, end = 96.dp)) {
+                            Box(modifier = Modifier.weight(0.3f)) {
+                                OutlinedTextField(textStyle = TextStyle.Default.copy(
+                                    fontSize = 20.sp, textAlign = TextAlign.Center
+                                ), value = vm.specifiedUMeger.value, onValueChange = {})
                             }
-                        }
-                        Row(modifier = Modifier.fillMaxWidth()) {
-                            Row(modifier = Modifier.fillMaxWidth().weight(0.5f).padding(end = 16.dp)) {
-                                Box(
-                                    modifier = Modifier.weight(0.7f).height(48.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = "Общий ток утечки, мА",
-                                        fontSize = 20.sp,
-                                        textAlign = TextAlign.Center
-                                    )
-                                }
-                                Box(modifier = Modifier.weight(0.3f)) {
-                                    OutlinedTextField(textStyle = TextStyle.Default.copy(
-                                        fontSize = 20.sp, textAlign = TextAlign.Center
-                                    ), value = vm.measuredI.value, onValueChange = {})
-                                }
+                            Box(
+                                modifier = Modifier.weight(0.4f).height(48.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "Напряжение МГР, В",
+                                    fontSize = 20.sp,
+                                    textAlign = TextAlign.Center
+                                )
                             }
-                            Row(modifier = Modifier.fillMaxWidth().weight(0.5f).padding(end = 16.dp)) {
-                                Box(
-                                    modifier = Modifier.weight(0.7f).height(48.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = "Оставшееся время, сек",
-                                        fontSize = 20.sp,
-                                        textAlign = TextAlign.Center
-                                    )
-                                }
-                                Box(modifier = Modifier.weight(0.3f)) {
-                                    OutlinedTextField(textStyle = TextStyle.Default.copy(
-                                        fontSize = 20.sp, textAlign = TextAlign.Center
-                                    ), value = vm.measuredTime.value, onValueChange = {})
-                                }
+                            Box(modifier = Modifier.weight(0.3f)) {
+                                OutlinedTextField(textStyle = TextStyle.Default.copy(
+                                    fontSize = 20.sp, textAlign = TextAlign.Center
+                                ), value = vm.measuredUMeger.value, onValueChange = {})
                             }
-                        }
-                        Row(modifier = Modifier.fillMaxWidth()) {
-                            Row(modifier = Modifier.fillMaxWidth().weight(0.33f).padding(end = 16.dp)) {
-                                Box(
-                                    modifier = Modifier.weight(0.7f).height(48.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = "Токовая защита",
-                                        fontSize = 20.sp,
-                                        textAlign = TextAlign.Center
-                                    )
-                                }
-                                Box(modifier = Modifier.weight(0.3f), contentAlignment = Alignment.Center) {
-                                    Circle(vm.colorCurrent.value)
-                                }
+                        }  //U МГР
+                        Row(modifier = Modifier.fillMaxWidth().padding(start = 96.dp, end = 96.dp)) {
+                            Box(modifier = Modifier.weight(0.3f)) {
+                                OutlinedTextField(textStyle = TextStyle.Default.copy(
+                                    fontSize = 20.sp, textAlign = TextAlign.Center
+                                ), value = vm.specifiedI.value, onValueChange = {})
                             }
-                            Row(modifier = Modifier.fillMaxWidth().weight(0.33f).padding(end = 16.dp)) {
-                                Box(
-                                    modifier = Modifier.weight(0.7f).height(48.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = "Дверь зоны",
-                                        fontSize = 20.sp,
-                                        textAlign = TextAlign.Center
-                                    )
-                                }
-                                Box(modifier = Modifier.weight(0.3f), contentAlignment = Alignment.Center) {
-                                    Circle(vm.colorZone.value)
-                                }
+                            Box(
+                                modifier = Modifier.weight(0.4f).height(48.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "Ток утечки, мА", fontSize = 20.sp, textAlign = TextAlign.Center
+                                )
                             }
-                            Row(modifier = Modifier.fillMaxWidth().weight(0.33f).padding(end = 16.dp)) {
-                                Box(
-                                    modifier = Modifier.weight(0.7f).height(48.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = "Дверь ШСО",
-                                        fontSize = 20.sp,
-                                        textAlign = TextAlign.Center
-                                    )
-                                }
-                                Box(modifier = Modifier.weight(0.3f), contentAlignment = Alignment.Center) {
-                                    Circle(vm.colorSCO.value)
-                                }
+                            Box(modifier = Modifier.weight(0.3f)) {
+                                OutlinedTextField(textStyle = TextStyle.Default.copy(
+                                    fontSize = 20.sp, textAlign = TextAlign.Center
+                                ), value = vm.measuredI.value, onValueChange = {})
                             }
-                        }
+                        }//I утечки
+                        Row(modifier = Modifier.fillMaxWidth().padding(start = 96.dp, end = 96.dp)) {
+                            Box(modifier = Modifier.weight(0.3f)) {
+                                OutlinedTextField(textStyle = TextStyle.Default.copy(
+                                    fontSize = 20.sp, textAlign = TextAlign.Center
+                                ), value = vm.specifiedTime.value, onValueChange = {})
+                            }
+                            Box(
+                                modifier = Modifier.weight(0.4f).height(48.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "Время, сек", fontSize = 20.sp, textAlign = TextAlign.Center
+                                )
+                            }
+                            Box(modifier = Modifier.weight(0.3f)) {
+                                OutlinedTextField(textStyle = TextStyle.Default.copy(
+                                    fontSize = 20.sp, textAlign = TextAlign.Center
+                                ), value = vm.measuredTime.value, onValueChange = {})
+                            }
+                        }//время
                     }
                 }
                 Card(elevation = 4.dp) {
@@ -385,42 +280,6 @@ object MainScreen : Screen {
                         Column(
                             modifier = Modifier.padding(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Row(modifier = Modifier.fillMaxWidth()) {
-                                Column(
-                                    modifier = Modifier.weight(0.5f),
-                                    horizontalAlignment = Alignment.CenterHorizontally
-                                ) {
-                                    Text(
-                                        text = "Точка 1, №",
-                                    )
-                                    OutlinedTextField(
-                                        modifier = Modifier.padding(8.dp).fillMaxWidth(),
-                                        textStyle = TextStyle.Default.copy(
-                                            fontSize = 20.sp, textAlign = TextAlign.Center
-                                        ),
-                                        value = vm.dot1.value,
-                                        onValueChange = { vm.dot1.value = it },
-                                        enabled = vm.mutableStateIsRunning.value
-                                    )
-                                }
-                                Column(
-                                    modifier = Modifier.weight(0.5f),
-                                    horizontalAlignment = Alignment.CenterHorizontally
-                                ) {
-                                    Text(
-                                        text = "Точка 2, №",
-                                    )
-                                    OutlinedTextField(
-                                        modifier = Modifier.padding(8.dp).fillMaxWidth(),
-                                        textStyle = TextStyle.Default.copy(
-                                            fontSize = 20.sp, textAlign = TextAlign.Center
-                                        ),
-                                        value = vm.dot2.value,
-                                        onValueChange = { vm.dot2.value = it },
-                                        enabled = vm.mutableStateIsRunning.value
-                                    )
-                                }
-                            }
                             if (vm.selectedObject.value != null) {
                                 println(vm.selectedObject.value!!.image.bytes) //TODO без этого не работает
                                 Image(
@@ -436,6 +295,7 @@ object MainScreen : Screen {
                                     }
                                 )
                             }
+
                         }
                     }
                 }

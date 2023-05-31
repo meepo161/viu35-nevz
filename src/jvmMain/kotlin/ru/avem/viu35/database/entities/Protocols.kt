@@ -50,7 +50,7 @@ class Protocol(id: EntityID<Int>) : IntEntity(id) {
 //        get() = id.toString()
 
 //    override fun toString() = "$id. $serial:$testItemType|$testItemField - $date $time Результат: $result"
-    override fun toString() = "$id. $serial: - $date $time Результат: $result"
+    override fun toString() = "$itemName-$serial-$date $time".replace(":", "-")
 
     fun toMills(): Long {
         val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm", Locale.ENGLISH)

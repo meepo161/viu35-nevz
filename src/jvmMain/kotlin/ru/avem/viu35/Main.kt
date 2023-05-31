@@ -8,13 +8,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPlacement
 import androidx.compose.ui.window.application
+import androidx.compose.ui.window.rememberWindowState
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.transitions.FadeTransition
 import ru.avem.viu35.database.DBManager
 import ru.avem.viu35.screens.auth.LoginScreen
 import kotlin.system.exitProcess
 
-var operator = ""
+var operatorLogin = ""
 var isTestRunning = false
 var isDarkTheme = mutableStateOf(false)
 
@@ -29,7 +30,6 @@ fun App() {
             lightColors()
         }
     ) {
-//        Navigator(Test1Screen) {
         Navigator(LoginScreen()) {
             FadeTransition(it)
         }
@@ -38,8 +38,9 @@ fun App() {
 
 fun main() = application {
     DBManager.validateDB()
-    Window(onCloseRequest = { onExit() }, undecorated = true, resizable = false) {
-        window.placement = WindowPlacement.Maximized
+    val windowState = rememberWindowState(placement = WindowPlacement.Fullscreen)
+
+    Window(onCloseRequest = { onExit() }, undecorated = true, resizable = false, state = windowState) {
         App()
     }
 }
@@ -48,4 +49,3 @@ fun onExit() {
     isTestRunning = false
     exitProcess(0)
 }
-

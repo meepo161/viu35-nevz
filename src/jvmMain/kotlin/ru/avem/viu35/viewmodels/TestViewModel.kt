@@ -6,6 +6,7 @@ import cafe.adriel.voyager.core.model.ScreenModel
 import isTestRunning
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import operatorLogin
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.avem.library.polling.IDeviceController
 import ru.avem.viu35.af
@@ -137,37 +138,19 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
                 }
 
                 DevicePoller.startPoll(name, model.DI_17_32_TRIG_INV) { value ->
+                    if (value.toShort() and 0b1 != 0.toShort()) {
+                        cause = "Сработала защита: Токовая защита до АРН"
+                    }
                     if (value.toShort() and 0b10 != 0.toShort()) {
-                        mainViewModel.colorCurrent.value = Color.Red
                         cause = "Сработала защита: Токовая защита после АРН"
                     }
-                }
-                DevicePoller.startPoll(name, model.DI_17_32_RAW) { value ->
-                    if (value.toShort() and 0b1 != 0.toShort()) {
-                        mainViewModel.colorCurrent.value = Color.Green
-                        currentDoArn = false
-                    } else {
-                        mainViewModel.colorCurrent.value = Color.Red
-                        currentDoArn = true
-                    }
                     if (value.toShort() and 0b100 != 0.toShort()) {
-                        mainViewModel.colorSCO.value = Color.Green
-                        DD2.offLightDoorSCO()
-                    } else {
-                        mainViewModel.colorSCO.value = Color.Red
                         cause = "Сработала защита: Концевик двери ШСО"
-                        DD2.onLightDoorSCO()
                     }
                     if (value.toShort() and 0b1000 != 0.toShort()) {
-                        mainViewModel.colorZone.value = Color.Green
-                        DD2.offLightDoorZone()
-                    } else {
-                        mainViewModel.colorZone.value = Color.Red
                         cause = "Сработала защита: Концевик двери Зоны"
-                        DD2.onLightDoorZone()
                     }
                 }
-
             }
         }
         if (isTestRunning) DD2.onLightGround()
@@ -177,31 +160,12 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
         if (isTestRunning) DD2.onLight()
     }
 
-    fun initDevices() {
-
-        if (isTestRunning) {
-            with(DD3) {
-                checkResponsibility()
-                if (!isResponding) {
-                    cause = "$name не отвечает"
-                }
-            }
-        }
-
-        if (isTestRunning) {
-            with(DD4) {
-                checkResponsibility()
-                if (!isResponding) {
-                    cause = "$name не отвечает"
-                }
-            }
-        }
-
+    fun initDevicesViu() {
         if (isTestRunning) {
             with(PV22) {
                 needDevices.add(this)
                 DevicePoller.startPoll(name, model.U_TRMS) { value ->
-                    mainViewModel.measuredU.value = value.toDouble().af()
+                    mainViewModel.measuredUMeger.value = value.toDouble().af()
                     if (value.toDouble() > 440) cause = "Несоответствие коэффициента трансформации"
                 }
             }
@@ -211,9 +175,7 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
             with(PV23) {
                 needDevices.add(this)
                 DevicePoller.startPoll(name, model.U_TRMS) { value ->
-                    if (isViuRunning) {
-                        mainViewModel.measuredUViu.value = (value.toDouble() * 1000).af()
-                    }
+                    mainViewModel.measuredUViu.value = (value.toDouble() * 1000).af()
                 }
             }
         }
@@ -290,6 +252,27 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
                 }
             }
         }
+    }
+
+    fun initDevices() {
+        if (isTestRunning) {
+            with(DD3) {
+                checkResponsibility()
+                if (!isResponding) {
+                    cause = "$name не отвечает"
+                }
+            }
+        }
+
+        if (isTestRunning) {
+            with(DD4) {
+                checkResponsibility()
+                if (!isResponding) {
+                    cause = "$name не отвечает"
+                }
+            }
+        }
+
         if (isTestRunning) {
             thread {
                 while (isTestRunning) {
@@ -324,17 +307,19 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
                 DD2.checkResponsibility()
                 if (!DD2.isResponding) cause = "ПР102 не отвечает"
                 mainViewModel.listColorsProtection.forEach {
-                    it.value = Color(0xFF0071bb)
+                    it.value = Color(0xFF6200EE)
                 }
                 if (isTestRunning) DD3.offAll()
                 if (isTestRunning) DD4.offAll()
                 if (isTestRunning) appendOneMessageToLog("Инициализация ПР")
                 if (isTestRunning) initDD2()
 
-                thread(isDaemon = true) {
-                    if (isTestRunning) DD2.onSound()
-                    if (isTestRunning) sleep(6000)
-                    if (isTestRunning) DD2.offSound()
+                if (operatorLogin != "admin") {
+                    thread(isDaemon = true) {
+                        if (isTestRunning) DD2.onSound()
+                        if (isTestRunning) sleep(6000)
+                        if (isTestRunning) DD2.offSound()
+                    }
                 }
 
                 if (isTestRunning && mainViewModel.allCheckBoxesMeger.value != ToggleableState.Off) {
@@ -363,6 +348,10 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
         if (isTestRunning) sleep(100)
         if (isTestRunning) DD2.offAVEM9()
         if (isTestRunning) sleep(3000)
+        if (isTestRunning) PR65.pollVoltageAKB()
+        if (isTestRunning && PR65.lowBattery.value) {
+            cause = "Низкий заряд АВЭМ-9. Подождите немного и повторите запуск"
+        }
         if (isTestRunning) DD4.on(6) //ЗЕМЛЯ
         if (isTestRunning) DD2.offLightGround()
         if (isTestRunning) DD4.on(5) //Мегер
@@ -379,7 +368,7 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
                 }
                 DevicePoller.startPoll(name, model.VOLTAGE) { value ->
                     if (isMgrRunning) {
-                        mainViewModel.measuredUViu.value = value.toDouble().af()
+                        mainViewModel.measuredUMeger.value = value.toDouble().af()
                     }
                 }
             }
@@ -451,7 +440,17 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
                 if (PR65.isResponding) PR65.stopTest()
                 if (isTestRunning) disassembleMgr(index)
                 if (isTestRunning) mainViewModel.listRs[index].value =
-                    if (r15 == 200000.0) ">200000" else if (r15 < 0.3) "<0.2" else r15.af()
+//                    if (mainViewModel.specifiedUMeger.value.toInt() == 2500 && r15 == 200000.0) {
+//                        ">200000"
+//                    } else if (mainViewModel.specifiedUMeger.value.toInt() == 1000 && r15 > 100000.0) {
+//                        ">100000"
+//                    } else if (mainViewModel.specifiedUMeger.value.toInt() == 500 && r15 > 50000.0) {
+//                        ">50000"
+//                    } else if (r15 < 0.3) {
+//                        "<0.2"
+//                    } else {
+                    r15.af()
+//                    } TODO убрать
                 if (r15 < 0.3) {
                     if (isTestRunning) mainViewModel.listColorsProtection[index].value = Color.Red
                     if (isTestRunning) mainViewModel.listCheckBoxesViu[index].value = false
@@ -470,9 +469,11 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
         if (isTestRunning) DD4.off(5) //Мегер
         if (isTestRunning) DD2.offLightMeger()
         isMgrRunning = false
+        mainViewModel.measuredUMeger.value = ""
     }
 
     private fun viu() {
+        initDevicesViu()
         isViuRunning = true
         if (isTestRunning) appendOneMessageToLog("Начало испытания ВИУ")
         if (isTestRunning) appendOneMessageToLog("Сбор схемы")
@@ -628,12 +629,6 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
         } else if (mainViewModel.selectedField.value == null) {
             mainViewModel.textDialog.value += "Не выбран тип объекта испытания\n"
             mainViewModel.dialogVisibleState.value = true
-        } else if (mainViewModel.dot1.value.isEmpty()) {
-            mainViewModel.textDialog.value += "Не указана точка 1\n"
-            mainViewModel.dialogVisibleState.value = true
-        } else if (mainViewModel.dot2.value.isEmpty()) {
-            mainViewModel.textDialog.value += "Не указана точка 2\n"
-            mainViewModel.dialogVisibleState.value = true
         }
         return mainViewModel.dialogVisibleState.value
     }
@@ -644,7 +639,7 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
         mainViewModel.storedUViu = ""
         mainViewModel.measuredI.value = ""
         mainViewModel.measuredUViu.value = ""
-        mainViewModel.measuredU.value = ""
+        mainViewModel.measuredUMeger.value = ""
         mainViewModel.measuredTime.value = ""
         mainViewModel.listColorsCurrentTF.forEach {
             it.value = Color.Transparent
@@ -663,7 +658,7 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
         }
 
         mainViewModel.listColorsProtection.forEach {
-            it.value = Color(0xFF0071bb)
+            it.value = Color(0xFF6200EE)
         }
         cause = ""
         isTestRunning = true
@@ -686,17 +681,17 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
         if (isTestRunning) appendOneMessageToLog("Испытание завершено")
         transaction {
             repeat(10) {
-                if (mainViewModel.listColorsProtection[it].value != Color(0xFF0071bb)) {
+                if (mainViewModel.listColorsProtection[it].value != Color(0xFF6200EE)) {
                     Protocol.new {
                         serial = mainViewModel.listSerialNumbers[it].value
-                        operator = "Тестовый оператор"
+                        operator = operatorLogin
                         itemName = mainViewModel.selectedObject.value!!.name
                         pointsName = mainViewModel.selectedField.value!!.nameTest
                         uViu = mainViewModel.storedUViu
                         iViu = mainViewModel.listCurrents[it].value
                         uMgr = mainViewModel.specifiedUMeger.value
                         rMgr = mainViewModel.listRs[it].value
-                        date =  SimpleDateFormat("dd.MM.y").format(System.currentTimeMillis()).toString()
+                        date = SimpleDateFormat("dd.MM.y").format(System.currentTimeMillis()).toString()
                         time = SimpleDateFormat("HH:mm:ss").format(System.currentTimeMillis()).toString()
                         result = when (mainViewModel.listColorsProtection[it].value) {
                             Color.Red -> "Неуспешно"
@@ -704,18 +699,17 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
                             else -> "Неизвестно"
                         }
                     }
-
                 }
             }
         }
         mainViewModel.listColorsProtection.forEach {
-            if (it.value == Color.Green) it.value = Color(0xFF0071bb)
+            if (it.value == Color.Green) it.value = Color(0xFF6200EE)
         }
         mainViewModel.isTestRunningState.value = false
         mainViewModel.measuredUViu.value = ""
         mainViewModel.measuredTime.value = ""
         mainViewModel.measuredI.value = ""
-        mainViewModel.measuredU.value = ""
+        mainViewModel.measuredUMeger.value = ""
 
     }
 
