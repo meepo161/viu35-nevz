@@ -35,7 +35,7 @@ import java.io.File
 
 class ProtocolsScreen(private var mainViewModel: MainScreenViewModel) : Screen {
     val dialogVisibleState = mutableStateOf(false)
-    val titleDialog = mutableStateOf("")
+    val titleDialog= mutableStateOf("")
     val textDialog = mutableStateOf("")
     val filterValue = mutableStateOf("")
 
@@ -72,10 +72,10 @@ class ProtocolsScreen(private var mainViewModel: MainScreenViewModel) : Screen {
             }) {
                 if (dialogVisibleState.value) {
                     ConfirmDialog(
-                        titleDialog.value,
-                        textDialog.value,
-                        { dialogVisibleState.value = false },
-                        { dialogVisibleState.value = false })
+                        title = titleDialog.value,
+                        text = textDialog.value,
+                        yesCallback = { dialogVisibleState.value = false },
+                        noCallback = { dialogVisibleState.value = false })
                 }
                 if (mainViewModel.selectedProtocol.value != null) {
                     DirectoryPicker(showDirectoryPicker.value) {
@@ -154,7 +154,7 @@ class ProtocolsScreen(private var mainViewModel: MainScreenViewModel) : Screen {
                             modifier = Modifier.weight(1 / 4f).height(128.dp),
                             onClick = {
                                 saveProtocolAsWorkbook(listOf(mainViewModel.selectedProtocol.value!!))
-                                openFile(File("cfg/lastOpened.xlsx"))
+                                openFile(File("lastOpened.xlsx"))
                             },
                             elevation = ButtonDefaults.elevation(
                                 defaultElevation = 10.dp, pressedElevation = 15.dp, disabledElevation = 0.dp
@@ -176,7 +176,8 @@ class ProtocolsScreen(private var mainViewModel: MainScreenViewModel) : Screen {
                             modifier = Modifier.weight(1 / 4f).height(128.dp),
                             onClick = {
                                 saveProtocolAsWorkbook(listOf(mainViewModel.selectedProtocol.value!!))
-                                Desktop.getDesktop().print(File("cfg/lastOpened.xlsx"))
+                                Desktop.getDesktop().print(File("lastOpened.xlsx"))
+                                mainViewModel.showDialog("Внимание", "Печать началась. Ожидайте")
                             },
                             elevation = ButtonDefaults.elevation(
                                 defaultElevation = 10.dp, pressedElevation = 15.dp, disabledElevation = 0.dp
@@ -253,14 +254,10 @@ class ProtocolsScreen(private var mainViewModel: MainScreenViewModel) : Screen {
                     mainViewModel.selectedProtocol.value = null
                 }
             } else {
-                dialogVisibleState.value = true
-                titleDialog.value = "Ошибка"
-                textDialog.value = "Не выбран протокол"
+                mainViewModel.showDialog("Ошибка", "Не выбран протокол")
             }
         } else {
-            dialogVisibleState.value = true
-            titleDialog.value = "Ошибка"
-            textDialog.value = "Удалять разрешено только администратору"
+            mainViewModel.showDialog("Ошибка", "Удалять разрешено только администратору")
         }
     }
 }

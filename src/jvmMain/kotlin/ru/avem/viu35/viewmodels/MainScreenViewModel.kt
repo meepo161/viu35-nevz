@@ -67,8 +67,9 @@ class MainScreenViewModel(val logScrollState: LazyListState) : ScreenModel {
     val objectFields = mutableStateListOf<TestItemField>()
     val selectedField = mutableStateOf<TestItemField?>(null)
 
-    val titleDialog = mutableStateOf("")
-    val textDialog = mutableStateOf("")
+    var titleDialog = mutableStateOf("")
+    var textDialog = mutableStateOf("")
+    var nameGif = mutableStateOf("")
 
     var selectedProtocol = mutableStateOf<Protocol?>(null)
     var allProtocols = mutableStateOf(DBManager.getAllProtocols())
@@ -83,8 +84,8 @@ class MainScreenViewModel(val logScrollState: LazyListState) : ScreenModel {
                 selectedField.value = objectFields.firstOrNull()
             }
             selectedField.value?.let { onTestObjectFieldSelected(it) }
+            clearTestFields()
         }
-//        Files.write(Paths.get(image), testItem.image.bytes)
     }
 
     fun onTestObjectFieldSelected(testItemField: TestItemField) {
@@ -97,6 +98,16 @@ class MainScreenViewModel(val logScrollState: LazyListState) : ScreenModel {
                 specifiedI.value = selectedField.value!!.current.toString()
                 specifiedTime.value = selectedField.value!!.time.toString()
             }
+            listCheckBoxesMeger.forEach {
+                it.value = false
+            }
+            listCheckBoxesViu.forEach {
+                it.value = false
+            }
+            allCheckBoxesViu.value = ToggleableState.Off
+            allCheckBoxesMeger.value = ToggleableState.Off
+
+            clearTestFields()
         }
     }
 
@@ -109,5 +120,41 @@ class MainScreenViewModel(val logScrollState: LazyListState) : ScreenModel {
         list.forEach {
             it.value = checkBox.value == ToggleableState.On
         }
+    }
+
+    fun clearTestFields() {
+        measuredI.value = ""
+        measuredUViu.value = ""
+        measuredUMeger.value = ""
+        measuredTime.value = ""
+        listColorsCurrentTF.forEach {
+            it.value = Color.Transparent
+        }
+        listColorsRsTF.forEach {
+            it.value = Color.Transparent
+        }
+        listCurrents.forEach {
+            it.value = ""
+        }
+        listRs.forEach {
+            it.value = ""
+        }
+        listColorsProtection.forEach {
+            it.value = Color(0xFF6200EE)
+        }
+    }
+
+    fun showDialog(title: String, text: String, gif: String = "") {
+        titleDialog.value = title
+        textDialog.value = text
+        nameGif.value = gif
+        dialogVisibleState.value = true
+    }
+
+    fun hideDialog() {
+        dialogVisibleState.value = false
+        titleDialog.value = ""
+        textDialog.value = ""
+        nameGif.value = ""
     }
 }

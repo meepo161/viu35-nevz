@@ -26,7 +26,6 @@ import ru.avem.viu35.database.DBManager
 import ru.avem.viu35.screens.ObjectEditorScreen
 import ru.avem.viu35.screens.ProtocolsScreen
 import ru.avem.viu35.screens.UserEditorScreen
-import ru.avem.viu35.screens.auth.LoginScreen
 import ru.avem.viu35.viewmodels.MainScreenViewModel
 
 @Composable
@@ -61,9 +60,7 @@ fun HomeScreenDrawer(mainViewModel: MainScreenViewModel, isClickable: MutableSta
                     navigator.push(ObjectEditorScreen(mainViewModel))
                 }
             } else {
-                mainViewModel.titleDialog.value = "Внимание"
-                mainViewModel.textDialog.value = "Редактирование доступно только для администратора"
-                mainViewModel.dialogVisibleState.value = true
+                mainViewModel.showDialog("Внимание", "Редактирование доступно только для администратора")
             }
         }
         DrawerMenuItem(painterResource("icons/baseline_storage_24.xml"), "База данных протоколов") {
@@ -76,9 +73,7 @@ fun HomeScreenDrawer(mainViewModel: MainScreenViewModel, isClickable: MutableSta
                     navigator.push(UserEditorScreen())
                 }
             } else {
-                mainViewModel.titleDialog.value = "Внимание"
-                mainViewModel.textDialog.value = "Редактирование доступно только для администратора"
-                mainViewModel.dialogVisibleState.value = true
+                mainViewModel.showDialog("Внимание", "Редактирование доступно только для администратора")
             }
         }
         Divider()
@@ -96,7 +91,7 @@ fun HomeScreenDrawer(mainViewModel: MainScreenViewModel, isClickable: MutableSta
         Divider()
         DrawerMenuItem(Icons.Filled.People, "Сменить пользователя") {
             if (isClickable.value) {
-                navigator.push(LoginScreen())
+                navigator.pop()
             }
         }
         DrawerMenuItem(Icons.Filled.ExitToApp, "Выход") {

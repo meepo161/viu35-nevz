@@ -54,12 +54,6 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
     private var chopper = false
 
     @Volatile
-    private var isMgrRunning = false
-
-    @Volatile
-    private var isViuRunning = false
-
-    @Volatile
     private var currentDoArn = false
 
     @Volatile
@@ -125,7 +119,10 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
                         if (mainViewModel.listCheckBoxesViu[8].value) protectionCurrent(8, "> 100 мА")//12
                     if (value.toShort() and 0b10000000000000 != 0.toShort())
                         if (mainViewModel.listCheckBoxesViu[9].value) protectionCurrent(9, "> 100 мА")//13
-//                    if (value.toShort() and 0b100000000000000 != 0.toShort()) protectionCurrent(index)
+                    if (value.toShort() and 0b100000000000000 != 0.toShort()) {
+                        DD2.offAllowStart()
+                        cause = "Сработала общая токовая защита"
+                    }
                 }
 
                 DevicePoller.startPoll(name, model.DI_01_16_RAW) { value ->
@@ -158,6 +155,24 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
         if (isTestRunning) DD2.onDoorLockIsp()
         if (isTestRunning) DD2.onLightTablo()
         if (isTestRunning) DD2.onLight()
+
+
+        if (isTestRunning) {
+            thread {
+                while (isTestRunning) {
+                    needDevices.forEach {
+                        if (isTestRunning) {
+                            it.checkResponsibilityAndNotify()
+                            if (!it.isResponding) {
+                                cause = "Возможно нажат аварийной стоп"
+                            }
+                        }
+                    }
+                    wait(1)
+                }
+            }
+        }
+        if (isTestRunning) fields.forEach(Field::poll)
     }
 
     fun initDevicesViu() {
@@ -165,7 +180,6 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
             with(PV22) {
                 needDevices.add(this)
                 DevicePoller.startPoll(name, model.U_TRMS) { value ->
-                    mainViewModel.measuredUMeger.value = value.toDouble().af()
                     if (value.toDouble() > 440) cause = "Несоответствие коэффициента трансформации"
                 }
             }
@@ -180,7 +194,7 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
             }
         }
 
-        if (isTestRunning) {
+        if (isTestRunning && mainViewModel.specifiedI.value.toInt() <= 100) {
             listPA.forEachIndexed { index, aveM3 ->
                 if (mainViewModel.listCheckBoxesViu[index].value) {
                     mainViewModel.listViu[index] = mainViewModel.listCheckBoxesViu[index].value
@@ -189,7 +203,7 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
                         DevicePoller.startPoll(name, model.U_TRMS) { value ->
                             if (listCurrentsState[index]) {
                                 mainViewModel.listCurrents[index].value = value.toDouble().formatDigits(1)
-                                var specifiedI = mainViewModel.specifiedI.value.toDouble()
+                                val specifiedI = mainViewModel.specifiedI.value.toDouble()
                                 var colorTF = (130 - 130 / specifiedI * value.toDouble()).toFloat()
                                 if (colorTF < 0) colorTF = 0f
                                 mainViewModel.listColorsCurrentTF[index].value = Color.hsv(colorTF, 0.7f, 1f)
@@ -210,12 +224,25 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
             with(PA21) {
                 needDevices.add(this)
                 DevicePoller.startPoll(name, model.U_TRMS) { value ->
-                    if ((value.toDouble() * 1000) > 5) {
-                        mainViewModel.measuredI.value = (value.toDouble() * 1000).af()
+                    mainViewModel.measuredI.value = (value.toDouble() * 1000).af()
+                    if ((mainViewModel.specifiedI.value.toIntOrNull() ?: 0) > 100) {
+                        if (listCurrentsState[0]) {
+                            mainViewModel.listCurrents[0].value = (value.toDouble() * 1000).formatDigits(1)
+                            val specifiedI = mainViewModel.specifiedI.value.toDouble()
+                            var colorTF = (130 - 130 / specifiedI * (value.toDouble() * 1000)).toFloat()
+                            if (colorTF < 0) colorTF = 0f
+                            mainViewModel.listColorsCurrentTF[0].value = Color.hsv(colorTF, 0.7f, 1f)
+                        }
+                        if (value.toDouble() * 1000 > mainViewModel.specifiedI.value.toInt()) {
+                            mainViewModel.listColorsProtection[0].value = Color.Red
+                            mainViewModel.listViu[0] = false
+                            listCurrentsState[0] = false
+                            DD2.offAllowStart()
+                            cause = "Превышение тока утечки"
+                        }
                     } else {
-                        mainViewModel.measuredI.value = "0.0"
+                        if (value.toDouble() * 1000 > 1000) cause = "Превышение тока утечки"
                     }
-                    if (value.toDouble() * 1000 > 1000) cause = "Превышение тока утечки"
                 }
             }
         }
@@ -224,9 +251,6 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
             with(ATR240) {
                 needDevices.add(this)
                 DevicePoller.startPoll(name, model.ENDS_STATUS_REGISTER) { value ->
-                    if (value.toInt() == 2) {
-//                        cause = "Нажат верхний концевик АРН1" //todo potom
-                    }
                     if (value.toInt() == 3) {
                         cause = "Нажаты оба концевика АРН1"
                     }
@@ -240,9 +264,6 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
             with(ATR241) {
                 needDevices.add(this)
                 DevicePoller.startPoll(name, model.ENDS_STATUS_REGISTER) { value ->
-                    if (value.toInt() == 2) {
-//                        cause = "Нажат верхний концевик АРН2" //todo potom
-                    }
                     if (value.toInt() == 3) {
                         cause = "Нажаты оба концевика АРН2"
                     }
@@ -254,7 +275,7 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
         }
     }
 
-    fun initDevices() {
+    fun initDDs() {
         if (isTestRunning) {
             with(DD3) {
                 checkResponsibility()
@@ -272,23 +293,6 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
                 }
             }
         }
-
-        if (isTestRunning) {
-            thread {
-                while (isTestRunning) {
-                    needDevices.forEach {
-                        if (isTestRunning) {
-                            it.checkResponsibilityAndNotify()
-                            if (!it.isResponding) {
-                                cause = "Возможно нажат аварийной стоп"
-                            }
-                        }
-                    }
-                    wait(1)
-                }
-            }
-        }
-        if (isTestRunning) fields.forEach(Field::poll)
     }
 
     private fun protectionCurrent(index: Int, msg: String = "") {
@@ -322,12 +326,18 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
                     }
                 }
 
+                if (isTestRunning) appendOneMessageToLog("Инициализация устройств")
+                if (isTestRunning) initDDs()
+
                 if (isTestRunning && mainViewModel.allCheckBoxesMeger.value != ToggleableState.Off) {
                     meger()
                 }
-
                 if (isTestRunning && mainViewModel.allCheckBoxesViu.value != ToggleableState.Off) {
-                    viu()
+                    if (mainViewModel.specifiedI.value.toInt() > 100) {
+                        viu1000()
+                    } else {
+                        viu()
+                    }
                 }
 
                 DD2.checkResponsibility()
@@ -341,7 +351,6 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
     }
 
     private fun meger() {
-        isMgrRunning = true
         if (isTestRunning) appendOneMessageToLog("Начало испытания МГР")
         if (isTestRunning) appendOneMessageToLog("Сбор схемы")
         if (isTestRunning) DD2.onAVEM9()
@@ -367,9 +376,7 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
                     r15 = value.toDouble()
                 }
                 DevicePoller.startPoll(name, model.VOLTAGE) { value ->
-                    if (isMgrRunning) {
-                        mainViewModel.measuredUMeger.value = value.toDouble().af()
-                    }
+                    mainViewModel.measuredUMeger.value = value.toDouble().af()
                 }
             }
         }
@@ -427,7 +434,7 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
                                 top = false
                             }
                         }
-                        if (isTestRunning) mainViewModel.listColorsRsTF[index].value = Color.hsv(color, 0.7f, 1f)
+                        mainViewModel.listColorsRsTF[index].value = Color.hsv(color, 0.7f, 1f)
                         sleep(1)
                     }
                 }
@@ -440,17 +447,17 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
                 if (PR65.isResponding) PR65.stopTest()
                 if (isTestRunning) disassembleMgr(index)
                 if (isTestRunning) mainViewModel.listRs[index].value =
-//                    if (mainViewModel.specifiedUMeger.value.toInt() == 2500 && r15 == 200000.0) {
-//                        ">200000"
-//                    } else if (mainViewModel.specifiedUMeger.value.toInt() == 1000 && r15 > 100000.0) {
-//                        ">100000"
-//                    } else if (mainViewModel.specifiedUMeger.value.toInt() == 500 && r15 > 50000.0) {
-//                        ">50000"
-//                    } else if (r15 < 0.3) {
-//                        "<0.2"
-//                    } else {
-                    r15.af()
-//                    } TODO убрать
+                    if (mainViewModel.specifiedUMeger.value.toInt() == 2500 && r15 == 200000.0) {
+                        ">200000"
+                    } else if (mainViewModel.specifiedUMeger.value.toInt() == 1000 && r15 > 100000.0) {
+                        ">100000"
+                    } else if (mainViewModel.specifiedUMeger.value.toInt() == 500 && r15 > 50000.0) {
+                        ">50000"
+                    } else if (r15 < 0.3) {
+                        "<0.2"
+                    } else {
+                        r15.af()
+                    }
                 if (r15 < 0.3) {
                     if (isTestRunning) mainViewModel.listColorsProtection[index].value = Color.Red
                     if (isTestRunning) mainViewModel.listCheckBoxesViu[index].value = false
@@ -468,13 +475,11 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
         }
         if (isTestRunning) DD4.off(5) //Мегер
         if (isTestRunning) DD2.offLightMeger()
-        isMgrRunning = false
         mainViewModel.measuredUMeger.value = ""
     }
 
     private fun viu() {
         initDevicesViu()
-        isViuRunning = true
         if (isTestRunning) appendOneMessageToLog("Начало испытания ВИУ")
         if (isTestRunning) appendOneMessageToLog("Сбор схемы")
         if (isTestRunning) DD2.onKM2BP()
@@ -495,13 +500,8 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
             }
         }
 
-        if (isTestRunning) appendOneMessageToLog("Инициализация устройств")
-        if (isTestRunning) initDevices()
-
         if (isTestRunning) appendOneMessageToLog("Взведите рубильник")
-        if (isTestRunning) mainViewModel.titleDialog.value = "Внимание"
-        if (isTestRunning) mainViewModel.textDialog.value = "Взведите рубильник"
-        if (isTestRunning) mainViewModel.dialogVisibleState.value = true
+        if (isTestRunning) mainViewModel.showDialog("Внимание", "Взведите рубильник", "switch.gif")
         var timer = System.currentTimeMillis() + 5 * 60 * 1000
         while (!chopper && isTestRunning) {
             if (System.currentTimeMillis() > timer) {
@@ -509,13 +509,11 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
             }
             sleep(10)
         }
-        if (isTestRunning) mainViewModel.dialogVisibleState.value = false
+        if (isTestRunning) mainViewModel.hideDialog()
 
         if (isTestRunning) DD2.onAllowStart()
         if (isTestRunning) appendOneMessageToLog("Нажмите кнопку ПУСК")
-        if (isTestRunning) mainViewModel.titleDialog.value = "Внимание"
-        if (isTestRunning) mainViewModel.textDialog.value = "Нажмите кнопку ПУСК"
-        if (isTestRunning) mainViewModel.dialogVisibleState.value = true
+        if (isTestRunning) mainViewModel.showDialog("Внимание", "Нажмите кнопку ПУСК", "green_button.gif")
         timer = System.currentTimeMillis() + 5 * 60 * 1000
         while (!buttonPostStartPressed && isTestRunning) {
             if (System.currentTimeMillis() > timer) {
@@ -523,14 +521,12 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
             }
             sleep(10)
         }
-        if (isTestRunning) mainViewModel.dialogVisibleState.value = false
+        mainViewModel.hideDialog()
 
 
         while (currentDoArn && isTestRunning) {
             if (isTestRunning) appendOneMessageToLog("Повторно нажмите кнопку ПУСК")
-            if (isTestRunning) mainViewModel.titleDialog.value = "Внимание"
-            if (isTestRunning) mainViewModel.textDialog.value = "Повторно нажмите кнопку ПУСК"
-            if (isTestRunning) mainViewModel.dialogVisibleState.value = true
+            if (isTestRunning) mainViewModel.showDialog("Внимание", "Повторно нажмите кнопку ПУСК", "green_button.gif")
             timer = System.currentTimeMillis() + 5 * 60 * 1000
             while (!buttonPostStartPressed && isTestRunning) {
                 if (System.currentTimeMillis() > timer) {
@@ -538,7 +534,7 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
                 }
                 sleep(10)
             }
-            if (isTestRunning) mainViewModel.dialogVisibleState.value = false
+            if (isTestRunning) mainViewModel.hideDialog()
             if (isTestRunning) sleep(3000)
         }
 
@@ -548,7 +544,6 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
         if (isTestRunning) DD4.on(6) //ЗЕМЛЯ
         if (isTestRunning) DD2.offLightGround()
 
-        if (isTestRunning) DD2.onLightViu()
         if (isTestRunning) appendOneMessageToLog("Ожидание поднятия напряжения")
         val timerLatrs = System.currentTimeMillis()
         if (isTestRunning) ATR240.resetLATR()
@@ -599,7 +594,125 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
             }
             sleep(10)
         }
-        isViuRunning = false
+    }
+
+    private fun viu1000() {
+        if (isTestRunning) appendOneMessageToLog("Подключите ОИ к заземлению")
+        if (isTestRunning) mainViewModel.showDialog("Внимание", "Подключите ОИ к заземлению и нажмите <Ок>")
+
+        var timer = System.currentTimeMillis() + 10 * 60 * 1000
+        while (mainViewModel.dialogVisibleState.value && isTestRunning) {
+            if (System.currentTimeMillis() > timer) {
+                cause = "Не подключен ОИ к заземлению"
+            }
+            sleep(10)
+        }
+        initDevicesViu()
+        if (isTestRunning) appendOneMessageToLog("Начало испытания ВИУ")
+        if (isTestRunning) appendOneMessageToLog("Сбор схемы")
+        if (isTestRunning) DD2.onKM2BP()
+        if (isTestRunning) sleep(3000)
+        if (mainViewModel.listColorsProtection[0].value != Color.Red) {
+            if (isTestRunning) listCurrentsState[0] = mainViewModel.listCheckBoxesViu[0].value
+            if (isTestRunning && mainViewModel.listCheckBoxesViu[0].value) mainViewModel.listColorsProtection[0].value =
+                Color.Green
+        }
+        if (isTestRunning) sleep(3000)
+        if (isTestRunning) DD2.offKM2BP()
+
+        if (isTestRunning) appendOneMessageToLog("Взведите рубильник")
+        if (isTestRunning) mainViewModel.showDialog("Внимание", "Взведите рубильник", "switch.gif")
+        timer = System.currentTimeMillis() + 5 * 60 * 1000
+        while (!chopper && isTestRunning) {
+            if (System.currentTimeMillis() > timer) {
+                cause = "Не взведен рубильник"
+            }
+            sleep(10)
+        }
+        if (isTestRunning) mainViewModel.hideDialog()
+
+        if (isTestRunning) DD2.onAllowStart()
+        if (isTestRunning) appendOneMessageToLog("Нажмите кнопку ПУСК")
+        if (isTestRunning) mainViewModel.showDialog("Внимание", "Нажмите кнопку ПУСК", "green_button.gif")
+
+        timer = System.currentTimeMillis() + 5 * 60 * 1000
+        while (!buttonPostStartPressed && isTestRunning) {
+            if (System.currentTimeMillis() > timer) {
+                cause = "Не нажата кнопка ПУСК"
+            }
+            sleep(10)
+        }
+        mainViewModel.hideDialog()
+
+
+        while (currentDoArn && isTestRunning) {
+            if (isTestRunning) appendOneMessageToLog("Повторно нажмите кнопку ПУСК")
+            if (isTestRunning) mainViewModel.showDialog("Внимание", "Повторно нажмите кнопку ПУСК", "green_button.gif")
+            timer = System.currentTimeMillis() + 5 * 60 * 1000
+            while (!buttonPostStartPressed && isTestRunning) {
+                if (System.currentTimeMillis() > timer) {
+                    cause = "Не нажата кнопка ПУСК"
+                }
+                sleep(10)
+            }
+            if (isTestRunning) mainViewModel.hideDialog()
+            if (isTestRunning) sleep(3000)
+        }
+
+        if (isTestRunning) DD2.onLightViu()
+        if (isTestRunning) DD4.on(7) //ВИУ
+
+        if (isTestRunning) DD4.on(6) //ЗЕМЛЯ
+        if (isTestRunning) DD2.offLightGround()
+
+        if (isTestRunning) appendOneMessageToLog("Ожидание поднятия напряжения")
+        val timerLatrs = System.currentTimeMillis()
+        if (isTestRunning) ATR240.resetLATR()
+        if (isTestRunning) ATR241.resetLATR()
+
+        if (isTestRunning) ATR240.startUpLATRPulseInit(6f, 20f)
+        if (isTestRunning) ATR241.startUpLATRPulseInit(6f, 20f)
+
+        while ((voltageLatr1 < 5.0 || voltageLatr2 < 5.0) && isTestRunning) {
+            if (System.currentTimeMillis() - timerLatrs > 30000) cause = "Застревание АРН"
+            sleep(100)
+        }
+
+        if (isTestRunning) sleep(3000)
+
+        appendOneMessageToLog("Выставление заданного напряжения")
+
+        repeat(3) {
+            if (isTestRunning) voltageRegulation(mainViewModel.specifiedUViu.value.toDouble())
+            if (isTestRunning) sleep(1000)
+        }
+
+        if (isTestRunning) appendOneMessageToLog("Выдержка напряжения")
+        val startTime = System.currentTimeMillis()
+        val time = mainViewModel.specifiedTime.value.toDouble() * 1000 + startTime
+        while (isTestRunning && System.currentTimeMillis() < (time)) {
+            mainViewModel.measuredTime.value =
+                "%.1f".format(Locale.ENGLISH, abs(time - System.currentTimeMillis()) / 1000)
+            sleep(100)
+        }
+        mainViewModel.measuredTime.value = "%.1f".format(Locale.ENGLISH, 0.0)
+
+        mainViewModel.storedUViu = mainViewModel.measuredUViu.value
+
+        listCurrentsState[0] = false
+
+        appendOneMessageToLog("Снижения напряжения")
+        ATR240.resetLATR()
+        ATR241.resetLATR()
+
+        timer = System.currentTimeMillis() + 30000
+        while (mainViewModel.measuredUViu.value.toDouble() > 500) {
+            if (System.currentTimeMillis() > timer) {
+                cause = "Превышено время ожидания"
+                break
+            }
+            sleep(10)
+        }
     }
 
     private fun setAVEMConfiguration(index: Int) {
@@ -618,17 +731,12 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
     }
 
     private fun checkTestSettings(): Boolean {
-        mainViewModel.titleDialog.value = "Ошибка"
-        mainViewModel.textDialog.value = ""
         if (mainViewModel.listCheckBoxesMeger.none { it.value } && mainViewModel.listCheckBoxesViu.none { it.value }) {
-            mainViewModel.textDialog.value += "Не выбрано ни одно испытание\n"
-            mainViewModel.dialogVisibleState.value = true
+            mainViewModel.showDialog("Ошибка", "Не выбрано ни одно испытание", "error.gif")
         } else if (mainViewModel.selectedObject.value == null) {
-            mainViewModel.textDialog.value += "Не выбран объект испытания\n"
-            mainViewModel.dialogVisibleState.value = true
+            mainViewModel.showDialog("Ошибка", "Не выбран объект испытания", "error.gif")
         } else if (mainViewModel.selectedField.value == null) {
-            mainViewModel.textDialog.value += "Не выбран тип объекта испытания\n"
-            mainViewModel.dialogVisibleState.value = true
+            mainViewModel.showDialog("Ошибка", "Не выбран тип объекта испытания", "error.gif")
         }
         return mainViewModel.dialogVisibleState.value
     }
@@ -637,28 +745,9 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
         needDevices.clear()
         listMessagesLog.clear()
         mainViewModel.storedUViu = ""
-        mainViewModel.measuredI.value = ""
-        mainViewModel.measuredUViu.value = ""
-        mainViewModel.measuredUMeger.value = ""
-        mainViewModel.measuredTime.value = ""
-        mainViewModel.listColorsCurrentTF.forEach {
-            it.value = Color.Transparent
-        }
-        mainViewModel.listColorsRsTF.forEach {
-            it.value = Color.Transparent
-        }
+        mainViewModel.clearTestFields()
         for (listCurrent in listCurrentsState.indices) {
             listCurrentsState[listCurrent] = false
-        }
-        mainViewModel.listCurrents.forEach {
-            it.value = ""
-        }
-        mainViewModel.listRs.forEach {
-            it.value = ""
-        }
-
-        mainViewModel.listColorsProtection.forEach {
-            it.value = Color(0xFF6200EE)
         }
         cause = ""
         isTestRunning = true
@@ -666,17 +755,18 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
         mainViewModel.isTestRunningState.value = true
     }
 
+
     private fun finalizeTest() {
         isTestRunning = false
         if (PR65.isResponding) PR65.reset()
         DevicePoller.clearPollingRegisters()
         DevicePoller.clearWritingRegisters()
         mainViewModel.mutableStateIsRunning.value = true
-        mainViewModel.dialogVisibleState.value = false
-        if (cause.isNotEmpty()) {
-            mainViewModel.titleDialog.value = "Ошибка"
-            mainViewModel.textDialog.value = cause
-            mainViewModel.dialogVisibleState.value = true
+        mainViewModel.hideDialog()
+        if (cause.contains("кнопочном")) {
+            mainViewModel.showDialog("Ошибка", cause, "red_button.gif")
+        } else if (cause.isNotEmpty()) {
+            mainViewModel.showDialog("Ошибка", cause, "error.gif")
         }
         if (isTestRunning) appendOneMessageToLog("Испытание завершено")
         transaction {
@@ -961,8 +1051,8 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
     }
 
     private fun voltageRegulation(voltage: Double) {
-        var deviation = if (voltage > 2000) 50 else 20
-        var timer = 0L
+        val deviation = if (voltage > 2000) 50 else 20
+        var timer = System.currentTimeMillis()
         val single = 1500.0
         val both = 5000.0
         var speedPerc = 35f
@@ -975,7 +1065,6 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
         val speedFastDown = 24f
         val speedSlowUp = 8f
         val speedSlowDown = 10f
-        timer = System.currentTimeMillis()
         while (abs(mainViewModel.measuredUViu.value.toDouble() - voltage) > both && isTestRunning) {
             if (mainViewModel.measuredUViu.value.toDouble() < voltage) {
                 direction = up

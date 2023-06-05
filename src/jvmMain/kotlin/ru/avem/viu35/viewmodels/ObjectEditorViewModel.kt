@@ -187,7 +187,7 @@ class ObjectEditorViewModel(private var mainViewModel: MainScreenViewModel) : Sc
         currentFieldErrorState.value =
             currentFieldState.value.isEmpty()
                     || currentFieldState.value.toIntOrNull() == null
-                    || currentFieldState.value.toIntOrNull()!! > 100
+                    || currentFieldState.value.toIntOrNull()!! > 1000
                     || currentFieldState.value.toIntOrNull()!! < 1
 
         if (!nameTestFieldErrorState.value
@@ -307,7 +307,7 @@ class ObjectEditorViewModel(private var mainViewModel: MainScreenViewModel) : Sc
             currentFieldErrorState.value =
                 currentFieldState.value.isEmpty()
                         || currentFieldState.value.toIntOrNull() == null
-                        || currentFieldState.value.toIntOrNull()!! > 100
+                        || currentFieldState.value.toIntOrNull()!! > 1000
                         || currentFieldState.value.toIntOrNull()!! < 1
 
             if (!nameTestFieldErrorState.value

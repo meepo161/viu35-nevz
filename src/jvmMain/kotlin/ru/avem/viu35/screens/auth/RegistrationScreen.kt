@@ -1,9 +1,11 @@
 package ru.avem.viu35.screens.auth
 
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.RemoveRedEye
 import androidx.compose.runtime.*
@@ -25,7 +27,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import cafe.adriel.voyager.transitions.SlideTransition
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -33,12 +37,14 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import ru.avem.viu35.composables.ConfirmDialog
 import ru.avem.viu35.database.DBManager
 import ru.avem.viu35.database.entities.User
+import ru.avem.viu35.screens.MainScreen
 import ru.avem.viu35.utils.keyEventNext
 import ru.avem.viu35.utils.keyboardActionNext
 import ru.avem.viu35.viewmodels.UserEditorViewModel
 
 class RegistrationScreen(private var vm: UserEditorViewModel) : Screen {
 
+    @OptIn(ExperimentalAnimationApi::class)
     @Composable
     override fun Content() {
         val localNavigator = LocalNavigator.currentOrThrow
@@ -55,17 +61,30 @@ class RegistrationScreen(private var vm: UserEditorViewModel) : Screen {
         var confirmPasswordErrorState by remember { mutableStateOf(false) }
 
         val dialogVisibleState = mutableStateOf(false)
-        val titleDialog = mutableStateOf("")
-        val textDialog = mutableStateOf("")
+        var titleDialog = mutableStateOf("")
+        var textDialog = mutableStateOf("")
 
         Scaffold(
+            topBar = {
+                TopAppBar(title = { Text("Регистрация") }, navigationIcon = {
+                    IconButton(
+                        onClick = {
+                            localNavigator.pop()
+                        },
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Icon(Icons.Filled.ArrowBack, contentDescription = null)
+                        }
+                    }
+                })
+            },
             content = {
                 if (dialogVisibleState.value) {
                     ConfirmDialog(
-                        titleDialog.value,
-                        textDialog.value,
-                        { dialogVisibleState.value = false },
-                        { dialogVisibleState.value = false })
+                        title = titleDialog.value,
+                        text = textDialog.value,
+                        yesCallback = { dialogVisibleState.value = false },
+                        noCallback = { dialogVisibleState.value = false })
                 }
                 Column(
                     modifier = Modifier.padding(32.dp).fillMaxSize(),

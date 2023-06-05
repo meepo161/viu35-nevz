@@ -2,26 +2,24 @@ package ru.avem.viu35.protocol
 
 import androidx.compose.ui.res.useResource
 import org.apache.poi.ss.usermodel.CellType
-import org.apache.poi.xssf.usermodel.XSSFCell
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import ru.avem.viu35.copyFileFromStream
 import ru.avem.viu35.database.entities.Protocol
-import ru.avem.viu35.sp
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileNotFoundException
 
-fun saveProtocolAsWorkbook(listProtocols: List<Protocol>, path: String = "cfg/lastOpened.xlsx") {
+fun saveProtocolAsWorkbook(listProtocols: List<Protocol>, path: String = "lastOpened.xlsx") {
 
     val template = File(path)
 
-    if (File("cfg${sp}protocol.xlsx").exists()) {
-        copyFileFromStream(File("cfg/protocol.xlsx").inputStream(), template)
+    if (File("protocol.xlsx").exists()) {
+        copyFileFromStream(File("protocol.xlsx").inputStream(), template)
     } else {
         useResource("protocol.xlsx") {
-            copyFileFromStream(it, File("cfg/protocol.xlsx"))
+            copyFileFromStream(it, File("protocol.xlsx"))
         }
-        copyFileFromStream(File("cfg/protocol.xlsx").inputStream(), template)
+        copyFileFromStream(File("protocol.xlsx").inputStream(), template)
     }
 
     try {

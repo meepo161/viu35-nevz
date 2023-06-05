@@ -1,5 +1,6 @@
 package ru.avem.viu35.screens
 
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -45,7 +46,7 @@ import javax.imageio.ImageIO
 
 @Suppress("FunctionName")
 object MainScreen : Screen {
-    @OptIn(ExperimentalFoundationApi::class)
+    @OptIn(ExperimentalFoundationApi::class, ExperimentalAnimationApi::class)
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
@@ -120,183 +121,183 @@ object MainScreen : Screen {
             }
             if (vm.dialogVisibleState.value) {
                 ConfirmDialog(
-                    vm.titleDialog.value,
-                    vm.textDialog.value,
-                    { vm.dialogVisibleState.value = false },
-                    { vm.dialogVisibleState.value = false })
+                    title = vm.titleDialog.value,
+                    text = vm.textDialog.value,
+                    nameGif = vm.nameGif.value,
+                    yesCallback = { vm.hideDialog() },
+                    noCallback = { vm.hideDialog() }
+                )
             }
         }
     }
 
     @Composable
     private fun LeftPanel(modifier: Modifier, vm: MainScreenViewModel) {
-        Card(modifier = modifier, elevation = 4.dp) {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Card(elevation = 4.dp) {
+        Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Card(elevation = 4.dp) {
+                Column(
+                    modifier = Modifier.padding(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        modifier = Modifier.fillMaxWidth().padding(8.dp),
+                        textAlign = TextAlign.Center,
+                        fontSize = 20.sp,
+                        text = "Тип аппарата и номер чертежа"
+                    )
+                    ComboBox(selectedItem = vm.selectedObject,
+                        modifier = Modifier.width(1000.dp).padding(8.dp),
+                        textAlign = TextAlign.Start,
+                        isEditable = vm.mutableStateIsRunning.value,
+                        onDismissState = {},
+                        items = vm.objects,
+                        selectedValue = {
+                            vm.onTestObjectSelected(it!!)
+                        })
+
+                    ComboBox(selectedItem = vm.selectedField,
+                        modifier = Modifier.width(1000.dp).padding(8.dp),
+                        textAlign = TextAlign.Start,
+                        isEditable = vm.selectedObject.value != null && vm.mutableStateIsRunning.value,
+                        onDismissState = {},
+                        items = vm.objectFields,
+                        selectedValue = {
+                            vm.onTestObjectFieldSelected(it!!)
+                        })
+                }
+            }
+            Card(elevation = 4.dp) {
+                Column(
+                    modifier = Modifier.weight(0.5f).padding(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        Text(
+                            modifier = Modifier.weight(0.5f).padding(8.dp),
+                            textAlign = TextAlign.Center,
+                            fontSize = 20.sp,
+                            text = "Заданные параметры:"
+                        )
+
+                        Text(
+                            modifier = Modifier.weight(0.5f).padding(8.dp),
+                            textAlign = TextAlign.Center,
+                            fontSize = 20.sp,
+                            text = "Измеренные параметры:"
+                        )
+                    }
+                    Row(modifier = Modifier.fillMaxWidth().padding(start = 96.dp, end = 96.dp)) {
+                        Box(modifier = Modifier.weight(0.3f)) {
+                            OutlinedTextField(textStyle = TextStyle.Default.copy(
+                                fontSize = 20.sp, textAlign = TextAlign.Center
+                            ), value = vm.specifiedUViu.value, onValueChange = {})
+                        }
+                        Box(
+                            modifier = Modifier.weight(0.4f).height(48.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Напряжение ВИУ, В",
+                                fontSize = 20.sp,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                        Box(modifier = Modifier.weight(0.3f)) {
+                            OutlinedTextField(textStyle = TextStyle.Default.copy(
+                                fontSize = 20.sp, textAlign = TextAlign.Center
+                            ), value = vm.measuredUViu.value, onValueChange = {})
+                        }
+                    } //U ВИУ
+                    Row(modifier = Modifier.fillMaxWidth().padding(start = 96.dp, end = 96.dp)) {
+                        Box(modifier = Modifier.weight(0.3f)) {
+                            OutlinedTextField(textStyle = TextStyle.Default.copy(
+                                fontSize = 20.sp, textAlign = TextAlign.Center
+                            ), value = vm.specifiedUMeger.value, onValueChange = {})
+                        }
+                        Box(
+                            modifier = Modifier.weight(0.4f).height(48.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Напряжение МГР, В",
+                                fontSize = 20.sp,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                        Box(modifier = Modifier.weight(0.3f)) {
+                            OutlinedTextField(textStyle = TextStyle.Default.copy(
+                                fontSize = 20.sp, textAlign = TextAlign.Center
+                            ), value = vm.measuredUMeger.value, onValueChange = {})
+                        }
+                    }  //U МГР
+                    Row(modifier = Modifier.fillMaxWidth().padding(start = 96.dp, end = 96.dp)) {
+                        Box(modifier = Modifier.weight(0.3f)) {
+                            OutlinedTextField(textStyle = TextStyle.Default.copy(
+                                fontSize = 20.sp, textAlign = TextAlign.Center
+                            ), value = vm.specifiedI.value, onValueChange = {})
+                        }
+                        Box(
+                            modifier = Modifier.weight(0.4f).height(48.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Ток утечки, мА", fontSize = 20.sp, textAlign = TextAlign.Center
+                            )
+                        }
+                        Box(modifier = Modifier.weight(0.3f)) {
+                            OutlinedTextField(textStyle = TextStyle.Default.copy(
+                                fontSize = 20.sp, textAlign = TextAlign.Center
+                            ), value = vm.measuredI.value, onValueChange = {})
+                        }
+                    }//I утечки
+                    Row(modifier = Modifier.fillMaxWidth().padding(start = 96.dp, end = 96.dp)) {
+                        Box(modifier = Modifier.weight(0.3f)) {
+                            OutlinedTextField(textStyle = TextStyle.Default.copy(
+                                fontSize = 20.sp, textAlign = TextAlign.Center
+                            ), value = vm.specifiedTime.value, onValueChange = {})
+                        }
+                        Box(
+                            modifier = Modifier.weight(0.4f).height(48.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Время, сек", fontSize = 20.sp, textAlign = TextAlign.Center
+                            )
+                        }
+                        Box(modifier = Modifier.weight(0.3f)) {
+                            OutlinedTextField(textStyle = TextStyle.Default.copy(
+                                fontSize = 20.sp, textAlign = TextAlign.Center
+                            ), value = vm.measuredTime.value, onValueChange = {})
+                        }
+                    }//время
+                }
+            }
+            Card(elevation = 4.dp) {
+                if (vm.logState.value) {
+                    LogText(
+                        modifier = Modifier.padding(8.dp).fillMaxSize(),
+                        vm.logMessages,
+                        vm.logScrollState
+                    )
+                } else {
                     Column(
                         modifier = Modifier.padding(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Text(
-                            modifier = Modifier.fillMaxWidth().padding(8.dp),
-                            textAlign = TextAlign.Center,
-                            fontSize = 20.sp,
-                            text = "Тип аппарата и номер чертежа"
-                        )
-                        ComboBox(selectedItem = vm.selectedObject,
-                            modifier = Modifier.width(1000.dp).padding(8.dp),
-                            textAlign = TextAlign.Start,
-                            isEditable = vm.mutableStateIsRunning.value,
-                            onDismissState = {},
-                            items = vm.objects,
-                            selectedValue = {
-                                vm.onTestObjectSelected(it!!)
-                            })
-
-                        ComboBox(selectedItem = vm.selectedField,
-                            modifier = Modifier.width(1000.dp).padding(8.dp),
-                            textAlign = TextAlign.Start,
-                            isEditable = vm.selectedObject.value != null && vm.mutableStateIsRunning.value,
-                            onDismissState = {},
-                            items = vm.objectFields,
-                            selectedValue = {
-                                vm.onTestObjectFieldSelected(it!!)
-                            })
-                    }
-                }
-                Card(elevation = 4.dp) {
-                    Column(
-                        modifier = Modifier.weight(0.5f).padding(8.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Row(modifier = Modifier.fillMaxWidth()) {
-                            Text(
-                                modifier = Modifier.weight(0.5f).padding(8.dp),
-                                textAlign = TextAlign.Center,
-                                fontSize = 20.sp,
-                                text = "Заданные параметры:"
-                            )
-
-                            Text(
-                                modifier = Modifier.weight(0.5f).padding(8.dp),
-                                textAlign = TextAlign.Center,
-                                fontSize = 20.sp,
-                                text = "Измеренные параметры:"
+                        if (vm.selectedObject.value != null) {
+                            println(vm.selectedObject.value!!.image.bytes) //TODO без этого не работает
+                            Image(
+                                modifier = Modifier.fillMaxWidth().clickable {
+                                    vm.imageVisibleState.value = true
+                                }.height(512.dp),
+                                contentDescription = "image",
+                                bitmap = if (vm.selectedObject.value != null) {
+                                    Image.makeFromEncoded(vm.selectedObject.value!!.image.bytes)
+                                        .toComposeImageBitmap()
+                                } else {
+                                    ImageBitmap(800, 800)
+                                }
                             )
                         }
-                        Row(modifier = Modifier.fillMaxWidth().padding(start = 96.dp, end = 96.dp)) {
-                            Box(modifier = Modifier.weight(0.3f)) {
-                                OutlinedTextField(textStyle = TextStyle.Default.copy(
-                                    fontSize = 20.sp, textAlign = TextAlign.Center
-                                ), value = vm.specifiedUViu.value, onValueChange = {})
-                            }
-                            Box(
-                                modifier = Modifier.weight(0.4f).height(48.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = "Напряжение ВИУ, В",
-                                    fontSize = 20.sp,
-                                    textAlign = TextAlign.Center
-                                )
-                            }
-                            Box(modifier = Modifier.weight(0.3f)) {
-                                OutlinedTextField(textStyle = TextStyle.Default.copy(
-                                    fontSize = 20.sp, textAlign = TextAlign.Center
-                                ), value = vm.measuredUViu.value, onValueChange = {})
-                            }
-                        } //U ВИУ
-                        Row(modifier = Modifier.fillMaxWidth().padding(start = 96.dp, end = 96.dp)) {
-                            Box(modifier = Modifier.weight(0.3f)) {
-                                OutlinedTextField(textStyle = TextStyle.Default.copy(
-                                    fontSize = 20.sp, textAlign = TextAlign.Center
-                                ), value = vm.specifiedUMeger.value, onValueChange = {})
-                            }
-                            Box(
-                                modifier = Modifier.weight(0.4f).height(48.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = "Напряжение МГР, В",
-                                    fontSize = 20.sp,
-                                    textAlign = TextAlign.Center
-                                )
-                            }
-                            Box(modifier = Modifier.weight(0.3f)) {
-                                OutlinedTextField(textStyle = TextStyle.Default.copy(
-                                    fontSize = 20.sp, textAlign = TextAlign.Center
-                                ), value = vm.measuredUMeger.value, onValueChange = {})
-                            }
-                        }  //U МГР
-                        Row(modifier = Modifier.fillMaxWidth().padding(start = 96.dp, end = 96.dp)) {
-                            Box(modifier = Modifier.weight(0.3f)) {
-                                OutlinedTextField(textStyle = TextStyle.Default.copy(
-                                    fontSize = 20.sp, textAlign = TextAlign.Center
-                                ), value = vm.specifiedI.value, onValueChange = {})
-                            }
-                            Box(
-                                modifier = Modifier.weight(0.4f).height(48.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = "Ток утечки, мА", fontSize = 20.sp, textAlign = TextAlign.Center
-                                )
-                            }
-                            Box(modifier = Modifier.weight(0.3f)) {
-                                OutlinedTextField(textStyle = TextStyle.Default.copy(
-                                    fontSize = 20.sp, textAlign = TextAlign.Center
-                                ), value = vm.measuredI.value, onValueChange = {})
-                            }
-                        }//I утечки
-                        Row(modifier = Modifier.fillMaxWidth().padding(start = 96.dp, end = 96.dp)) {
-                            Box(modifier = Modifier.weight(0.3f)) {
-                                OutlinedTextField(textStyle = TextStyle.Default.copy(
-                                    fontSize = 20.sp, textAlign = TextAlign.Center
-                                ), value = vm.specifiedTime.value, onValueChange = {})
-                            }
-                            Box(
-                                modifier = Modifier.weight(0.4f).height(48.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = "Время, сек", fontSize = 20.sp, textAlign = TextAlign.Center
-                                )
-                            }
-                            Box(modifier = Modifier.weight(0.3f)) {
-                                OutlinedTextField(textStyle = TextStyle.Default.copy(
-                                    fontSize = 20.sp, textAlign = TextAlign.Center
-                                ), value = vm.measuredTime.value, onValueChange = {})
-                            }
-                        }//время
-                    }
-                }
-                Card(elevation = 4.dp) {
-                    if (vm.logState.value) {
-                        LogText(
-                            modifier = Modifier.padding(8.dp).fillMaxSize(),
-                            vm.logMessages,
-                            vm.logScrollState
-                        )
-                    } else {
-                        Column(
-                            modifier = Modifier.padding(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            if (vm.selectedObject.value != null) {
-                                println(vm.selectedObject.value!!.image.bytes) //TODO без этого не работает
-                                Image(
-                                    modifier = Modifier.fillMaxWidth().clickable {
-                                        vm.imageVisibleState.value = true
-                                    }.height(512.dp),
-                                    contentDescription = "image",
-                                    bitmap = if (vm.selectedObject.value != null) {
-                                        Image.makeFromEncoded(vm.selectedObject.value!!.image.bytes)
-                                            .toComposeImageBitmap()
-                                    } else {
-                                        ImageBitmap(800, 800)
-                                    }
-                                )
-                            }
 
-                        }
                     }
                 }
             }
@@ -305,204 +306,212 @@ object MainScreen : Screen {
 
     @Composable
     private fun RighPanel(modifier: Modifier, vm: MainScreenViewModel, testViewModel: TestViewModel) {
-        Card(modifier = modifier, elevation = 4.dp) {
-            Column(
-                modifier = Modifier.padding(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Card(elevation = 4.dp) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        TextH5("№", modifier = Modifier.width(72.dp))
-                        TextH5("Заводской номер")
-                        Column(
-                            modifier = Modifier.width(96.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(text = "МГР", fontSize = 20.sp)
-                            TriStateCheckbox(
-                                modifier = Modifier.scale(2f).size(48.dp),
-                                colors = CheckboxDefaults.colors(MaterialTheme.colors.primary),
-                                state = vm.allCheckBoxesMeger.value,
-                                enabled = vm.mutableStateIsRunning.value,
-                                onClick = {
-                                    vm.onClickTriStateCheckbox(
-                                        vm.allCheckBoxesMeger,
-                                        vm.listCheckBoxesMeger
-                                    )
-                                },
-                            )
-                        }
-                        TextH5("R, МОм", modifier = Modifier.padding(8.dp).width(140.dp))
-                        Column(
-                            modifier = Modifier.width(96.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(text = "ВИУ", fontSize = 20.sp)
-                            TriStateCheckbox(
-                                modifier = Modifier.scale(2f).size(48.dp),
-                                colors = CheckboxDefaults.colors(MaterialTheme.colors.primary),
-                                state = vm.allCheckBoxesViu.value,
-                                enabled = vm.mutableStateIsRunning.value,
-                                onClick = {
-                                    vm.onClickTriStateCheckbox(
-                                        vm.allCheckBoxesViu,
-                                        vm.listCheckBoxesViu
-                                    )
-                                },
-                            )
-                        }
-                        TextH5(text = "I, мА", modifier = Modifier.padding(8.dp).width(140.dp))
-                        TextH5("Статус", modifier = Modifier.padding(8.dp).fillMaxWidth())
-                    }
-                }
-                repeat(10) { number ->
-                    Card(elevation = 4.dp) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-
-                            TextH5("${number + 1}", modifier = Modifier.width(72.dp))
-
-                            OutlinedTextField(modifier = Modifier.padding(8.dp).width(280.dp),
-                                singleLine = true,
-                                textStyle = TextStyle.Default.copy(
-                                    fontSize = 20.sp, textAlign = TextAlign.Center
-                                ),
-                                value = vm.listSerialNumbers[number].value,
-                                onValueChange = { vm.listSerialNumbers[number].value = it })
-                            Box(
-                                modifier = Modifier.width(96.dp), contentAlignment = Alignment.Center
-                            ) {
-                                Checkbox(
-                                    checked = vm.listCheckBoxesMeger[number].value,
-                                    enabled = vm.mutableStateIsRunning.value,
-                                    colors = CheckboxDefaults.colors(MaterialTheme.colors.primary),
-                                    onCheckedChange = { isChecked ->
-                                        vm.listCheckBoxesMeger[number].value = isChecked
-                                        var selectedCheckBox = 0
-                                        vm.listCheckBoxesMeger.forEach {
-                                            if (it.value) selectedCheckBox++
-                                        }
-                                        if (selectedCheckBox == vm.listCheckBoxesMeger.size) {
-                                            vm.allCheckBoxesMeger.value = ToggleableState.On
-                                        } else if (selectedCheckBox > 0) {
-                                            vm.allCheckBoxesMeger.value =
-                                                ToggleableState.Indeterminate
-                                        } else {
-                                            vm.allCheckBoxesMeger.value = ToggleableState.Off
-                                        }
-                                    },
-                                    modifier = Modifier.scale(2f).size(48.dp)
-                                )
-                            }
-                            OutlinedTextField(modifier = Modifier.padding(8.dp).width(140.dp)
-                                .background(vm.listColorsRsTF[number].value),
-                                textStyle = TextStyle.Default.copy(
-                                    fontSize = 20.sp, textAlign = TextAlign.Center
-                                ),
-                                value = vm.listRs[number].value,
-                                onValueChange = {})
-                            Box(
-                                modifier = Modifier.width(96.dp), contentAlignment = Alignment.Center
-                            ) {
-                                Checkbox(
-                                    checked = vm.listCheckBoxesViu[number].value,
-                                    enabled = vm.mutableStateIsRunning.value,
-                                    colors = CheckboxDefaults.colors(MaterialTheme.colors.primary),
-                                    onCheckedChange = { isChecked ->
-                                        vm.listCheckBoxesViu[number].value = isChecked
-                                        var selectedCheckBox = 0
-                                        vm.listCheckBoxesViu.forEach {
-                                            if (it.value) selectedCheckBox++
-                                        }
-                                        if (selectedCheckBox == vm.listCheckBoxesViu.size) {
-                                            vm.allCheckBoxesViu.value = ToggleableState.On
-                                        } else if (selectedCheckBox > 0) {
-                                            vm.allCheckBoxesViu.value = ToggleableState.Indeterminate
-                                        } else {
-                                            vm.allCheckBoxesViu.value = ToggleableState.Off
-                                        }
-                                    },
-                                    modifier = Modifier.scale(2f).size(48.dp)
-                                )
-                            }
-                            OutlinedTextField(modifier = Modifier.padding(8.dp).width(140.dp)
-                                .background(vm.listColorsCurrentTF[number].value),
-                                textStyle = TextStyle.Default.copy(
-                                    fontSize = 20.sp, textAlign = TextAlign.Center
-                                ),
-                                value = vm.listCurrents[number].value,
-                                onValueChange = {})
-                            Circle(color = vm.listColorsProtection[number].value, modifier = modifier.width(140.dp))
-                        }
-                    }
-                }
+        Column(
+            modifier = modifier.padding(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Card(elevation = 32.dp) {
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(64.dp)
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Button(
-                        modifier = Modifier.weight(1 / 2f).height(128.dp), onClick = {
-                            vm.logState.value = !vm.logState.value
-                        }, elevation = ButtonDefaults.elevation(
-                            defaultElevation = 10.dp, pressedElevation = 15.dp, disabledElevation = 0.dp
+                    TextH5("№", modifier = Modifier.width(72.dp))
+                    TextH5("Заводской номер")
+                    Column(
+                        modifier = Modifier.width(96.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(text = "МГР", fontSize = 20.sp)
+                        TriStateCheckbox(
+                            modifier = Modifier.scale(2f).height(48.dp).width(96.dp),
+                            colors = CheckboxDefaults.colors(MaterialTheme.colors.primary),
+                            state = vm.allCheckBoxesMeger.value,
+                            enabled = vm.mutableStateIsRunning.value && (vm.specifiedI.value.toIntOrNull()
+                                ?: 0) < 100,
+                            onClick = {
+                                vm.onClickTriStateCheckbox(
+                                    vm.allCheckBoxesMeger,
+                                    vm.listCheckBoxesMeger
+                                )
+                            },
                         )
+                    }
+                    TextH5("R, МОм", modifier = Modifier.padding(8.dp).width(140.dp))
+                    Column(
+                        modifier = Modifier.width(96.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(16.dp)
-                        ) {
-                            Text(
-                                text = if (vm.logState.value) "Показать чертеж" else "Показать лог",
-                                fontSize = 28.sp,
-                                fontWeight = FontWeight.Bold
-                            )
+                        Text(text = "ВИУ", fontSize = 20.sp)
+                        TriStateCheckbox(
+                            modifier = Modifier.scale(2f).height(48.dp).width(96.dp),
+                            colors = CheckboxDefaults.colors(MaterialTheme.colors.primary),
+                            state = vm.allCheckBoxesViu.value,
+                            enabled = vm.mutableStateIsRunning.value && (vm.specifiedI.value.toIntOrNull()
+                                ?: 0) < 100,
+                            onClick = {
+                                vm.onClickTriStateCheckbox(
+                                    vm.allCheckBoxesViu,
+                                    vm.listCheckBoxesViu
+                                )
+                            },
+                        )
+                    }
+                    TextH5(text = "I, мА", modifier = Modifier.padding(8.dp).width(140.dp))
+                    TextH5("Статус", modifier = Modifier.padding(8.dp).fillMaxWidth())
+                }
+            }
+            Column(modifier = Modifier.weight(0.99f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                repeat(10) { number ->
+                    if ((vm.specifiedI.value.toIntOrNull() ?: 0) < 100 || (((vm.specifiedI.value.toIntOrNull()
+                            ?: 0) > 100) && number == 0)
+                    ) {
+                        Card(elevation = 4.dp) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                TextH5("${number + 1}", modifier = Modifier.width(72.dp))
+
+                                OutlinedTextField(modifier = Modifier.padding(8.dp).width(280.dp),
+                                    singleLine = true,
+                                    textStyle = TextStyle.Default.copy(
+                                        fontSize = 20.sp, textAlign = TextAlign.Center
+                                    ),
+                                    value = vm.listSerialNumbers[number].value,
+                                    onValueChange = { vm.listSerialNumbers[number].value = it })
+                                Box(
+                                    modifier = Modifier.width(96.dp), contentAlignment = Alignment.Center
+                                ) {
+                                    Checkbox(
+                                        checked = vm.listCheckBoxesMeger[number].value,
+                                        enabled = vm.mutableStateIsRunning.value,
+                                        colors = CheckboxDefaults.colors(MaterialTheme.colors.primary),
+                                        onCheckedChange = { isChecked ->
+                                            vm.listCheckBoxesMeger[number].value = isChecked
+                                            var selectedCheckBox = 0
+                                            vm.listCheckBoxesMeger.forEach {
+                                                if (it.value) selectedCheckBox++
+                                            }
+                                            if (selectedCheckBox == vm.listCheckBoxesMeger.size) {
+                                                vm.allCheckBoxesMeger.value = ToggleableState.On
+                                            } else if (selectedCheckBox > 0) {
+                                                vm.allCheckBoxesMeger.value =
+                                                    ToggleableState.Indeterminate
+                                            } else {
+                                                vm.allCheckBoxesMeger.value = ToggleableState.Off
+                                            }
+                                        },
+                                        modifier = Modifier.scale(2f).height(48.dp).width(96.dp)
+                                    )
+                                }
+                                OutlinedTextField(modifier = Modifier.padding(8.dp).width(140.dp)
+                                    .background(vm.listColorsRsTF[number].value),
+                                    textStyle = TextStyle.Default.copy(
+                                        fontSize = 20.sp, textAlign = TextAlign.Center
+                                    ),
+                                    value = vm.listRs[number].value,
+                                    onValueChange = {})
+                                Box(
+                                    modifier = Modifier.width(96.dp), contentAlignment = Alignment.Center
+                                ) {
+                                    Checkbox(
+                                        checked = vm.listCheckBoxesViu[number].value,
+                                        enabled = vm.mutableStateIsRunning.value,
+                                        colors = CheckboxDefaults.colors(MaterialTheme.colors.primary),
+                                        onCheckedChange = { isChecked ->
+                                            vm.listCheckBoxesViu[number].value = isChecked
+                                            var selectedCheckBox = 0
+                                            vm.listCheckBoxesViu.forEach {
+                                                if (it.value) selectedCheckBox++
+                                            }
+                                            if (selectedCheckBox == vm.listCheckBoxesViu.size) {
+                                                vm.allCheckBoxesViu.value = ToggleableState.On
+                                            } else if (selectedCheckBox > 0) {
+                                                vm.allCheckBoxesViu.value = ToggleableState.Indeterminate
+                                            } else {
+                                                vm.allCheckBoxesViu.value = ToggleableState.Off
+                                            }
+                                        },
+                                        modifier = Modifier.scale(2f).height(48.dp).width(96.dp)
+                                    )
+                                }
+                                OutlinedTextField(modifier = Modifier.padding(8.dp).width(140.dp)
+                                    .background(vm.listColorsCurrentTF[number].value),
+                                    textStyle = TextStyle.Default.copy(
+                                        fontSize = 20.sp, textAlign = TextAlign.Center
+                                    ),
+                                    value = vm.listCurrents[number].value,
+                                    onValueChange = {})
+                                Circle(
+                                    color = vm.listColorsProtection[number].value,
+                                    modifier = modifier.width(140.dp)
+                                )
+                            }
                         }
                     }
-                    Button(
-                        modifier = Modifier.weight(1 / 2f).height(128.dp), onClick = {
-                            testViewModel.start()
-                        }, elevation = ButtonDefaults.elevation(
-                            defaultElevation = 10.dp, pressedElevation = 15.dp, disabledElevation = 0.dp
-                        ), enabled = !vm.isTestRunningState.value
+                }
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(64.dp)
+            ) {
+                Button(
+                    modifier = Modifier.weight(1 / 3f).height(64.dp), onClick = {
+                        vm.logState.value = !vm.logState.value
+                    }, elevation = ButtonDefaults.elevation(
+                        defaultElevation = 10.dp, pressedElevation = 15.dp, disabledElevation = 0.dp
+                    )
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(16.dp)
-                        ) {
-                            Text(text = "Старт", fontSize = 28.sp, fontWeight = FontWeight.Bold)
-                            Icon(
-                                imageVector = Icons.Filled.PlayArrow,
-                                contentDescription = null,
-                                modifier = Modifier.size(48.dp)
-                            )
-                        }
+                        Text(
+                            text = if (vm.logState.value) "Показать чертеж" else "Показать лог",
+                            fontSize = 28.sp,
+                            fontWeight = FontWeight.Bold
+                        )
                     }
-                    Button(
-                        modifier = Modifier.weight(1 / 2f).height(128.dp),
-                        onClick = {
-                            testViewModel.stop()
-                        },
-                        elevation = ButtonDefaults.elevation(
-                            defaultElevation = 10.dp, pressedElevation = 15.dp, disabledElevation = 0.dp
-                        ), enabled = vm.isTestRunningState.value
+                }
+                Button(
+                    modifier = Modifier.weight(1 / 3f).height(64.dp), onClick = {
+                        testViewModel.start()
+                    }, elevation = ButtonDefaults.elevation(
+                        defaultElevation = 10.dp, pressedElevation = 15.dp, disabledElevation = 0.dp
+                    ), enabled = !vm.isTestRunningState.value
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(16.dp)
-                        ) {
-                            Text(text = "Стоп", fontSize = 28.sp, fontWeight = FontWeight.Bold)
-                            Icon(
-                                imageVector = Icons.Filled.Stop,
-                                contentDescription = null,
-                                modifier = Modifier.size(48.dp)
-                            )
-                        }
+                        Text(text = "Старт", fontSize = 28.sp, fontWeight = FontWeight.Bold)
+                        Icon(
+                            imageVector = Icons.Filled.PlayArrow,
+                            contentDescription = null,
+                            modifier = Modifier.size(48.dp)
+                        )
+                    }
+                }
+                Button(
+                    modifier = Modifier.weight(1 / 3f).height(64.dp),
+                    onClick = {
+                        testViewModel.stop()
+                    },
+                    elevation = ButtonDefaults.elevation(
+                        defaultElevation = 10.dp, pressedElevation = 15.dp, disabledElevation = 0.dp
+                    ), enabled = vm.isTestRunningState.value
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        Text(text = "Стоп", fontSize = 28.sp, fontWeight = FontWeight.Bold)
+                        Icon(
+                            imageVector = Icons.Filled.Stop,
+                            contentDescription = null,
+                            modifier = Modifier.size(48.dp)
+                        )
                     }
                 }
             }

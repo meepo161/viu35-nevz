@@ -499,10 +499,10 @@ class ObjectEditorScreen(private var mainViewModel: MainScreenViewModel) : Scree
             }
             if (mainViewModel.dialogVisibleState.value) {
                 ConfirmDialog(
-                    mainViewModel.titleDialog.value,
-                    mainViewModel.textDialog.value,
-                    { mainViewModel.dialogVisibleState.value = false },
-                    { mainViewModel.dialogVisibleState.value = false })
+                    title = mainViewModel.titleDialog.value,
+                    text = mainViewModel.textDialog.value,
+                    yesCallback = { mainViewModel.hideDialog() },
+                    noCallback = { mainViewModel.hideDialog() })
             }
         }
     }
@@ -577,7 +577,7 @@ class ObjectEditorScreen(private var mainViewModel: MainScreenViewModel) : Scree
                         if (vm.currentFieldErrorState.value) {
                             Text(
                                 modifier = Modifier.padding(start = 64.dp),
-                                text = "*1-100 мА",
+                                text = "*1-1000 мА",
                                 fontSize = 20.sp,
                                 textAlign = TextAlign.Center
                             )

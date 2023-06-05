@@ -188,11 +188,11 @@ class PR(
         offOutput01To16(1)
     }
 
-    fun onNull() {
+    fun onShunt1A() {
         onOutput01To16(2)
     }
 
-    fun offNull() {
+    fun offShunt1A() {
         offOutput01To16(2)
     }
 

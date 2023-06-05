@@ -42,10 +42,10 @@ class UserEditorScreen : Screen {
             }) {
                 if (vm.dialogVisibleState.value) {
                     ConfirmDialog(
-                        vm.titleDialog.value,
-                        vm.textDialog.value,
-                        { vm.dialogVisibleState.value = false },
-                        { vm.dialogVisibleState.value = false })
+                        title = vm.titleDialog.value,
+                        text = vm.textDialog.value,
+                        yesCallback = { vm.dialogVisibleState.value = false },
+                        noCallback = { vm.dialogVisibleState.value = false })
                 }
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.Center) {
