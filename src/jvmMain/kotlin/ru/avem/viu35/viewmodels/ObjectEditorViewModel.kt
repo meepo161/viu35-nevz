@@ -319,6 +319,7 @@ class ObjectEditorViewModel(private var mainViewModel: MainScreenViewModel) : Sc
             ) {
                 scope.launch {
                     transaction {
+                        mainViewModel.selectedField.value?.nameTest = nameTestFieldState.value
                         mainViewModel.selectedField.value?.uViu = uViuFieldState.value.toInt()
                         mainViewModel.selectedField.value?.time = timeFieldState.value.toInt()
                         mainViewModel.selectedField.value?.uMeger = uMegerFieldState.value.toInt()

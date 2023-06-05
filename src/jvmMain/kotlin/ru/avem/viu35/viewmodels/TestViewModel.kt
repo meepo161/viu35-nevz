@@ -195,10 +195,10 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
         }
 
         if (isTestRunning && mainViewModel.specifiedI.value.toInt() <= 100) {
-            listPA.forEachIndexed { index, aveM3 ->
+            listPA.forEachIndexed { index, avem7 ->
                 if (mainViewModel.listCheckBoxesViu[index].value) {
                     mainViewModel.listViu[index] = mainViewModel.listCheckBoxesViu[index].value
-                    with(aveM3) {
+                    with(avem7) {
                         needDevices.add(this)
                         DevicePoller.startPoll(name, model.U_TRMS) { value ->
                             if (listCurrentsState[index]) {
@@ -207,9 +207,9 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
                                 var colorTF = (130 - 130 / specifiedI * value.toDouble()).toFloat()
                                 if (colorTF < 0) colorTF = 0f
                                 mainViewModel.listColorsCurrentTF[index].value = Color.hsv(colorTF, 0.7f, 1f)
-                                if (!mainViewModel.listViu.any { it }) {
-                                    cause = "Превышение по току по всем выбранным Постам"
-                                }
+                            }
+                            if (!mainViewModel.listViu.any { it }) {
+                                cause = "Превышение по току по всем выбранным Постам"
                             }
                             if (value.toDouble() > mainViewModel.specifiedI.value.toDouble() && listCurrentsState[index]) {
                                 protectionCurrent(index)
@@ -298,8 +298,14 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
     private fun protectionCurrent(index: Int, msg: String = "") {
         disassembleViu(index)
         mainViewModel.listColorsProtection[index].value = Color.Red
+        mainViewModel.listColorsCurrentTF[index].value = Color.hsv(0f, 0.7f, 1f)
         mainViewModel.listViu[index] = false
         listCurrentsState[index] = false
+        if(msg == "") {
+            mainViewModel.listCurrents[index].value = ">${mainViewModel.specifiedI.value}"
+        } else {
+            mainViewModel.listCurrents[index].value = "> 100"
+        }
         appendOneMessageToLog("Пост ${index + 1}: Превышение по току $msg")
     }
 
@@ -742,6 +748,7 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
     }
 
     private fun initTest() {
+        mainViewModel.logState.value = true
         needDevices.clear()
         listMessagesLog.clear()
         mainViewModel.storedUViu = ""
@@ -753,6 +760,7 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
         isTestRunning = true
         mainViewModel.mutableStateIsRunning.value = false
         mainViewModel.isTestRunningState.value = true
+
     }
 
 
@@ -767,6 +775,8 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
             mainViewModel.showDialog("Ошибка", cause, "red_button.gif")
         } else if (cause.isNotEmpty()) {
             mainViewModel.showDialog("Ошибка", cause, "error.gif")
+        } else {
+            mainViewModel.showDialog("Внимание", "Испытание завершено")
         }
         if (isTestRunning) appendOneMessageToLog("Испытание завершено")
         transaction {
@@ -800,7 +810,7 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
         mainViewModel.measuredTime.value = ""
         mainViewModel.measuredI.value = ""
         mainViewModel.measuredUMeger.value = ""
-
+        mainViewModel.logState.value = false
     }
 
     fun stop() {

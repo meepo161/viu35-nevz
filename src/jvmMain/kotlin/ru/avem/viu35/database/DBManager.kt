@@ -100,7 +100,7 @@ object DBManager {
                     }
                 }
                 TestItem.new {
-                    name = "Блок реэисторов высоковольтной цепи БРВЦ-4б"
+                    name = "Блок резисторов высоковольтной цепи БРВЦ-4б"
                     type = "6ТС.277.046"
                     useResource("6ТС.277.046.png") {
                         image =
@@ -120,7 +120,7 @@ object DBManager {
                     TestItemField.new {
                         testItem = ti
                         key = 2
-                        nameTest = "Между дойкой поз. 6 и поверхностью К"
+                        nameTest = "Между стойкой поз. 6 и поверхностью К"
                         uViu = 9500
                         time = 60
                         uMeger = 2500
