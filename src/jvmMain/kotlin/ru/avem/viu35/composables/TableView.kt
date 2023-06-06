@@ -34,7 +34,9 @@ fun <T> TableView(
     onItemSecondaryPressed: (Int) -> Unit,
     contextMenuContent: @Composable () -> Unit,
     isExpandedDropdownMenu: MutableState<Boolean>,
-    listWeight: List<Float> = listOf(0.6f, 0.1f, 0.1f, 0.1f, 0.16f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f)
+    listWeight: List<Float> = listOf(0.6f, 0.1f, 0.1f, 0.1f, 0.16f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f),
+    rowHeight: Int = 48,
+    fontSize : Int = 28
 ) {
     var hoveredItem by remember { mutableStateOf(selectedItem) }
 
@@ -110,13 +112,14 @@ fun <T> TableView(
                                 .border(
                                     width = 1.dp,
                                     color = MaterialTheme.colors.onBackground
-                                ).weight(listWeight[index]).height(48.dp), contentAlignment = Alignment.Center
+                                ).weight(listWeight[index]).height(rowHeight.dp), contentAlignment = Alignment.Center
                         ) {
                             Text(
                                 text = field,
                                 modifier = Modifier.padding(4.dp),
                                 textAlign = TextAlign.Center,
-                                fontSize = 28.sp
+                                fontSize = fontSize.sp,
+                                maxLines = 2
                             )
                         }
                     }

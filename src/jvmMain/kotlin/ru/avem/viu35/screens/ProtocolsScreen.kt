@@ -114,6 +114,7 @@ class ProtocolsScreen(private var mainViewModel: MainScreenViewModel) : Screen {
                             items = mainViewModel.allProtocols.value,
                             columns = listOf(
                                 Protocol::itemName,
+                                Protocol::pointsName,
                                 Protocol::operator,
                                 Protocol::date,
                                 Protocol::time,
@@ -122,10 +123,11 @@ class ProtocolsScreen(private var mainViewModel: MainScreenViewModel) : Screen {
                             ),
                             columnNames = listOf(
                                 "Тип аппарата",
+                                "Испытываемая точка",
                                 "Оператор",
                                 "Дата",
                                 "Время",
-                                "Серийный номер",
+                                "Заводской номер",
                                 "Результат",
                             ),
                             onItemPrimaryPressed = {
@@ -134,6 +136,9 @@ class ProtocolsScreen(private var mainViewModel: MainScreenViewModel) : Screen {
                             onItemSecondaryPressed = {
                                 mainViewModel.selectedProtocol.value = mainViewModel.allProtocols.value[it]
                             },
+                            listWeight = listOf(0.25f, 0.25f, 0.2f, 0.1f, 0.1f, 0.2f, 0.1f),
+                            rowHeight = 80,
+                            fontSize = 22,
                             contextMenuContent = {
                                 DropdownMenuItem(onClick = {
                                     deleteProtocol()

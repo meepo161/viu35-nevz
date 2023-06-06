@@ -32,6 +32,7 @@ import cafe.adriel.voyager.core.lifecycle.LifecycleEffect
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import onExit
 import operatorLogin
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -107,27 +108,28 @@ class LoginScreen : Screen {
                             append("А")
                         }
                         append("вторизация")
-                    }, fontSize = 30.sp)
-                    Spacer(Modifier.size(16.dp))
+                    }, fontSize = 48.sp)
+                    Spacer(Modifier.size(24.dp))
                     ComboBox(
-                        modifier = Modifier.width(280.dp),
+                        modifier = Modifier.width(560.dp),
                         selectedItem = selectedLogin,
                         items = users,
                         selectedValue = {
                             selectedLogin.value = it
                         },
-                        textAlign = TextAlign.Start
+                        textAlign = TextAlign.Start,
+                        fontSize = 32
                     )
                     Spacer(Modifier.size(16.dp))
                     OutlinedTextField(
                         textStyle = TextStyle.Default.copy(
-                            fontSize = 20.sp
+                            fontSize = 32.sp
                         ),
                         value = password.value,
                         singleLine = true,
                         onValueChange = { password.value = it },
                         isError = passwordErrorState,
-                        modifier = Modifier.focusTarget().onPreviewKeyEvent {
+                        modifier = Modifier.width(560.dp).focusTarget().onPreviewKeyEvent {
                             keyEventNext(it, focusManager)
                         }.onKeyEvent {
                             if (it.key == Key.Enter) {
@@ -169,11 +171,26 @@ class LoginScreen : Screen {
                             Text(
                                 text = "Вход",
                                 color = MaterialTheme.colors.surface,
-                                fontSize = 28.sp,
+                                fontSize = 48.sp,
                                 fontWeight = FontWeight.Bold
                             )
                         },
                         colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.primary)
+                    )
+                    Spacer(Modifier.size(16.dp))
+                    Button(
+                        onClick = {
+                            onExit()
+                        },
+                        content = {
+                            Text(
+                                text = "Выход",
+                                color = MaterialTheme.colors.surface,
+                                fontSize = 24.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        },
+                        colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.secondary)
                     )
                 }
             })

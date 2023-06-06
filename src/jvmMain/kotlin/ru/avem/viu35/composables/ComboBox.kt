@@ -35,7 +35,8 @@ fun <T> ComboBox(
     items: List<T>,
     selectedValue: (T) -> Unit = {},
     isEditable: Boolean = true,
-    textAlign: TextAlign = TextAlign.Center
+    textAlign: TextAlign = TextAlign.Center,
+    fontSize: Int = 20
 ) {
     var expandedState by remember {
         if (selectedItem.value != null) {
@@ -52,7 +53,7 @@ fun <T> ComboBox(
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier.clickable(enabled = isEditable) {
+            modifier = Modifier.clickable(enabled = isEditable && !expandedState) {
                 expandedState = !expandedState
             },
         ) {
@@ -62,7 +63,7 @@ fun <T> ComboBox(
                 } else {
                     transaction { selectedItem.value.toString() }
                 },
-                fontSize = 20.sp,
+                fontSize = fontSize.sp,
                 softWrap = false,
                 textAlign = textAlign,
                 modifier = Modifier.padding(16.dp).weight(0.9f),
@@ -93,7 +94,7 @@ fun <T> ComboBox(
                                 Text(
                                     text = transaction { item.toString() },
                                     overflow = TextOverflow.Visible,
-                                    fontSize = 20.sp,
+                                    fontSize = fontSize.sp,
                                 )
                             }
                         }

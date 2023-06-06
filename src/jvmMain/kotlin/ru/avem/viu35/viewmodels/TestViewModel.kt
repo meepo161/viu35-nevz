@@ -224,10 +224,18 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
             with(PA21) {
                 needDevices.add(this)
                 DevicePoller.startPoll(name, model.U_TRMS) { value ->
-                    mainViewModel.measuredI.value = (value.toDouble() * 1000).af()
+                    if (value.toDouble() > 1.0) {
+                        mainViewModel.measuredI.value = (value.toDouble() * 1000).af()
+                    } else {
+                        mainViewModel.measuredI.value = (0.0).af()
+                    }
                     if ((mainViewModel.specifiedI.value.toIntOrNull() ?: 0) > 100) {
                         if (listCurrentsState[0]) {
-                            mainViewModel.listCurrents[0].value = (value.toDouble() * 1000).formatDigits(1)
+                            if (value.toDouble() > 1.0) {
+                                mainViewModel.listCurrents[0].value = (value.toDouble() * 1000).formatDigits(1)
+                            } else {
+                                mainViewModel.listCurrents[0].value = (0.0).formatDigits(1)
+                            }
                             val specifiedI = mainViewModel.specifiedI.value.toDouble()
                             var colorTF = (130 - 130 / specifiedI * (value.toDouble() * 1000)).toFloat()
                             if (colorTF < 0) colorTF = 0f
@@ -324,13 +332,13 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
                 if (isTestRunning) appendOneMessageToLog("Инициализация ПР")
                 if (isTestRunning) initDD2()
 
-                if (operatorLogin != "admin") {
+//                if (operatorLogin != "admin") {
                     thread(isDaemon = true) {
                         if (isTestRunning) DD2.onSound()
                         if (isTestRunning) sleep(6000)
                         if (isTestRunning) DD2.offSound()
                     }
-                }
+//                }
 
                 if (isTestRunning) appendOneMessageToLog("Инициализация устройств")
                 if (isTestRunning) initDDs()

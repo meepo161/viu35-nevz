@@ -39,7 +39,7 @@ fun App() {
 
 fun main() = application {
     DBManager.validateDB()
-    val windowState = rememberWindowState(placement = WindowPlacement.Fullscreen)
+    val windowState = rememberWindowState(placement = WindowPlacement.Maximized)
 
     Window(onCloseRequest = { onExit() }, undecorated = true, resizable = false, state = windowState) {
         App()

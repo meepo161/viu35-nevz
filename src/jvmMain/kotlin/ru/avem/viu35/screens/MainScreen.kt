@@ -461,7 +461,7 @@ object MainScreen : Screen {
                         vm.logState.value = !vm.logState.value
                     }, elevation = ButtonDefaults.elevation(
                         defaultElevation = 10.dp, pressedElevation = 15.dp, disabledElevation = 0.dp
-                    )
+                    ), enabled = !isTestRunning
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
