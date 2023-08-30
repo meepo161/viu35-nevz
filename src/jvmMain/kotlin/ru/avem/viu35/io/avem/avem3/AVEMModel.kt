@@ -5,6 +5,7 @@ import ru.avem.library.polling.IDeviceModel
 
 class AVEMModel : IDeviceModel {
     val U_TRMS = "U_TRMS"
+    val U_AMP = "U_AMP"
     val RELAY_VALUE = "RELAY_VALUE"
     val RELAY_ON = "RELAY_ON"
     val RELAY_OFF = "RELAY_OFF"
@@ -14,6 +15,10 @@ class AVEMModel : IDeviceModel {
     val SERIAL_NUMBER = "SERIAL_NUMBER"
 
     override val registers: Map<String, DeviceRegister> = mapOf(
+        U_AMP to DeviceRegister(
+            0x1000,
+            DeviceRegister.RegisterValueType.FLOAT
+        ),
         U_TRMS to DeviceRegister(
             0x1004,
             DeviceRegister.RegisterValueType.FLOAT

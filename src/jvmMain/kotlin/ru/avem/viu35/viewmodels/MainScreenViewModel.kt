@@ -24,9 +24,11 @@ class MainScreenViewModel(val logScrollState: LazyListState) : ScreenModel {
 
     val imageVisibleState = mutableStateOf(false)
     val dialogVisibleState = mutableStateOf(false)
+    val exitDialogVisibleState = mutableStateOf(false)
     val image = "${File("").absolutePath}\\images\\image.jpg"
 
     val listSerialNumbers = List(10) { mutableStateOf("") }
+    val listDateProduct = List(10) { mutableStateOf("") }
     val listCurrents = List(10) { mutableStateOf("") }
     val listColorsCurrentTF = List(10) { mutableStateOf(Color.Transparent) }
     val listColorsRsTF = List(10) { mutableStateOf(Color.Transparent) }
@@ -45,12 +47,16 @@ class MainScreenViewModel(val logScrollState: LazyListState) : ScreenModel {
     val specifiedI = mutableStateOf("")
     val specifiedTime = mutableStateOf("")
 
+    val measuredUViuAmp = mutableStateOf("")
+
     val measuredUViu = mutableStateOf("")
     val measuredTime = mutableStateOf("")
     val measuredI = mutableStateOf("")
     val measuredUMeger = mutableStateOf("")
+    val indexMeger = mutableStateOf(0)
 
     var storedUViu = ""
+    var storedUViuAmp = ""
 
     val storedListCurrents = mutableListOf<Double>()
     val storedListRs = mutableListOf<Double>()

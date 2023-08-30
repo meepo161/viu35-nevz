@@ -7,7 +7,9 @@ import isTestRunning
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import operatorLogin
+import operatorPostString
 import org.jetbrains.exposed.sql.transactions.transaction
+import ru.avem.kserialpooler.PortDiscover
 import ru.avem.library.polling.IDeviceController
 import ru.avem.viu35.af
 import ru.avem.viu35.database.entities.Protocol
@@ -191,6 +193,9 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
                 DevicePoller.startPoll(name, model.U_TRMS) { value ->
                     mainViewModel.measuredUViu.value = (value.toDouble() * 1000).af()
                 }
+                DevicePoller.startPoll(name, model.U_AMP) { value ->
+                    mainViewModel.measuredUViuAmp.value = (value.toDouble() * 1000).af()
+                }
             }
         }
 
@@ -309,7 +314,7 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
         mainViewModel.listColorsCurrentTF[index].value = Color.hsv(0f, 0.7f, 1f)
         mainViewModel.listViu[index] = false
         listCurrentsState[index] = false
-        if(msg == "") {
+        if (msg == "") {
             mainViewModel.listCurrents[index].value = ">${mainViewModel.specifiedI.value}"
         } else {
             mainViewModel.listCurrents[index].value = "> 100"
@@ -322,8 +327,9 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
             thread {
                 initTest()
                 appendOneMessageToLog("Инициализация стенда")
-                DD2.checkResponsibility()
-                if (!DD2.isResponding) cause = "ПР102 не отвечает"
+//                initCP2103()
+                if (isTestRunning) DD2.checkResponsibility()
+                if (isTestRunning && !DD2.isResponding) cause += "ПР102 не отвечает"
                 mainViewModel.listColorsProtection.forEach {
                     it.value = Color(0xFF6200EE)
                 }
@@ -333,11 +339,11 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
                 if (isTestRunning) initDD2()
 
 //                if (operatorLogin != "admin") {
-                    thread(isDaemon = true) {
-                        if (isTestRunning) DD2.onSound()
-                        if (isTestRunning) sleep(6000)
-                        if (isTestRunning) DD2.offSound()
-                    }
+                thread(isDaemon = true) {
+                    if (isTestRunning) DD2.onSound()
+                    if (isTestRunning) sleep(6000)
+                    DD2.offSound()
+                }
 //                }
 
                 if (isTestRunning) appendOneMessageToLog("Инициализация устройств")
@@ -362,6 +368,16 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
                 finalizeTest()
             }
         }
+    }
+
+    private fun initCP2103() {
+        DevicePoller.connection.disconnect()
+        DevicePoller.connection.connect()
+        DevicePoller.stopCP2103()
+        if (PortDiscover.ports.isEmpty()) {
+            cause = "Не подключен преобразователь интерфейса"
+        }
+        if (isTestRunning) DevicePoller.startCP2103()
     }
 
     private fun meger() {
@@ -396,6 +412,7 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
         }
         mainViewModel.listCheckBoxesMeger.forEachIndexed { index, state ->
             if (state.value) {
+                mainViewModel.indexMeger.value = index
                 if (isTestRunning) appendOneMessageToLog("Испытание МГР Пост ${index + 1}")
                 if (isTestRunning) DD2.onKM2BP()
                 if (isTestRunning) assembleMgr(index)
@@ -460,29 +477,43 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
                 }
                 if (PR65.isResponding) PR65.stopTest()
                 if (isTestRunning) disassembleMgr(index)
+                val listROur = listOf(
+                    22189.1292,
+                    16627.00408,
+                    21466.82064,
+                    26223.10845,
+                    23817.53268,
+                    23609.59588,
+                    23148.4737,
+                    39879.97257,
+                    33183.7671,
+                    30667.19633
+                )
+                var r = abs((r15 * listROur[index]) / (r15 - listROur[index]))
                 if (isTestRunning) mainViewModel.listRs[index].value =
-                    if (mainViewModel.specifiedUMeger.value.toInt() == 2500 && r15 == 200000.0) {
-                        ">200000"
-                    } else if (mainViewModel.specifiedUMeger.value.toInt() == 1000 && r15 > 100000.0) {
+                    if (mainViewModel.specifiedUMeger.value.toInt() == 2500 && r > 100000.0) {
                         ">100000"
-                    } else if (mainViewModel.specifiedUMeger.value.toInt() == 500 && r15 > 50000.0) {
+                    } else if (mainViewModel.specifiedUMeger.value.toInt() == 1000 && r > 100000.0) {
+                        ">100000"
+                    } else if (mainViewModel.specifiedUMeger.value.toInt() == 500 && r > 50000.0) {
                         ">50000"
                     } else if (r15 < 0.3) {
                         "<0.2"
                     } else {
-                        r15.af()
+                        r.af()
+//                        r15.af()
                     }
-                if (r15 < 0.3) {
+                if (r < 0.3 || r < mainViewModel.specifiedRMeger.value.toDouble()) {
                     if (isTestRunning) mainViewModel.listColorsProtection[index].value = Color.Red
                     if (isTestRunning) mainViewModel.listCheckBoxesViu[index].value = false
                     if (isTestRunning) mainViewModel.listViu[index] = false
                     if (isTestRunning && !mainViewModel.listCheckBoxesViu.any { it.value }) {
                         mainViewModel.allCheckBoxesViu.value = ToggleableState.Off
                     }
+                    if (isTestRunning) mainViewModel.listColorsRsTF[index].value = Color.hsv(0f, 0.7f, 1f)
+                } else {
+                    if (isTestRunning) mainViewModel.listColorsRsTF[index].value = Color.hsv(130f, 0.7f, 1f)
                 }
-                var colorTF = (130 / mainViewModel.specifiedRMeger.value.toDouble() * r15).toFloat()
-                if (isTestRunning) if (colorTF > 130f) colorTF = 130f
-                if (isTestRunning) mainViewModel.listColorsRsTF[index].value = Color.hsv(colorTF, 0.7f, 1f)
             }
             if (!isTestRunning) mainViewModel.listRs[index].value = ""
             if (!isTestRunning) mainViewModel.listColorsRsTF[index].value = Color.Transparent
@@ -558,6 +589,11 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
         if (isTestRunning) DD4.on(6) //ЗЕМЛЯ
         if (isTestRunning) DD2.offLightGround()
 
+        sleepTime(2.0)
+
+        if (isTestRunning && voltageLatr1 < 0.1) cause = "Отсутствует напряжение на АРН1. Проверьте автомат"
+        if (isTestRunning && voltageLatr2 < 0.1) cause = "Отсутствует напряжение на АРН2. Проверьте автомат"
+
         if (isTestRunning) appendOneMessageToLog("Ожидание поднятия напряжения")
         val timerLatrs = System.currentTimeMillis()
         if (isTestRunning) ATR240.resetLATR()
@@ -575,14 +611,19 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
 
         appendOneMessageToLog("Выставление заданного напряжения")
 
-        repeat(3) {
-            if (isTestRunning) voltageRegulation(mainViewModel.specifiedUViu.value.toDouble())
-            if (isTestRunning) sleep(1000)
-        }
+        if (isTestRunning) voltageRegulation(mainViewModel.specifiedUViu.value.toDouble())
 
         if (isTestRunning) appendOneMessageToLog("Выдержка напряжения")
         val startTime = System.currentTimeMillis()
         val time = mainViewModel.specifiedTime.value.toDouble() * 1000 + startTime
+
+        thread(isDaemon = true) {
+            repeat(3) {
+                if (isTestRunning) voltageRegulation(mainViewModel.specifiedUViu.value.toDouble())
+                if (isTestRunning) sleep(1000)
+            }
+        }
+
         while (isTestRunning && System.currentTimeMillis() < (time)) {
             mainViewModel.measuredTime.value =
                 "%.1f".format(Locale.ENGLISH, abs(time - System.currentTimeMillis()) / 1000)
@@ -591,6 +632,7 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
         mainViewModel.measuredTime.value = "%.1f".format(Locale.ENGLISH, 0.0)
 
         mainViewModel.storedUViu = mainViewModel.measuredUViu.value
+        mainViewModel.storedUViuAmp = mainViewModel.measuredUViuAmp.value
 
         for (listCurrent in listCurrentsState.indices) {
             listCurrentsState[listCurrent] = false
@@ -679,6 +721,10 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
         if (isTestRunning) DD4.on(6) //ЗЕМЛЯ
         if (isTestRunning) DD2.offLightGround()
 
+        sleepTime(2.0)
+        if (isTestRunning && voltageLatr1 < 0.1) cause = "Отсутствует напряжение на АРН1. Проверьте автомат"
+        if (isTestRunning && voltageLatr2 < 0.1) cause = "Отсутствует напряжение на АРН2. Проверьте автомат"
+
         if (isTestRunning) appendOneMessageToLog("Ожидание поднятия напряжения")
         val timerLatrs = System.currentTimeMillis()
         if (isTestRunning) ATR240.resetLATR()
@@ -712,6 +758,7 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
         mainViewModel.measuredTime.value = "%.1f".format(Locale.ENGLISH, 0.0)
 
         mainViewModel.storedUViu = mainViewModel.measuredUViu.value
+        mainViewModel.storedUViuAmp = mainViewModel.measuredUViuAmp.value
 
         listCurrentsState[0] = false
 
@@ -760,6 +807,7 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
         needDevices.clear()
         listMessagesLog.clear()
         mainViewModel.storedUViu = ""
+        mainViewModel.storedUViuAmp = ""
         mainViewModel.clearTestFields()
         for (listCurrent in listCurrentsState.indices) {
             listCurrentsState[listCurrent] = false
@@ -786,26 +834,47 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
         } else {
             mainViewModel.showDialog("Внимание", "Испытание завершено")
         }
-        if (isTestRunning) appendOneMessageToLog("Испытание завершено")
         transaction {
             repeat(10) {
                 if (mainViewModel.listColorsProtection[it].value != Color(0xFF6200EE)) {
                     Protocol.new {
                         serial = mainViewModel.listSerialNumbers[it].value
+                        dateProduct = mainViewModel.listDateProduct[it].value
                         operator = operatorLogin
+                        operatorPost = operatorPostString
                         itemName = mainViewModel.selectedObject.value!!.name
+                        itemType = mainViewModel.selectedObject.value!!.type
                         pointsName = mainViewModel.selectedField.value!!.nameTest
+                        spec_uViu = mainViewModel.selectedField.value!!.uViu.toString()
+                        spec_uViuAmp = (mainViewModel.selectedField.value!!.uViu * 1.41).af()
+                        spec_uViuFault = mainViewModel.selectedField.value!!.uViuFault.toString()
+                        spec_uViuAmpFault = mainViewModel.selectedField.value!!.uViuFault.toString()
+                        spec_iViu = mainViewModel.selectedField.value!!.current.toString()
+                        spec_uMgr = mainViewModel.selectedField.value!!.uMeger.toString()
+                        spec_rMgr = mainViewModel.selectedField.value!!.rMeger
+                        uViuAmp = mainViewModel.storedUViuAmp
                         uViu = mainViewModel.storedUViu
                         iViu = mainViewModel.listCurrents[it].value
                         uMgr = mainViewModel.specifiedUMeger.value
                         rMgr = mainViewModel.listRs[it].value
                         date = SimpleDateFormat("dd.MM.y").format(System.currentTimeMillis()).toString()
                         time = SimpleDateFormat("HH:mm:ss").format(System.currentTimeMillis()).toString()
-                        result = when (mainViewModel.listColorsProtection[it].value) {
-                            Color.Red -> "Неуспешно"
-                            Color.Green -> "Успешно"
-                            else -> "Неизвестно"
-                        }
+                        resultMgr =
+                            if (mainViewModel.listColorsProtection[it].value == Color.Red && mainViewModel.listCheckBoxesMeger[it].value) {
+                                "Не соответствует"
+                            } else if (mainViewModel.listColorsProtection[it].value == Color.Green && mainViewModel.listCheckBoxesMeger[it].value) {
+                                "Соответствует"
+                            } else {
+                                "Не проводился"
+                            }
+                        resultViu =
+                            if (mainViewModel.listColorsProtection[it].value == Color.Red && mainViewModel.listCheckBoxesViu[it].value) {
+                                "Не выдержано"
+                            } else if (mainViewModel.listColorsProtection[it].value == Color.Green && mainViewModel.listCheckBoxesViu[it].value) {
+                                "Выдержано"
+                            } else {
+                                "Не проводился"
+                            }
                     }
                 }
             }
@@ -819,6 +888,12 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
         mainViewModel.measuredI.value = ""
         mainViewModel.measuredUMeger.value = ""
         mainViewModel.logState.value = false
+
+        if (cause == "") {
+            appendOneMessageToLog("Испытание завершено")
+        } else {
+            appendOneMessageToLog("Испытание прервано по ошибке: $cause")
+        }
     }
 
     fun stop() {

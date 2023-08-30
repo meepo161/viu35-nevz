@@ -14,12 +14,14 @@ import ru.avem.viu35.io.owen.pr.PR
 import ru.avem.viu35.io.rele.ReleController
 
 object DevicePoller : SimplePollingModel() {
-    private val connection = Connection(
+    val connection = Connection(
         adapterName = "CP2103 USB to RS-485",
         serialParameters = SerialParameters(8, 0, 1, 38400),
         timeoutRead = 100,
         timeoutWrite = 100
-    ).apply { connect() }
+    ).apply {
+        connect()
+    }
 
     private val main = ModbusRTUAdapter(connection)
 
@@ -66,5 +68,12 @@ object DevicePoller : SimplePollingModel() {
 
     init {
         start()
+    }
+
+    fun startCP2103() {
+        start()
+    }
+    fun stopCP2103() {
+        stop()
     }
 }

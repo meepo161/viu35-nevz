@@ -6,6 +6,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
@@ -23,7 +24,7 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.avem.viu35.composables.ConfirmDialog
-import ru.avem.viu35.composables.TableView
+import ru.avem.viu35.composables.ProtocolTableView
 import ru.avem.viu35.database.DBManager
 import ru.avem.viu35.database.entities.Protocol
 import ru.avem.viu35.database.entities.Protocols
@@ -35,7 +36,7 @@ import java.io.File
 
 class ProtocolsScreen(private var mainViewModel: MainScreenViewModel) : Screen {
     val dialogVisibleState = mutableStateOf(false)
-    val titleDialog= mutableStateOf("")
+    val titleDialog = mutableStateOf("")
     val textDialog = mutableStateOf("")
     val filterValue = mutableStateOf("")
 
@@ -58,6 +59,7 @@ class ProtocolsScreen(private var mainViewModel: MainScreenViewModel) : Screen {
         val navigator = LocalNavigator.currentOrThrow
         val isExpandedDropDownMenu = mutableStateOf(false)
         val showDirectoryPicker = mutableStateOf(false)
+        val listCheckBoxes = List(mainViewModel.allProtocols.value.size) { remember { mutableStateOf(false) } }
 
 
         MaterialTheme {
@@ -80,11 +82,19 @@ class ProtocolsScreen(private var mainViewModel: MainScreenViewModel) : Screen {
                 if (mainViewModel.selectedProtocol.value != null) {
                     DirectoryPicker(showDirectoryPicker.value) {
                         if (it != null) {
-                            saveProtocolAsWorkbook(
-                                listOf(mainViewModel.selectedProtocol.value!!), File(
-                                    it, "${mainViewModel.selectedProtocol.value!!}.xlsx"
-                                ).absolutePath
-                            )
+                            var list = mutableListOf<Protocol>()
+                            listCheckBoxes.forEachIndexed { index, mutableState ->
+                                if (mutableState.value) {
+                                    list.add(mainViewModel.allProtocols.value[index])
+                                }
+                            }
+                            if (list.size == 0) {
+                                mainViewModel.showDialog("Ошибка", "Не выбран ни один протокол")
+                            } else if (list.size > 11) {
+                                mainViewModel.showDialog("Ошибка", "Выбрано больше 10 протоколов")
+                            } else {
+                                saveProtocolAsWorkbook(list)
+                            }
                         }
                         showDirectoryPicker.value = false
                     }
@@ -109,26 +119,27 @@ class ProtocolsScreen(private var mainViewModel: MainScreenViewModel) : Screen {
                         })
                     }
                     Box(modifier = Modifier.weight(0.9f)) {
-                        TableView(
+                        ProtocolTableView(
                             selectedItem = mainViewModel.selectedProtocol.value,
                             items = mainViewModel.allProtocols.value,
+                            listCheckBoxes = listCheckBoxes,
                             columns = listOf(
                                 Protocol::itemName,
+                                Protocol::itemType,
                                 Protocol::pointsName,
                                 Protocol::operator,
                                 Protocol::date,
                                 Protocol::time,
                                 Protocol::serial,
-                                Protocol::result,
                             ),
                             columnNames = listOf(
                                 "Тип аппарата",
+                                "Чертеж",
                                 "Испытываемая точка",
                                 "Оператор",
                                 "Дата",
                                 "Время",
                                 "Заводской номер",
-                                "Результат",
                             ),
                             onItemPrimaryPressed = {
                                 mainViewModel.selectedProtocol.value = mainViewModel.allProtocols.value[it]
@@ -154,12 +165,23 @@ class ProtocolsScreen(private var mainViewModel: MainScreenViewModel) : Screen {
                         modifier = Modifier.weight(0.1f).fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally)
                     ) {
-
                         Button(
                             modifier = Modifier.weight(1 / 4f).height(128.dp),
                             onClick = {
-                                saveProtocolAsWorkbook(listOf(mainViewModel.selectedProtocol.value!!))
-                                openFile(File("lastOpened.xlsx"))
+                                var list = mutableListOf<Protocol>()
+                                listCheckBoxes.forEachIndexed { index, mutableState ->
+                                    if (mutableState.value) {
+                                        list.add(mainViewModel.allProtocols.value[index])
+                                    }
+                                }
+                                if (list.size == 0) {
+                                    mainViewModel.showDialog("Ошибка", "Не выбран ни один протокол")
+                                } else if (list.size > 11) {
+                                    mainViewModel.showDialog("Ошибка", "Выбрано больше 10 протоколов")
+                                } else {
+                                    saveProtocolAsWorkbook(list)
+                                    openFile(File("lastOpened.xlsx"))
+                                }
                             },
                             elevation = ButtonDefaults.elevation(
                                 defaultElevation = 10.dp, pressedElevation = 15.dp, disabledElevation = 0.dp
@@ -180,9 +202,20 @@ class ProtocolsScreen(private var mainViewModel: MainScreenViewModel) : Screen {
                         Button(
                             modifier = Modifier.weight(1 / 4f).height(128.dp),
                             onClick = {
-                                saveProtocolAsWorkbook(listOf(mainViewModel.selectedProtocol.value!!))
-                                Desktop.getDesktop().print(File("lastOpened.xlsx"))
-                                mainViewModel.showDialog("Внимание", "Печать началась. Ожидайте")
+                                var list = mutableListOf<Protocol>()
+                                listCheckBoxes.forEachIndexed { index, mutableState ->
+                                    if (mutableState.value) {
+                                        list.add(mainViewModel.allProtocols.value[index])
+                                    }
+                                }
+                                if (list.size == 0) {
+                                    mainViewModel.showDialog("Ошибка", "Не выбран ни один протокол")
+                                } else if (list.size > 11) {
+                                    mainViewModel.showDialog("Ошибка", "Выбрано больше 10 протоколов")
+                                } else {
+                                    saveProtocolAsWorkbook(list)
+                                    Desktop.getDesktop().print(File("lastOpened.xlsx"))
+                                }
                             },
                             elevation = ButtonDefaults.elevation(
                                 defaultElevation = 10.dp, pressedElevation = 15.dp, disabledElevation = 0.dp

@@ -21,7 +21,8 @@ fun ConfirmDialog(
     text: String,
     nameGif: String = "",
     yesCallback: () -> Unit,
-    noCallback: () -> Unit
+    noCallback: () -> Unit,
+    secondButton: Boolean = false
 ) {
     AlertDialog(
         modifier = Modifier.width(500.dp),
@@ -52,16 +53,18 @@ fun ConfirmDialog(
                         Text("Ок", style = MaterialTheme.typography.h5)
                     }
                 }
-//                Button(onClick = {
-//                    noCallback()
-//                }, modifier = Modifier.fillMaxWidth().height(52.dp)) {
-//                    Row(
-//                        horizontalArrangement = Arrangement.spacedBy(4.dp),
-//                        verticalAlignment = Alignment.CenterVertically
-//                    ) {
-//                        Text("НЕТ", style = MaterialTheme.typography.h5)
-//                    }
-//                }
+                if (secondButton) {
+                    Button(onClick = {
+                        noCallback()
+                    }, modifier = Modifier.fillMaxWidth().height(52.dp)) {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("Нет", style = MaterialTheme.typography.h5)
+                        }
+                    }
+                }
             }
         }
     )

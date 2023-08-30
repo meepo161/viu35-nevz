@@ -10,6 +10,7 @@ object TestItemFields : IntIdTable() {
     var key = integer("key")
     var nameTest = varchar("nameTest", 2048)
     var uViu = integer("uViu")
+    var uViuFault = integer("uViuFault")
     var time = integer("time")
     var uMeger = integer("uMeger")
     var rMeger = varchar("rMeger", 128)
@@ -24,6 +25,7 @@ class TestItemField(id: EntityID<Int>) : IntEntity(id) {
     var key by TestItemFields.key
     var nameTest by TestItemFields.nameTest
     var uViu by TestItemFields.uViu
+    var uViuFault by TestItemFields.uViuFault
     var time by TestItemFields.time
     var uMeger by TestItemFields.uMeger
     var rMeger by TestItemFields.rMeger

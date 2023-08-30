@@ -1,6 +1,6 @@
 package ru.avem.viu35.screens
 
-import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -35,6 +35,7 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import isTestRunning
 import kotlinx.coroutines.launch
+import onExit
 import org.jetbrains.skia.Image
 import ru.avem.viu35.composables.*
 import ru.avem.viu35.viewmodels.MainScreenViewModel
@@ -46,7 +47,7 @@ import javax.imageio.ImageIO
 
 @Suppress("FunctionName")
 object MainScreen : Screen {
-    @OptIn(ExperimentalFoundationApi::class, ExperimentalAnimationApi::class)
+    @OptIn(ExperimentalFoundationApi::class)
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
@@ -96,27 +97,32 @@ object MainScreen : Screen {
                     MainScreenActionBar(navigator, vm) {}
                 })
             }) {
-            if (vm.imageVisibleState.value) {
-                Image(
-                    modifier = Modifier.fillMaxSize().onClick(matcher = PointerMatcher.mouse(PointerButton.Primary),
-                        keyboardModifiers = { true },
-                        onClick = {
-                            vm.imageVisibleState.value = false
-                        }),
-                    contentDescription = "image",
-                    bitmap = if (vm.selectedObject.value != null) {
-                        Image.Companion.makeFromEncoded(vm.selectedObject.value!!.image.bytes)
-                            .toComposeImageBitmap()
-                    } else {
-                        ImageBitmap(800, 800)
+            Column(modifier = Modifier.fillMaxSize()) {
+
+                AnimatedVisibility(vm.imageVisibleState.value) {
+                    Image(
+                        modifier = Modifier.fillMaxSize().onClick(matcher = PointerMatcher.mouse(PointerButton.Primary),
+                            keyboardModifiers = { true },
+                            onClick = {
+                                vm.imageVisibleState.value = false
+                            }),
+                        contentDescription = "image",
+                        bitmap = if (vm.selectedObject.value != null) {
+                            Image.Companion.makeFromEncoded(vm.selectedObject.value!!.image.bytes)
+                                .toComposeImageBitmap()
+                        } else {
+                            ImageBitmap(800, 800)
+                        }
+                    )
+                }
+                AnimatedVisibility(!vm.imageVisibleState.value) {
+                    Row(
+                        modifier = Modifier.fillMaxSize().padding(16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        LeftPanel(modifier = Modifier.weight(0.4f), vm)
+                        RightPanel(modifier = Modifier.weight(0.6f), vm, testViewModel)
                     }
-                )
-            } else {
-                Row(
-                    modifier = Modifier.fillMaxSize().padding(16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    LeftPanel(modifier = Modifier.weight(0.4f), vm)
-                    RighPanel(modifier = Modifier.weight(0.6f), vm, testViewModel)
                 }
             }
             if (vm.dialogVisibleState.value) {
@@ -126,6 +132,16 @@ object MainScreen : Screen {
                     nameGif = vm.nameGif.value,
                     yesCallback = { vm.hideDialog() },
                     noCallback = { vm.hideDialog() }
+                )
+            }
+            if (vm.exitDialogVisibleState.value) {
+                ConfirmDialog(
+                    title = "Выход",
+                    text = "Вы собираетесь выйти из приложения",
+                    nameGif = "",
+                    yesCallback = { onExit() },
+                    noCallback = { vm.exitDialogVisibleState.value = false },
+                    secondButton = true
                 )
             }
         }
@@ -172,20 +188,20 @@ object MainScreen : Screen {
                 ) {
                     Row(modifier = Modifier.fillMaxWidth()) {
                         Text(
-                            modifier = Modifier.weight(0.5f).padding(8.dp),
+                            modifier = Modifier.weight(0.5f).padding(end = 64.dp),
                             textAlign = TextAlign.Center,
                             fontSize = 20.sp,
                             text = "Заданные параметры:"
                         )
 
                         Text(
-                            modifier = Modifier.weight(0.5f).padding(8.dp),
+                            modifier = Modifier.weight(0.5f).padding(start = 64.dp),
                             textAlign = TextAlign.Center,
                             fontSize = 20.sp,
                             text = "Измеренные параметры:"
                         )
                     }
-                    Row(modifier = Modifier.fillMaxWidth().padding(start = 96.dp, end = 96.dp)) {
+                    Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp)) {
                         Box(modifier = Modifier.weight(0.3f)) {
                             OutlinedTextField(textStyle = TextStyle.Default.copy(
                                 fontSize = 20.sp, textAlign = TextAlign.Center
@@ -196,18 +212,43 @@ object MainScreen : Screen {
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = "Напряжение ВИУ, В",
+                                text = "Напряжение TRMS|AMP, В",
                                 fontSize = 20.sp,
                                 textAlign = TextAlign.Center
+                            )
+                        }
+                        Box(modifier = Modifier.weight(0.15f)) {
+                            OutlinedTextField(textStyle = TextStyle.Default.copy(
+                                fontSize = 20.sp, textAlign = TextAlign.Center
+                            ), value = vm.measuredUViu.value, onValueChange = {})
+                        }
+                        Box(modifier = Modifier.weight(0.15f)) {
+                            OutlinedTextField(textStyle = TextStyle.Default.copy(
+                                fontSize = 20.sp, textAlign = TextAlign.Center
+                            ), value = vm.measuredUViuAmp.value, onValueChange = {})
+                        }
+                    } //U ВИУ
+                    Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp)) {
+                        Box(modifier = Modifier.weight(0.3f)) {
+                            OutlinedTextField(textStyle = TextStyle.Default.copy(
+                                fontSize = 20.sp, textAlign = TextAlign.Center
+                            ), value = vm.specifiedI.value, onValueChange = {})
+                        }
+                        Box(
+                            modifier = Modifier.weight(0.4f).height(48.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Ток утечки, мА", fontSize = 20.sp, textAlign = TextAlign.Center
                             )
                         }
                         Box(modifier = Modifier.weight(0.3f)) {
                             OutlinedTextField(textStyle = TextStyle.Default.copy(
                                 fontSize = 20.sp, textAlign = TextAlign.Center
-                            ), value = vm.measuredUViu.value, onValueChange = {})
+                            ), value = vm.measuredI.value, onValueChange = {})
                         }
-                    } //U ВИУ
-                    Row(modifier = Modifier.fillMaxWidth().padding(start = 96.dp, end = 96.dp)) {
+                    }//I утечки
+                    Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp)) {
                         Box(modifier = Modifier.weight(0.3f)) {
                             OutlinedTextField(textStyle = TextStyle.Default.copy(
                                 fontSize = 20.sp, textAlign = TextAlign.Center
@@ -229,27 +270,29 @@ object MainScreen : Screen {
                             ), value = vm.measuredUMeger.value, onValueChange = {})
                         }
                     }  //U МГР
-                    Row(modifier = Modifier.fillMaxWidth().padding(start = 96.dp, end = 96.dp)) {
+                    Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp)) {
                         Box(modifier = Modifier.weight(0.3f)) {
                             OutlinedTextField(textStyle = TextStyle.Default.copy(
                                 fontSize = 20.sp, textAlign = TextAlign.Center
-                            ), value = vm.specifiedI.value, onValueChange = {})
+                            ), value = vm.specifiedRMeger.value, onValueChange = {})
                         }
                         Box(
                             modifier = Modifier.weight(0.4f).height(48.dp),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = "Ток утечки, мА", fontSize = 20.sp, textAlign = TextAlign.Center
+                                text = "R изоляции, МОм",
+                                fontSize = 20.sp,
+                                textAlign = TextAlign.Center
                             )
                         }
                         Box(modifier = Modifier.weight(0.3f)) {
                             OutlinedTextField(textStyle = TextStyle.Default.copy(
                                 fontSize = 20.sp, textAlign = TextAlign.Center
-                            ), value = vm.measuredI.value, onValueChange = {})
+                            ), value = vm.listRs[vm.indexMeger.value].value, onValueChange = {})
                         }
-                    }//I утечки
-                    Row(modifier = Modifier.fillMaxWidth().padding(start = 96.dp, end = 96.dp)) {
+                    }  //R МГР
+                    Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp)) {
                         Box(modifier = Modifier.weight(0.3f)) {
                             OutlinedTextField(textStyle = TextStyle.Default.copy(
                                 fontSize = 20.sp, textAlign = TextAlign.Center
@@ -271,43 +314,35 @@ object MainScreen : Screen {
                     }//время
                 }
             }
-            Card(elevation = 4.dp) {
-                if (vm.logState.value) {
+            Card(modifier = Modifier.fillMaxHeight(), elevation = 4.dp) {
+                AnimatedVisibility(vm.logState.value) {
                     LogText(
-                        modifier = Modifier.padding(8.dp).fillMaxSize(),
+                        modifier = Modifier.fillMaxSize(),
                         vm.logMessages,
                         vm.logScrollState
                     )
-                } else {
-                    Column(
-                        modifier = Modifier.padding(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        if (vm.selectedObject.value != null) {
-                            println(vm.selectedObject.value!!.image.bytes) //TODO без этого не работает
-                            Image(
-                                modifier = Modifier.fillMaxWidth().clickable {
-                                    vm.imageVisibleState.value = true
-                                }.height(512.dp),
-                                contentDescription = "image",
-                                bitmap = if (vm.selectedObject.value != null) {
-                                    Image.makeFromEncoded(vm.selectedObject.value!!.image.bytes)
-                                        .toComposeImageBitmap()
-                                } else {
-                                    ImageBitmap(800, 800)
-                                }
-                            )
-                        }
-
-                    }
+                }
+                AnimatedVisibility(!vm.logState.value && vm.selectedObject.value != null) {
+                    val targetState = vm.selectedObject.value!!.image.bytes
+                    print(targetState) //TODO без этого не работает
+                    Image(
+                        modifier = Modifier.fillMaxWidth().clickable {
+                            vm.imageVisibleState.value = true
+                        }.height(512.dp),
+                        contentDescription = "image",
+                        bitmap =
+                        Image.makeFromEncoded(vm.selectedObject.value!!.image.bytes)
+                            .toComposeImageBitmap()
+                    )
                 }
             }
         }
     }
 
     @Composable
-    private fun RighPanel(modifier: Modifier, vm: MainScreenViewModel, testViewModel: TestViewModel) {
+    private fun RightPanel(modifier: Modifier, vm: MainScreenViewModel, testViewModel: TestViewModel) {
         Column(
-            modifier = modifier.padding(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)
+            modifier = modifier, verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Card(elevation = 32.dp) {
                 Row(
@@ -316,7 +351,14 @@ object MainScreen : Screen {
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     TextH5("№", modifier = Modifier.width(72.dp))
-                    TextH5("Заводской номер")
+                    Column(Modifier.padding(start = 20.dp)) {
+                        Text("Заводской", fontSize = 20.sp, modifier = Modifier.width(136.dp))
+                        Text("номер", fontSize = 20.sp, modifier = Modifier.width(136.dp))
+                    }
+                    Column(Modifier.padding(start = 10.dp)) {
+                        Text("Дата", fontSize = 20.sp, modifier = Modifier.width(146.dp))
+                        Text("изготовления", fontSize = 20.sp, modifier = Modifier.width(146.dp))
+                    }
                     Column(
                         modifier = Modifier.width(96.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
@@ -373,13 +415,21 @@ object MainScreen : Screen {
                             ) {
                                 TextH5("${number + 1}", modifier = Modifier.width(72.dp))
 
-                                OutlinedTextField(modifier = Modifier.padding(8.dp).width(280.dp),
+                                OutlinedTextField(modifier = Modifier.padding(8.dp).width(140.dp),
                                     singleLine = true,
                                     textStyle = TextStyle.Default.copy(
                                         fontSize = 20.sp, textAlign = TextAlign.Center
                                     ),
                                     value = vm.listSerialNumbers[number].value,
                                     onValueChange = { vm.listSerialNumbers[number].value = it })
+
+                                OutlinedTextField(modifier = Modifier.padding(8.dp).width(140.dp),
+                                    singleLine = true,
+                                    textStyle = TextStyle.Default.copy(
+                                        fontSize = 20.sp, textAlign = TextAlign.Center
+                                    ),
+                                    value = vm.listDateProduct[number].value,
+                                    onValueChange = { vm.listDateProduct[number].value = it })
                                 Box(
                                     modifier = Modifier.width(96.dp), contentAlignment = Alignment.Center
                                 ) {
@@ -408,7 +458,7 @@ object MainScreen : Screen {
                                 OutlinedTextField(modifier = Modifier.padding(8.dp).width(140.dp)
                                     .background(vm.listColorsRsTF[number].value),
                                     textStyle = TextStyle.Default.copy(
-                                        fontSize = 20.sp, textAlign = TextAlign.Center
+                                        fontSize = 20.sp, textAlign = TextAlign.Center, color = Color.Black
                                     ),
                                     value = vm.listRs[number].value,
                                     onValueChange = {})
@@ -439,7 +489,7 @@ object MainScreen : Screen {
                                 OutlinedTextField(modifier = Modifier.padding(8.dp).width(140.dp)
                                     .background(vm.listColorsCurrentTF[number].value),
                                     textStyle = TextStyle.Default.copy(
-                                        fontSize = 20.sp, textAlign = TextAlign.Center
+                                        fontSize = 20.sp, textAlign = TextAlign.Center, color = Color.Black
                                     ),
                                     value = vm.listCurrents[number].value,
                                     onValueChange = {})

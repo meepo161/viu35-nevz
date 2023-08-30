@@ -19,10 +19,10 @@ import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import isDarkTheme
-import onExit
 import operatorLogin
 import ru.avem.composables.DrawerMenuItem
 import ru.avem.viu35.database.DBManager
+import ru.avem.viu35.file
 import ru.avem.viu35.screens.ObjectEditorScreen
 import ru.avem.viu35.screens.ProtocolsScreen
 import ru.avem.viu35.screens.UserEditorScreen
@@ -47,7 +47,7 @@ fun HomeScreenDrawer(mainViewModel: MainScreenViewModel, isClickable: MutableSta
             Column {
                 Text("ВИУ-35", fontSize = 16.sp)
                 Text(
-                    "Версия 0.0.1", fontSize = 12.sp, style = TextStyle(
+                    "Версия 1.0.2", fontSize = 12.sp, style = TextStyle(
                         color = Color.Gray
                     )
                 )
@@ -86,17 +86,24 @@ fun HomeScreenDrawer(mainViewModel: MainScreenViewModel, isClickable: MutableSta
         ) {
             if (isClickable.value) {
                 isDarkTheme.value = !isDarkTheme.value
+                file.writeText(
+                    if (isDarkTheme.value) {
+                        "1"
+                    } else {
+                        "0"
+                    }
+                )
             }
         }
         Divider()
         DrawerMenuItem(Icons.Filled.People, "Сменить пользователя") {
             if (isClickable.value) {
-                navigator.pop()
+                navigator.popUntilRoot()
             }
         }
         DrawerMenuItem(Icons.Filled.ExitToApp, "Выход") {
             if (isClickable.value) {
-                onExit()
+                mainViewModel.exitDialogVisibleState.value = true
             }
         }
     }

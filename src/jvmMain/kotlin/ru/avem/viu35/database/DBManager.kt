@@ -6,6 +6,7 @@ import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.statements.api.ExposedBlob
 import org.jetbrains.exposed.sql.transactions.TransactionManager
 import org.jetbrains.exposed.sql.transactions.transaction
+import ru.avem.viu35.af
 import ru.avem.viu35.database.entities.*
 import java.sql.Connection
 import java.text.SimpleDateFormat
@@ -25,48 +26,85 @@ object DBManager {
             if (User.all().empty()) {
                 User.new {
                     name = "admin"
+                    post = "Администратор"
                     password = "avem"
                 }
             }
             if (Protocol.all().empty()) {
-                var protocol1 = Protocol.new {
-                    serial = "serial"
-                    operator = "operator"
-                    itemName = "itemName"
-                    pointsName = "pointsName"
-                    uViu = "uViu"
-                    iViu = "iViu"
-                    uMgr = "uMgr"
-                    rMgr = "rMgr"
-                    date = "date"
-                    result = "result"
-                    time = "time"
-                }
-                var protocol2 = Protocol.new {
-                    serial = "serial"
-                    operator = "operator2"
-                    itemName = "itemName2"
-                    pointsName = "pointsName2"
-                    uViu = "uViu2"
-                    iViu = "iViu2"
-                    uMgr = "uMgr2"
-                    rMgr = "rMgr2"
-                    date = "date2"
-                    result = "result"
-                    time = "time"
+                Protocol.new {
+                    serial = "666999000"
+                    dateProduct = SimpleDateFormat("dd.MM.y").format(System.currentTimeMillis()).toString()
+                    operator = "Максим"
+                    operatorPost = "Инженер испытатель"
+                    itemName = "Резистор токоограничивающий РТ-45"
+                    itemType = "6ТС.273.045"
+                    pointsName = "Между любым из выводов и стойкой поз.3"
+                    spec_uViu = "7000"
+                    spec_uViuFault = "50"
+                    spec_uViuAmp = (7000 * 1.41).af()
+                    spec_uViuAmpFault = "50"
+                    spec_iViu = "50"
+                    spec_uMgr = "2500"
+                    spec_rMgr = "150"
+                    uViuAmp = "9934"
+                    uViu = "7001"
+                    iViu = "0.3"
+                    uMgr = "2500"
+                    rMgr = "13376"
+                    date = SimpleDateFormat("dd.MM.y").format(System.currentTimeMillis()).toString()
+                    resultViu = "Выдержано"
+                    resultMgr = "Соответствует"
+                    time = SimpleDateFormat("HH:mm:ss").format(System.currentTimeMillis()).toString()
                 }
                 Protocol.new {
-                    serial = "serial11111111111"
-                    operator = "Тестовый оператор"
-                    itemName = "бЛОК12у"
-                    pointsName = "ауккук"
-                    uViu = "1"
-                    iViu = "2"
-                    uMgr = "3"
-                    rMgr = "4"
+                    serial = "666999001"
+                    dateProduct = SimpleDateFormat("dd.MM.y").format(System.currentTimeMillis()).toString()
+                    operator = "Максим"
+                    operatorPost = "Инженер испытатель"
+                    itemName = "Резистор токоограничивающий РТ-45"
+                    itemType = "6ТС.273.045"
+                    pointsName = "Между любым из выводов и стойкой поз.3"
+                    spec_uViu = "7000"
+                    spec_uViuFault = "50"
+                    spec_uViuAmp = (7000 * 1.41).af()
+                    spec_uViuAmpFault = "50"
+                    spec_iViu = "50"
+                    spec_uMgr = "2500"
+                    spec_rMgr = "150"
+                    uViuAmp = "9934"
+                    uViu = "7001"
+                    iViu = "50"
+                    uMgr = "2500"
+                    rMgr = "13376"
                     date = SimpleDateFormat("dd.MM.y").format(System.currentTimeMillis()).toString()
+                    resultViu = "Не выдержано"
+                    resultMgr = "Соответствует"
                     time = SimpleDateFormat("HH:mm:ss").format(System.currentTimeMillis()).toString()
-                    result = "Неизвестно"
+                }
+                Protocol.new {
+                    serial = "666999002"
+                    dateProduct = SimpleDateFormat("dd.MM.y").format(System.currentTimeMillis()).toString()
+                    operator = "Максим"
+                    operatorPost = "Инженер испытатель"
+                    itemName = "Резистор токоограничивающий РТ-45"
+                    itemType = "6ТС.273.045"
+                    pointsName = "Между любым из выводов и стойкой поз.3"
+                    spec_uViu = "7000"
+                    spec_uViuFault = "50"
+                    spec_uViuAmp = (7000 * 1.41).af()
+                    spec_uViuAmpFault = "50"
+                    spec_iViu = "50"
+                    spec_uMgr = "2500"
+                    spec_rMgr = "150"
+                    uViuAmp = "9934"
+                    uViu = "7001"
+                    iViu = "0.3"
+                    uMgr = "2500"
+                    rMgr = "102"
+                    date = SimpleDateFormat("dd.MM.y").format(System.currentTimeMillis()).toString()
+                    resultViu = "Выдержано"
+                    resultMgr = "Не соответствует"
+                    time = SimpleDateFormat("HH:mm:ss").format(System.currentTimeMillis()).toString()
                 }
             }
             if (TestItem.all().empty()) {
@@ -83,6 +121,7 @@ object DBManager {
                         key = 1
                         nameTest = "Между любым из выводов и стойкой поз.3"
                         uViu = 7000
+                        uViuFault = 50
                         time = 60
                         uMeger = 2500
                         rMeger = 150.0.toString()
@@ -93,6 +132,7 @@ object DBManager {
                         key = 2
                         nameTest = "Между стойкой поз.3 и поверхностью Д"
                         uViu = 9500
+                        uViuFault = 50
                         time = 60
                         uMeger = 2500
                         rMeger = 150.0.toString()
@@ -112,6 +152,7 @@ object DBManager {
                         key = 1
                         nameTest = "Между выводами 1; 9 и стойкой поз. 6"
                         uViu = 7000
+                        uViuFault = 50
                         time = 60
                         uMeger = 2500
                         rMeger = 150.0.toString()
@@ -122,6 +163,7 @@ object DBManager {
                         key = 2
                         nameTest = "Между стойкой поз. 6 и поверхностью К"
                         uViu = 9500
+                        uViuFault = 50
                         time = 60
                         uMeger = 2500
                         rMeger = 150.0.toString()
@@ -132,6 +174,7 @@ object DBManager {
                         key = 2
                         nameTest = "Между выводами 1 и 9"
                         uViu = 4500
+                        uViuFault = 50
                         time = 60
                         uMeger = 2500
                         rMeger = 150.0.toString()
@@ -151,6 +194,7 @@ object DBManager {
                         key = 1
                         nameTest = "Между любым из выводов и скобами поз. 2,10"
                         uViu = 7000
+                        uViuFault = 50
                         time = 60
                         uMeger = 2500
                         rMeger = 150.0.toString()
@@ -161,6 +205,7 @@ object DBManager {
                         key = 2
                         nameTest = "Между скобами поз. 2,10 и поверхностями Г"
                         uViu = 9500
+                        uViuFault = 50
                         time = 60
                         uMeger = 2500
                         rMeger = 150.0.toString()
@@ -180,6 +225,7 @@ object DBManager {
                         key = 1
                         nameTest = "Между любым из выводов и скобами поз. 9"
                         uViu = 7000
+                        uViuFault = 50
                         time = 60
                         uMeger = 2500
                         rMeger = 150.0.toString()
@@ -190,6 +236,7 @@ object DBManager {
                         key = 2
                         nameTest = "Между скобами поз. 9 н поверхностями Г"
                         uViu = 9500
+                        uViuFault = 50
                         time = 60
                         uMeger = 2500
                         rMeger = 150.0.toString()
@@ -209,6 +256,7 @@ object DBManager {
                         key = 1
                         nameTest = "Между любым из выводов и скобами поз. 8"
                         uViu = 7000
+                        uViuFault = 50
                         time = 60
                         uMeger = 2500
                         rMeger = 150.0.toString()
@@ -219,6 +267,7 @@ object DBManager {
                         key = 2
                         nameTest = "Между скобами поз. 8 и поверхностями Г"
                         uViu = 9500
+                        uViuFault = 50
                         time = 60
                         uMeger = 2500
                         rMeger = 150.0.toString()
@@ -238,6 +287,7 @@ object DBManager {
                         key = 1
                         nameTest = "Между любым из выводов и скобами поз. 13"
                         uViu = 7000
+                        uViuFault = 50
                         time = 60
                         uMeger = 2500
                         rMeger = 150.0.toString()
@@ -248,6 +298,7 @@ object DBManager {
                         key = 2
                         nameTest = "Между скобами поз. 13 и поверхностями Г"
                         uViu = 9500
+                        uViuFault = 50
                         time = 60
                         uMeger = 2500
                         rMeger = 150.0.toString()
@@ -267,6 +318,7 @@ object DBManager {
                         key = 1
                         nameTest = "Между любым из выводов и скобами поз. 14"
                         uViu = 7000
+                        uViuFault = 50
                         time = 60
                         uMeger = 2500
                         rMeger = 150.0.toString()
@@ -277,6 +329,7 @@ object DBManager {
                         key = 2
                         nameTest = "Между скобами поз. 14 и поверхностями Г"
                         uViu = 9500
+                        uViuFault = 50
                         time = 60
                         uMeger = 2500
                         rMeger = 150.0.toString()
@@ -296,6 +349,7 @@ object DBManager {
                         key = 1
                         nameTest = "Между любым из выводов и скобами поз. 10"
                         uViu = 7000
+                        uViuFault = 50
                         time = 60
                         uMeger = 2500
                         rMeger = 150.0.toString()
@@ -306,6 +360,7 @@ object DBManager {
                         key = 2
                         nameTest = "Между скобами поз. 10 и поверхностями Г"
                         uViu = 9500
+                        uViuFault = 50
                         time = 60
                         uMeger = 2500
                         rMeger = 150.0.toString()
@@ -325,6 +380,7 @@ object DBManager {
                         key = 1
                         nameTest = "Между любым из выводов и скобами поз. 12"
                         uViu = 7000
+                        uViuFault = 50
                         time = 60
                         uMeger = 2500
                         rMeger = 150.0.toString()
@@ -335,6 +391,7 @@ object DBManager {
                         key = 2
                         nameTest = "Между скобами поз. 12 и поверхностями Г"
                         uViu = 9500
+                        uViuFault = 50
                         time = 60
                         uMeger = 2500
                         rMeger = 150.0.toString()
@@ -354,6 +411,7 @@ object DBManager {
                         key = 1
                         nameTest = "Между любым из выводов и скобами поз. 13"
                         uViu = 7000
+                        uViuFault = 50
                         time = 60
                         uMeger = 2500
                         rMeger = 150.0.toString()
@@ -364,6 +422,7 @@ object DBManager {
                         key = 2
                         nameTest = "Между скобами поз. 13 и поверхностями Г"
                         uViu = 9500
+                        uViuFault = 50
                         time = 60
                         uMeger = 2500
                         rMeger = 150.0.toString()
@@ -383,6 +442,7 @@ object DBManager {
                         key = 1
                         nameTest = "Между любым из выводов и скобами поз. 13"
                         uViu = 7000
+                        uViuFault = 50
                         time = 60
                         uMeger = 2500
                         rMeger = 150.0.toString()
@@ -393,6 +453,7 @@ object DBManager {
                         key = 2
                         nameTest = "Между скобами поз. 13 и поверхностями Г"
                         uViu = 9500
+                        uViuFault = 50
                         time = 60
                         uMeger = 2500
                         rMeger = 150.0.toString()
@@ -412,6 +473,7 @@ object DBManager {
                         key = 1
                         nameTest = "Между любым из выводов и скобами поз. 12"
                         uViu = 7000
+                        uViuFault = 50
                         time = 60
                         uMeger = 2500
                         rMeger = 150.0.toString()
@@ -422,6 +484,7 @@ object DBManager {
                         key = 2
                         nameTest = "Между скобами поз. 12 и поверхностями Г"
                         uViu = 9500
+                        uViuFault = 50
                         time = 60
                         uMeger = 2500
                         rMeger = 150.0.toString()
@@ -441,6 +504,7 @@ object DBManager {
                         key = 1
                         nameTest = "Между выводами 1, 2, 3 и скобами поз. 12"
                         uViu = 7000
+                        uViuFault = 50
                         time = 60
                         uMeger = 2500
                         rMeger = 150.0.toString()
@@ -451,6 +515,7 @@ object DBManager {
                         key = 2
                         nameTest = "Между скобами поз. 12 и поверхностями Г"
                         uViu = 9500
+                        uViuFault = 50
                         time = 60
                         uMeger = 2500
                         rMeger = 150.0.toString()
@@ -470,6 +535,7 @@ object DBManager {
                         key = 1
                         nameTest = "Между выводами 1, 2 и скобами поз. 10"
                         uViu = 7000
+                        uViuFault = 50
                         time = 60
                         uMeger = 2500
                         rMeger = 150.0.toString()
@@ -480,6 +546,7 @@ object DBManager {
                         key = 2
                         nameTest = "Между скобами поз. 10 и поверхностями Г"
                         uViu = 9500
+                        uViuFault = 50
                         time = 60
                         uMeger = 2500
                         rMeger = 150.0.toString()
@@ -499,6 +566,7 @@ object DBManager {
                         key = 1
                         nameTest = "Между любым из выводов и скобами поз. 4, 16"
                         uViu = 7000
+                        uViuFault = 50
                         time = 60
                         uMeger = 2500
                         rMeger = 150.0.toString()
@@ -509,6 +577,7 @@ object DBManager {
                         key = 2
                         nameTest = "Между скобами поз. 4,16 и поверхностями Г"
                         uViu = 9500
+                        uViuFault = 50
                         time = 60
                         uMeger = 2500
                         rMeger = 150.0.toString()
@@ -519,6 +588,7 @@ object DBManager {
                         key = 1
                         nameTest = "Между выводом 3 и скобой поз. 14"
                         uViu = 7000
+                        uViuFault = 50
                         time = 60
                         uMeger = 2500
                         rMeger = 150.0.toString()
@@ -529,6 +599,7 @@ object DBManager {
                         key = 2
                         nameTest = "Между скобой поз. 14 и поверхностью Ж"
                         uViu = 9500
+                        uViuFault = 50
                         time = 60
                         uMeger = 2500
                         rMeger = 150.0.toString()
@@ -548,6 +619,7 @@ object DBManager {
                         key = 1
                         nameTest = "Между любым из выводов 1,2 и скобой поз.12"
                         uViu = 7000
+                        uViuFault = 50
                         time = 60
                         uMeger = 2500
                         rMeger = 150.0.toString()
@@ -558,6 +630,7 @@ object DBManager {
                         key = 2
                         nameTest = "Между скобой поз. 12 и поверхностью Г"
                         uViu = 9500
+                        uViuFault = 50
                         time = 60
                         uMeger = 2500
                         rMeger = 150.0.toString()
@@ -577,6 +650,7 @@ object DBManager {
                         key = 1
                         nameTest = "Между любым из выводов 1,2,3,4 и скобой поз.10"
                         uViu = 7000
+                        uViuFault = 50
                         time = 60
                         uMeger = 2500
                         rMeger = 150.0.toString()
@@ -587,6 +661,7 @@ object DBManager {
                         key = 2
                         nameTest = "Между скобой поз. 10 и поверхностью Г"
                         uViu = 9500
+                        uViuFault = 50
                         time = 60
                         uMeger = 2500
                         rMeger = 150.0.toString()
@@ -606,6 +681,7 @@ object DBManager {
                         key = 1
                         nameTest = "Между любым из выводов 1,2,3,4,5 и скобой поз.12"
                         uViu = 7000
+                        uViuFault = 50
                         time = 60
                         uMeger = 2500
                         rMeger = 150.0.toString()
@@ -616,6 +692,7 @@ object DBManager {
                         key = 2
                         nameTest = "Между скобой поз. 12 и поверхностью Ж"
                         uViu = 9500
+                        uViuFault = 50
                         time = 60
                         uMeger = 2500
                         rMeger = 150.0.toString()
@@ -635,6 +712,7 @@ object DBManager {
                         key = 1
                         nameTest = "Между любым из выводов 1,2,3,5 и скобой поз.12"
                         uViu = 7000
+                        uViuFault = 50
                         time = 60
                         uMeger = 2500
                         rMeger = 150.0.toString()
@@ -645,6 +723,7 @@ object DBManager {
                         key = 1
                         nameTest = "Между любым из выводов 4,6 и скобой поз.12"
                         uViu = 7000
+                        uViuFault = 50
                         time = 60
                         uMeger = 2500
                         rMeger = 150.0.toString()
@@ -655,6 +734,7 @@ object DBManager {
                         key = 2
                         nameTest = "Между скобой поз. 12 и поверхностью Ж"
                         uViu = 9500
+                        uViuFault = 50
                         time = 60
                         uMeger = 2500
                         rMeger = 150.0.toString()
@@ -674,6 +754,7 @@ object DBManager {
                         key = 1
                         nameTest = "Между любым из выводов 1(или 2) и скобой поз.12"
                         uViu = 7000
+                        uViuFault = 50
                         time = 60
                         uMeger = 2500
                         rMeger = 150.0.toString()
@@ -684,6 +765,7 @@ object DBManager {
                         key = 2
                         nameTest = "Между скобой поз. 12 и поверхностью Г"
                         uViu = 9500
+                        uViuFault = 50
                         time = 60
                         uMeger = 2500
                         rMeger = 150.0.toString()
@@ -703,6 +785,7 @@ object DBManager {
                         key = 1
                         nameTest = "Между выводом 1 и скобой поз.15"
                         uViu = 7000
+                        uViuFault = 50
                         time = 60
                         uMeger = 2500
                         rMeger = 150.0.toString()
@@ -713,6 +796,7 @@ object DBManager {
                         key = 1
                         nameTest = "Между выводом 3 и скобой поз.15"
                         uViu = 7000
+                        uViuFault = 50
                         time = 60
                         uMeger = 2500
                         rMeger = 150.0.toString()
@@ -723,6 +807,7 @@ object DBManager {
                         key = 2
                         nameTest = "Между скобой поз. 15 и поверхностью Ж"
                         uViu = 9500
+                        uViuFault = 50
                         time = 60
                         uMeger = 2500
                         rMeger = 150.0.toString()
@@ -742,6 +827,7 @@ object DBManager {
                         key = 1
                         nameTest = "Между выводами 1 или 2,3 и стойкой поз.1"
                         uViu = 7000
+                        uViuFault = 50
                         time = 60
                         uMeger = 2500
                         rMeger = 150.0.toString()
@@ -752,6 +838,7 @@ object DBManager {
                         key = 1
                         nameTest = "Между выводами 4 или 5 и стойкой поз.1"
                         uViu = 7000
+                        uViuFault = 50
                         time = 60
                         uMeger = 2500
                         rMeger = 150.0.toString()
@@ -762,6 +849,7 @@ object DBManager {
                         key = 2
                         nameTest = "Между скобой поз. 15 и поверхностью Ж"
                         uViu = 9500
+                        uViuFault = 50
                         time = 60
                         uMeger = 2500
                         rMeger = 150.0.toString()

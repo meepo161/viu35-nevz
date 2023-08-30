@@ -375,6 +375,7 @@ class ObjectEditorScreen(private var mainViewModel: MainScreenViewModel) : Scree
 //                                            TestItemField::key,
                                             TestItemField::nameTest,
                                             TestItemField::uViu,
+                                            TestItemField::uViuFault,
                                             TestItemField::time,
                                             TestItemField::uMeger,
                                             TestItemField::rMeger,
@@ -384,6 +385,7 @@ class ObjectEditorScreen(private var mainViewModel: MainScreenViewModel) : Scree
 //                                            "№",
                                             "Наименование",
                                             "U ВИУ, В",
+                                            "Допуски, ±В",
                                             "Время, с",
                                             "U мегер, В",
                                             "R изоляции, МОм",
@@ -563,6 +565,33 @@ class ObjectEditorScreen(private var mainViewModel: MainScreenViewModel) : Scree
                     modifier = Modifier.weight(0.3f).height(48.dp), contentAlignment = Alignment.Center
                 ) {
                     Text(
+                        text = "Допуски U ВИУ, В", fontSize = 20.sp, textAlign = TextAlign.Center
+                    )
+                }
+                Box(modifier = Modifier.weight(0.7f)) {
+                    Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.Center) {
+                        OutlinedTextField(textStyle = TextStyle.Default.copy(
+                            fontSize = 20.sp, textAlign = TextAlign.Center
+                        ),
+                            isError = vm.uViuFaultFieldErrorState.value,
+                            value = vm.uViuFaultFieldState.value,
+                            onValueChange = { vm.uViuFaultFieldState.value = it })
+                        if (vm.uViuFaultFieldErrorState.value) {
+                            Text(
+                                modifier = Modifier.padding(start = 64.dp),
+                                text = "*0-100 %",
+                                fontSize = 20.sp,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
+                }
+            }
+            Row(modifier = Modifier.fillMaxWidth().padding(end = 16.dp)) {
+                Box(
+                    modifier = Modifier.weight(0.3f).height(48.dp), contentAlignment = Alignment.Center
+                ) {
+                    Text(
                         text = "Ток утечки, мА", fontSize = 20.sp, textAlign = TextAlign.Center
                     )
                 }
@@ -640,7 +669,7 @@ class ObjectEditorScreen(private var mainViewModel: MainScreenViewModel) : Scree
                     modifier = Modifier.weight(0.3f).height(48.dp), contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "R изоляции, МОм", fontSize = 20.sp, textAlign = TextAlign.Center
+                        text = "R изоляции, не менее, МОм", fontSize = 20.sp, textAlign = TextAlign.Center
                     )
                 }
                 Box(modifier = Modifier.weight(0.7f)) {

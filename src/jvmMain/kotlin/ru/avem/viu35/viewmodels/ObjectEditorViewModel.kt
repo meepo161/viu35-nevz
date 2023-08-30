@@ -38,6 +38,7 @@ class ObjectEditorViewModel(private var mainViewModel: MainScreenViewModel) : Sc
 
     val nameTestFieldState = mutableStateOf("")
     val uViuFieldState = mutableStateOf("")
+    val uViuFaultFieldState = mutableStateOf("")
     val timeFieldState = mutableStateOf("")
     val uMegerFieldState = mutableStateOf("")
     val rMegerFieldState = mutableStateOf("")
@@ -46,6 +47,7 @@ class ObjectEditorViewModel(private var mainViewModel: MainScreenViewModel) : Sc
 
     val nameTestFieldErrorState = mutableStateOf(false)
     val uViuFieldErrorState = mutableStateOf(false)
+    val uViuFaultFieldErrorState = mutableStateOf(false)
     val timeFieldErrorState = mutableStateOf(false)
     val uMegerFieldErrorState = mutableStateOf(false)
     val rMegerFieldErrorState = mutableStateOf(false)
@@ -87,6 +89,7 @@ class ObjectEditorViewModel(private var mainViewModel: MainScreenViewModel) : Sc
                                 key = it.key
                                 nameTest = it.nameTest
                                 uViu = it.uViu
+                                uViuFault = it.uViuFault
                                 time = it.time
                                 uMeger = it.uMeger
                                 rMeger = it.rMeger
@@ -170,6 +173,11 @@ class ObjectEditorViewModel(private var mainViewModel: MainScreenViewModel) : Sc
                     || uViuFieldState.value.toIntOrNull() == null
                     || uViuFieldState.value.toIntOrNull()!! > 15000
                     || uViuFieldState.value.toIntOrNull()!! < 500
+        uViuFaultFieldErrorState.value =
+            uViuFaultFieldState.value.isEmpty()
+                    || uViuFaultFieldState.value.toIntOrNull() == null
+                    || uViuFaultFieldState.value.toIntOrNull()!! > 100
+                    || uViuFaultFieldState.value.toIntOrNull()!! < 0
         timeFieldErrorState.value =
             timeFieldState.value.isEmpty()
                     || timeFieldState.value.toIntOrNull() == null
@@ -192,6 +200,7 @@ class ObjectEditorViewModel(private var mainViewModel: MainScreenViewModel) : Sc
 
         if (!nameTestFieldErrorState.value
             && !uViuFieldErrorState.value
+            && !uViuFaultFieldErrorState.value
             && !timeFieldErrorState.value
             && !uMegerFieldErrorState.value
             && !rMegerFieldErrorState.value
@@ -210,6 +219,7 @@ class ObjectEditorViewModel(private var mainViewModel: MainScreenViewModel) : Sc
                         key = lastKey + 1
                         nameTest = nameTestFieldState.value
                         uViu = uViuFieldState.value.toInt()
+                        uViuFault = uViuFaultFieldState.value.toInt()
                         time = timeFieldState.value.toInt()
                         uMeger = uMegerFieldState.value.toInt()
                         rMeger = rMegerFieldState.value.replace(",", ".").toDouble().toString()
@@ -240,6 +250,7 @@ class ObjectEditorViewModel(private var mainViewModel: MainScreenViewModel) : Sc
     private fun clearStates() {
         nameTestFieldState.value = ""
         uViuFieldState.value = ""
+        uViuFaultFieldState.value = ""
         timeFieldState.value = ""
         uMegerFieldState.value = ""
         rMegerFieldState.value = ""
@@ -260,6 +271,7 @@ class ObjectEditorViewModel(private var mainViewModel: MainScreenViewModel) : Sc
                     key = mainViewModel.selectedObject.value!!.fieldsIterable.last().key + 1
                     nameTest = mainViewModel.selectedField.value!!.nameTest
                     uViu = mainViewModel.selectedField.value!!.uViu
+                    uViuFault = mainViewModel.selectedField.value!!.uViuFault
                     time = mainViewModel.selectedField.value!!.time
                     uMeger = mainViewModel.selectedField.value!!.uMeger
                     rMeger = mainViewModel.selectedField.value!!.rMeger
@@ -290,6 +302,11 @@ class ObjectEditorViewModel(private var mainViewModel: MainScreenViewModel) : Sc
                         || uViuFieldState.value.toIntOrNull() == null
                         || uViuFieldState.value.toIntOrNull()!! > 15000
                         || uViuFieldState.value.toIntOrNull()!! < 500
+            uViuFaultFieldErrorState.value =
+                uViuFaultFieldState.value.isEmpty()
+                        || uViuFaultFieldState.value.toIntOrNull() == null
+                        || uViuFaultFieldState.value.toIntOrNull()!! > 100
+                        || uViuFaultFieldState.value.toIntOrNull()!! < 0
             timeFieldErrorState.value =
                 timeFieldState.value.isEmpty()
                         || timeFieldState.value.toIntOrNull() == null
@@ -312,6 +329,7 @@ class ObjectEditorViewModel(private var mainViewModel: MainScreenViewModel) : Sc
 
             if (!nameTestFieldErrorState.value
                 && !uViuFieldErrorState.value
+                && !uViuFaultFieldErrorState.value
                 && !timeFieldErrorState.value
                 && !uMegerFieldErrorState.value
                 && !rMegerFieldErrorState.value
@@ -321,6 +339,7 @@ class ObjectEditorViewModel(private var mainViewModel: MainScreenViewModel) : Sc
                     transaction {
                         mainViewModel.selectedField.value?.nameTest = nameTestFieldState.value
                         mainViewModel.selectedField.value?.uViu = uViuFieldState.value.toInt()
+                        mainViewModel.selectedField.value?.uViuFault = uViuFaultFieldState.value.toInt()
                         mainViewModel.selectedField.value?.time = timeFieldState.value.toInt()
                         mainViewModel.selectedField.value?.uMeger = uMegerFieldState.value.toInt()
                         mainViewModel.selectedField.value?.rMeger =
@@ -346,6 +365,8 @@ class ObjectEditorViewModel(private var mainViewModel: MainScreenViewModel) : Sc
                 mainViewModel.selectedField.value!!.nameTest
             uViuFieldState.value =
                 mainViewModel.selectedField.value!!.uViu.toString()
+            uViuFaultFieldState.value =
+                mainViewModel.selectedField.value!!.uViuFault.toString()
             timeFieldState.value =
                 mainViewModel.selectedField.value!!.time.toString()
             uMegerFieldState.value =

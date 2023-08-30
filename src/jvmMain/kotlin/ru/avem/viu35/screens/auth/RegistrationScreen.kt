@@ -27,9 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
-import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import cafe.adriel.voyager.transitions.SlideTransition
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -37,7 +35,6 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import ru.avem.viu35.composables.ConfirmDialog
 import ru.avem.viu35.database.DBManager
 import ru.avem.viu35.database.entities.User
-import ru.avem.viu35.screens.MainScreen
 import ru.avem.viu35.utils.keyEventNext
 import ru.avem.viu35.utils.keyboardActionNext
 import ru.avem.viu35.viewmodels.UserEditorViewModel
@@ -52,10 +49,12 @@ class RegistrationScreen(private var vm: UserEditorViewModel) : Screen {
 
         val scope = CoroutineScope(Dispatchers.Default)
         var name by remember { mutableStateOf(TextFieldValue()) }
+        var post by remember { mutableStateOf(TextFieldValue()) }
         var password by remember { mutableStateOf(TextFieldValue()) }
         var confirmPassword by remember { mutableStateOf(TextFieldValue()) }
 
         var nameErrorState by remember { mutableStateOf(false) }
+        var postErrorState by remember { mutableStateOf(false) }
         var loginErrorState by remember { mutableStateOf(false) }
         var passwordErrorState by remember { mutableStateOf(false) }
         var confirmPasswordErrorState by remember { mutableStateOf(false) }
@@ -122,6 +121,32 @@ class RegistrationScreen(private var vm: UserEditorViewModel) : Screen {
                         keyboardActions = keyboardActionNext(focusManager)
                     )
                     if (nameErrorState) {
+                        Text(text = "Обязательно", color = MaterialTheme.colors.error)
+                    }
+                    Spacer(Modifier.size(16.dp))
+                    OutlinedTextField(
+                        textStyle = TextStyle.Default.copy(
+                            fontSize = 20.sp
+                        ),
+                        value = post,
+                        onValueChange = {
+                            if (postErrorState) {
+                                postErrorState = false
+                            }
+                            post = it
+                        },
+
+                        modifier = Modifier.focusTarget().onPreviewKeyEvent {
+                            keyEventNext(it, focusManager)
+                        },
+                        isError = postErrorState,
+                        label = {
+                            Text(text = "Должность*")
+                        },
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                        keyboardActions = keyboardActionNext(focusManager)
+                    )
+                    if (postErrorState) {
                         Text(text = "Обязательно", color = MaterialTheme.colors.error)
                     }
                     Spacer(Modifier.size(16.dp))
@@ -216,6 +241,10 @@ class RegistrationScreen(private var vm: UserEditorViewModel) : Screen {
                                     nameErrorState = true
                                 }
 
+                                post.text.isEmpty() -> {
+                                    postErrorState = true
+                                }
+
                                 password.text.isEmpty() -> {
                                     passwordErrorState = true
                                 }
@@ -238,6 +267,7 @@ class RegistrationScreen(private var vm: UserEditorViewModel) : Screen {
                                             transaction {
                                                 User.new {
                                                     this.name = name.text
+                                                    this.post = post.text
                                                     this.password = password.text
                                                 }
                                             }

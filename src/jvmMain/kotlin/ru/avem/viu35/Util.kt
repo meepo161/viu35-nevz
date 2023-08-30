@@ -7,6 +7,8 @@ import kotlin.math.abs
 
 val sp = File.separatorChar
 
+val file = File("conf.txt")
+
 fun Number.af() = with(abs(String.format(Locale.US, "%.4f", toDouble()).toDouble())) {
     val format = when {
         this.isNaN() -> return ""

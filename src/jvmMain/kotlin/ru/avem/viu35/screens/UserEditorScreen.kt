@@ -53,8 +53,9 @@ class UserEditorScreen : Screen {
                             TableView(
                                 selectedItem = vm.selectedUser.value,
                                 items = vm.allUsers.value,
-                                columns = listOf(User::name),
-                                columnNames = listOf("Фамилия Имя Отчество"),
+                                columns = listOf(User::name, User::post),
+                                columnNames = listOf("Фамилия Имя Отчество", "Должность"),
+                                listWeight = listOf(1f, 1f),
                                 onItemPrimaryPressed = { vm.selectedUser.value = vm.allUsers.value[it] },
                                 onItemSecondaryPressed = { vm.selectedUser.value = vm.allUsers.value[it] },
                                 contextMenuContent = {

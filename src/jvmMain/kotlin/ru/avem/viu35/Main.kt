@@ -1,4 +1,3 @@
-
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.material.MaterialTheme
@@ -13,10 +12,12 @@ import androidx.compose.ui.window.rememberWindowState
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.transitions.SlideTransition
 import ru.avem.viu35.database.DBManager
+import ru.avem.viu35.file
 import ru.avem.viu35.screens.auth.LoginScreen
 import kotlin.system.exitProcess
 
 var operatorLogin = ""
+var operatorPostString = ""
 var isTestRunning = false
 var isDarkTheme = mutableStateOf(false)
 
@@ -32,12 +33,16 @@ fun App() {
         }
     ) {
         Navigator(LoginScreen()) { navigator ->
-            SlideTransition(navigator = navigator, )
+            SlideTransition(navigator = navigator)
         }
     }
 }
 
 fun main() = application {
+    if (!file.exists()) {
+        file.createNewFile()
+    }
+    isDarkTheme.value = file.readText() == "1"
     DBManager.validateDB()
     val windowState = rememberWindowState(placement = WindowPlacement.Maximized)
 

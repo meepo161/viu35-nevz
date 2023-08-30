@@ -34,6 +34,7 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import onExit
 import operatorLogin
+import operatorPostString
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.avem.viu35.composables.ComboBox
@@ -81,15 +82,16 @@ class LoginScreen : Screen {
                 }
 
                 else -> {
-                    if (
-                        transaction {
-                            User.find {
-                                (Users.name eq login.value) and (Users.password eq password.value)
-                            }.toList()
-                        }.isEmpty()) {
+                    var user = transaction {
+                        User.find {
+                            (Users.name eq login.value) and (Users.password eq password.value)
+                        }.toList()
+                    }
+                    if (user.isEmpty()) {
                         loginErrorState = true
                         passwordErrorState = true
                     } else {
+                        operatorPostString = user[0].post
                         authorize()
                     }
                 }
