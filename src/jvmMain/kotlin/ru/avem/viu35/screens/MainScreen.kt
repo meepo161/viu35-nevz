@@ -324,16 +324,26 @@ object MainScreen : Screen {
                 }
                 AnimatedVisibility(!vm.logState.value && vm.selectedObject.value != null) {
                     val targetState = vm.selectedObject.value!!.image.bytes
-                    print(targetState) //TODO без этого не работает
-                    Image(
-                        modifier = Modifier.fillMaxWidth().clickable {
-                            vm.imageVisibleState.value = true
-                        }.height(512.dp),
-                        contentDescription = "image",
-                        bitmap =
-                        Image.makeFromEncoded(vm.selectedObject.value!!.image.bytes)
-                            .toComposeImageBitmap()
-                    )
+                    if (vm.selectedObject.value!!.image.bytes.size > 1) {
+                        print(targetState)
+                        Image(
+                            modifier = Modifier.fillMaxWidth().clickable {
+                                vm.imageVisibleState.value = true
+                            }.height(512.dp),
+                            contentDescription = "image",
+                            bitmap =
+                            Image.makeFromEncoded(vm.selectedObject.value!!.image.bytes)
+                                .toComposeImageBitmap()
+                        )
+                    } else {
+                        Image(
+                            modifier = Modifier.fillMaxWidth().clickable {
+                                vm.imageVisibleState.value = true
+                            }.height(512.dp),
+                            contentDescription = "image",
+                            bitmap = ImageBitmap(200, 200)
+                        )
+                    }
                 }
             }
         }

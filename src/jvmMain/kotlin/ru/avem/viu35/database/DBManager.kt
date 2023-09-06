@@ -113,7 +113,7 @@ object DBManager {
                     type = "6ТС.273.045"
                     useResource("6ТС.273.045.png") {
                         image =
-                            ExposedBlob(it.readAllBytes())
+                            ExposedBlob(ByteArray(1))
                     }
                 }.also { ti ->
                     TestItemField.new {

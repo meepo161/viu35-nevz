@@ -325,7 +325,37 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
     fun start() {
         if (!isTestRunning && !checkTestSettings()) {
             thread {
+
+                transaction {
+                    Protocol.new {
+                        serial              = "mainViewModel.listSerialNumbers[0].value"
+                        dateProduct         = "mainViewModel.listDateProduct[0].value"
+                        operator            = "operatorLogin"
+                        operatorPost        = "operatorPostString"
+                        itemName            = "mainViewModel.selectedObject.value!!.name"
+                        itemType            = "mainViewModel.selectedObject.value!!.type"
+                        pointsName          = "mainViewModel.selectedField.value!!.nameTest"
+                        spec_uViu           = "mainViewModel.selectedField.value!!.uViu.toString()"
+                        spec_uViuAmp        = "(mainViewModel.selectedField.value!!.uViu * 1.41).af()"
+                        spec_uViuFault      = "mainViewModel.selectedField.value!!.uViuFault.toString()"
+                        spec_uViuAmpFault   = "1"
+                        spec_iViu           = "mainViewModel.selectedField.value!!.current.toString()"
+                        spec_uMgr           = "mainViewModel.selectedField.value!!.uMeger.toString()"
+                        spec_rMgr           = "mainViewModel.selectedField.value!!.rMeger"
+                        uViuAmp             = "mainViewModel.storedUViuAmp"
+                        uViu                = "mainViewModel.storedUViu"
+                        iViu                = "mainViewModel.listCurrents[0].value"
+                        uMgr                = "mainViewModel.specifiedUMeger.value"
+                        rMgr                = "mainViewModel.listRs[it].value"
+                        date                = "SimpleDateFormat().format(System.currentTimeMillis()).toString()"
+                        time                = "SimpleDateFormat().format(System.currentTimeMillis()).toString()"
+                        resultMgr =                            "Не проводился"
+                        resultViu =                            "Не проводился"
+                    }
+                }
+
                 initTest()
+                mainViewModel.measuredUViu.value = "0.0"
                 appendOneMessageToLog("Инициализация стенда")
 //                initCP2103()
                 if (isTestRunning) DD2.checkResponsibility()

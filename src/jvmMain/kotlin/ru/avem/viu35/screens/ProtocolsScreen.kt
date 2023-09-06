@@ -7,6 +7,7 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
@@ -18,6 +19,7 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.darkrockstudios.libraries.mpfilepicker.DirectoryPicker
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import operatorLogin
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
@@ -60,18 +62,21 @@ class ProtocolsScreen(private var mainViewModel: MainScreenViewModel) : Screen {
         val isExpandedDropDownMenu = mutableStateOf(false)
         val showDirectoryPicker = mutableStateOf(false)
         val listCheckBoxes = List(mainViewModel.allProtocols.value.size) { remember { mutableStateOf(false) } }
-
+        val scaffoldState = rememberScaffoldState()
+        val scope = rememberCoroutineScope()
 
         MaterialTheme {
-            Scaffold(topBar = {
-                TopAppBar(title = { Text("База данных протоколов") }, navigationIcon = {
-                    IconButton(onClick = {
-                        navigator.pop()
-                    }) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = null)
-                    }
-                })
-            }) {
+            Scaffold(
+                scaffoldState = scaffoldState,
+                topBar = {
+                    TopAppBar(title = { Text("База данных протоколов") }, navigationIcon = {
+                        IconButton(onClick = {
+                            navigator.pop()
+                        }) {
+                            Icon(Icons.Filled.ArrowBack, contentDescription = null)
+                        }
+                    })
+                }) {
                 if (dialogVisibleState.value) {
                     ConfirmDialog(
                         title = titleDialog.value,
@@ -89,9 +94,13 @@ class ProtocolsScreen(private var mainViewModel: MainScreenViewModel) : Screen {
                                 }
                             }
                             if (list.size == 0) {
-                                mainViewModel.showDialog("Ошибка", "Не выбран ни один протокол")
+                                scope.launch {
+                                    scaffoldState.snackbarHostState.showSnackbar("Ошибка. Не выбран ни один протокол")
+                                }
                             } else if (list.size > 11) {
-                                mainViewModel.showDialog("Ошибка", "Выбрано больше 10 протоколов")
+                                scope.launch {
+                                    scaffoldState.snackbarHostState.showSnackbar("Ошибка. Выбрано больше 10 протоколов")
+                                }
                             } else {
                                 saveProtocolAsWorkbook(list)
                             }
@@ -152,7 +161,7 @@ class ProtocolsScreen(private var mainViewModel: MainScreenViewModel) : Screen {
                             fontSize = 22,
                             contextMenuContent = {
                                 DropdownMenuItem(onClick = {
-                                    deleteProtocol()
+                                    deleteProtocol(scope, scaffoldState)
                                     isExpandedDropDownMenu.value = false
                                 }) {
                                     Text("Удалить")
@@ -174,10 +183,15 @@ class ProtocolsScreen(private var mainViewModel: MainScreenViewModel) : Screen {
                                         list.add(mainViewModel.allProtocols.value[index])
                                     }
                                 }
+
                                 if (list.size == 0) {
-                                    mainViewModel.showDialog("Ошибка", "Не выбран ни один протокол")
+                                    scope.launch {
+                                        scaffoldState.snackbarHostState.showSnackbar("Ошибка. Не выбран ни один протокол")
+                                    }
                                 } else if (list.size > 11) {
-                                    mainViewModel.showDialog("Ошибка", "Выбрано больше 10 протоколов")
+                                    scope.launch {
+                                        scaffoldState.snackbarHostState.showSnackbar("Ошибка. Выбрано больше 10 протоколов")
+                                    }
                                 } else {
                                     saveProtocolAsWorkbook(list)
                                     openFile(File("lastOpened.xlsx"))
@@ -209,9 +223,13 @@ class ProtocolsScreen(private var mainViewModel: MainScreenViewModel) : Screen {
                                     }
                                 }
                                 if (list.size == 0) {
-                                    mainViewModel.showDialog("Ошибка", "Не выбран ни один протокол")
+                                    scope.launch {
+                                        scaffoldState.snackbarHostState.showSnackbar("Ошибка. Не выбран ни один протокол")
+                                    }
                                 } else if (list.size > 11) {
-                                    mainViewModel.showDialog("Ошибка", "Выбрано больше 10 протоколов")
+                                    scope.launch {
+                                        scaffoldState.snackbarHostState.showSnackbar("Ошибка. Выбрано больше 10 протоколов")
+                                    }
                                 } else {
                                     saveProtocolAsWorkbook(list)
                                     Desktop.getDesktop().print(File("lastOpened.xlsx"))
@@ -257,7 +275,7 @@ class ProtocolsScreen(private var mainViewModel: MainScreenViewModel) : Screen {
                         Button(
                             modifier = Modifier.weight(1 / 4f).height(128.dp),
                             onClick = {
-                                deleteProtocol()
+                                deleteProtocol(scope, scaffoldState)
                             },
                             elevation = ButtonDefaults.elevation(
                                 defaultElevation = 10.dp, pressedElevation = 15.dp, disabledElevation = 0.dp
@@ -281,7 +299,10 @@ class ProtocolsScreen(private var mainViewModel: MainScreenViewModel) : Screen {
         }
     }
 
-    private fun deleteProtocol() {
+    private fun deleteProtocol(
+        scope: CoroutineScope,
+        scaffoldState: ScaffoldState
+    ) {
         if (operatorLogin == "admin") {
             if (mainViewModel.selectedProtocol.value != null) {
                 mainViewModel.scope.launch {
@@ -292,10 +313,14 @@ class ProtocolsScreen(private var mainViewModel: MainScreenViewModel) : Screen {
                     mainViewModel.selectedProtocol.value = null
                 }
             } else {
-                mainViewModel.showDialog("Ошибка", "Не выбран протокол")
+                scope.launch {
+                    scaffoldState.snackbarHostState.showSnackbar("Ошибка. Не выбран протокол")
+                }
             }
         } else {
-            mainViewModel.showDialog("Ошибка", "Удалять разрешено только администратору")
+            scope.launch {
+                scaffoldState.snackbarHostState.showSnackbar("Ошибка. Удалять разрешено только администратору")
+            }
         }
     }
 }

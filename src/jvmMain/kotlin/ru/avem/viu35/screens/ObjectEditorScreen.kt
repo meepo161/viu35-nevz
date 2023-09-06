@@ -255,7 +255,7 @@ class ObjectEditorScreen(private var mainViewModel: MainScreenViewModel) : Scree
                                         vm.imageVisibleState.value = false
                                     }),
                             contentDescription = "image",
-                            bitmap = if (mainViewModel.selectedObject.value != null) {
+                            bitmap = if (mainViewModel.selectedObject.value != null && mainViewModel.selectedObject.value!!.image.bytes.size > 1) {
                                 Image.Companion.makeFromEncoded(mainViewModel.selectedObject.value!!.image.bytes)
                                     .toComposeImageBitmap()
                             } else {
