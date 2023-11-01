@@ -82,7 +82,7 @@ object MainScreen : Screen {
             },
             topBar = {
                 TopAppBar(navigationIcon = {
-                    IconButton(onClick = {
+                    IconButton(modifier = Modifier.width(256.dp),onClick = {
                         scope.launch {
                             if (scaffoldState.drawerState.isClosed && !isTestRunning) {
                                 scaffoldState.drawerState.open()
@@ -90,9 +90,19 @@ object MainScreen : Screen {
                                 scaffoldState.drawerState.close()
                             }
                         }
-                    }) { Icon(Icons.Filled.Menu, contentDescription = null) }
+                    }) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Icon(Icons.Filled.Menu, contentDescription = null)
+                            Text("Меню")
+                        }
+                    }
                 }, title = {
-                    Text("ВИУ-35")
+                    Text(
+                        modifier = Modifier.fillMaxWidth(),
+                        text = "ВИУ-35",
+                        textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.h6,
+                    )
                 }, actions = {
                     MainScreenActionBar(navigator, vm) {}
                 })
@@ -446,7 +456,7 @@ object MainScreen : Screen {
                                     Checkbox(
                                         checked = vm.listCheckBoxesMeger[number].value,
                                         enabled = vm.mutableStateIsRunning.value,
-                                        colors = CheckboxDefaults.colors(MaterialTheme.colors.primary),
+//                                        colors = CheckboxDefaults.colors(MaterialTheme.colors.primary),
                                         onCheckedChange = { isChecked ->
                                             vm.listCheckBoxesMeger[number].value = isChecked
                                             var selectedCheckBox = 0
