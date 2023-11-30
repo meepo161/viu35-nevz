@@ -453,7 +453,7 @@ class ObjectEditorScreen(private var mainViewModel: MainScreenViewModel) : Scree
                                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                                         ) {
                                             Icon(imageVector = Icons.Filled.Edit, contentDescription = null)
-                                            Text(text = "Редактировать")
+                                            Text(text = "Редактировать", fontSize = 20.sp)
                                         }
                                     }
                                     Button(

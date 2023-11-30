@@ -29,7 +29,7 @@ object DevicePoller : SimplePollingModel() {
 
     val DD2 = PR("DD2", main, 2).addTo(devs)
     val DD3 = ReleController("DD3", main, 3).addTo(devs)
-    val DD4 = ReleController("DD3", main, 4).addTo(devs)
+    val DD4 = ReleController("DD4", main, 4).addTo(devs)
 
     val PV22 = AVEM("PV22", main, 22).addTo(devs)
     val PV23 = AVEM("PV23", main, 23).addTo(devs)
