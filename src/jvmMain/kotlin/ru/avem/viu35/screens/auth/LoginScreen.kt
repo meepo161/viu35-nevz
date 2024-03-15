@@ -1,31 +1,30 @@
 package ru.avem.viu35.screens.auth
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.RemoveRedEye
+import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.focusTarget
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
-import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.lifecycle.LifecycleEffect
@@ -42,8 +41,6 @@ import ru.avem.viu35.database.DBManager
 import ru.avem.viu35.database.entities.User
 import ru.avem.viu35.database.entities.Users
 import ru.avem.viu35.screens.MainScreen
-import ru.avem.viu35.utils.keyEventNext
-import ru.avem.viu35.utils.keyboardActionNext
 
 class LoginScreen : Screen {
     @OptIn(ExperimentalComposeUiApi::class)
@@ -60,6 +57,11 @@ class LoginScreen : Screen {
         var users = remember { mutableStateListOf<User>() }
         val selectedLogin = remember { mutableStateOf(DBManager.getAllUsers().first()) }
         var passwordVisibility by remember { mutableStateOf(true) }
+
+        val gradient =
+            Brush.verticalGradient(listOf(Color(0xFF7a32ff), Color(0xFF5e00c2)))
+        val gradient2 =
+            Brush.verticalGradient(listOf(Color(0x66F7a32ff), Color(0x665e00c2)))
 
         LifecycleEffect(onStarted = {
             users.addAll(DBManager.getAllUsers())
@@ -101,99 +103,146 @@ class LoginScreen : Screen {
         Scaffold(
             content = {
                 Column(
-                    modifier = Modifier.padding(16.dp).fillMaxSize(),
+                    modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    Text(text = buildAnnotatedString {
-                        withStyle(style = SpanStyle(color = MaterialTheme.colors.primary)) {
-                            append("А")
-                        }
-                        append("вторизация")
-                    }, fontSize = 48.sp)
-                    Spacer(Modifier.size(24.dp))
-                    ComboBox(
-                        modifier = Modifier.width(560.dp),
-                        selectedItem = selectedLogin,
-                        items = users,
-                        selectedValue = {
-                            selectedLogin.value = it
-                        },
-                        textAlign = TextAlign.Start,
-                        fontSize = 32
+                    Text(
+                        text = "Вход",
+                        fontSize = 48.sp,
+                        fontWeight = FontWeight.Bold
                     )
+
+                    Spacer(Modifier.size(64.dp))
+
+                    Column(
+                        modifier = Modifier.width(460.dp)
+                    ) {
+                        Text(
+                            text = "Имя пользователя",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        ComboBox(
+                            modifier = Modifier.width(460.dp),
+                            selectedItem = selectedLogin,
+                            items = users,
+                            selectedValue = {
+                                selectedLogin.value = it
+                            },
+                            textAlign = TextAlign.Start,
+                            fontSize = 32
+                        )
+                    }
                     Spacer(Modifier.size(16.dp))
-                    OutlinedTextField(
-                        textStyle = TextStyle.Default.copy(
-                            fontSize = 32.sp
-                        ),
-                        value = password.value,
-                        singleLine = true,
-                        onValueChange = { password.value = it },
-                        isError = passwordErrorState,
-                        modifier = Modifier.width(560.dp).focusTarget().onPreviewKeyEvent {
-                            keyEventNext(it, focusManager)
-                        }.onKeyEvent {
-                            if (it.key == Key.Enter) {
-                                tryLogin()
-                                true
-                            } else {
-                                false
-                            }
-                        },
-                        label = {
-                            Text(text = "Введите пароль*")
-                        },
-                        trailingIcon = {
-                            IconButton(onClick = {
-                                passwordVisibility = !passwordVisibility
-                            }) {
-                                Icon(
-                                    imageVector = if (passwordVisibility) Icons.Default.RemoveRedEye else Icons.Default.Clear,
-                                    contentDescription = "visibility",
-                                    tint = MaterialTheme.colors.primary
-                                )
-                            }
-                        },
-                        visualTransformation = if (passwordVisibility) PasswordVisualTransformation() else VisualTransformation.None,
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                        keyboardActions = keyboardActionNext(focusManager)
-                    )
+                    Column(
+                        modifier = Modifier.width(460.dp)
+                    ) {
+                        Text(
+                            text = "Пароль",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        TextField(
+                            textStyle = TextStyle.Default.copy(
+                                fontSize = 32.sp
+                            ),
+                            value = password.value,
+                            colors = TextFieldDefaults.textFieldColors(backgroundColor = Color.Transparent),
+                            singleLine = true,
+                            onValueChange = { password.value = it },
+                            isError = passwordErrorState,
+                            modifier = Modifier.width(560.dp).focusTarget().onKeyEvent {
+                                if (it.key == Key.Enter) {
+                                    tryLogin()
+                                    true
+                                } else {
+                                    false
+                                }
+                            },
+                            label = {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.Lock,
+                                        contentDescription = null
+                                    )
+                                    Spacer(Modifier.size(8.dp))
+                                    Text(text = "Введите пароль")
+                                }
+                            },
+                            trailingIcon = {
+                                IconButton(onClick = {
+                                    passwordVisibility = !passwordVisibility
+                                }) {
+                                    Icon(
+                                        imageVector = if (passwordVisibility) Icons.Default.RemoveRedEye else Icons.Default.Clear,
+                                        contentDescription = "visibility",
+                                        tint = MaterialTheme.colors.primary
+                                    )
+                                }
+                            },
+                            visualTransformation = if (passwordVisibility) PasswordVisualTransformation() else VisualTransformation.None,
+                        )
+                    }
                     if (passwordErrorState) {
                         Text(text = "Ошибка", color = MaterialTheme.colors.primary)
                     } else {
                         Text(text = "")
                     }
-                    Spacer(Modifier.size(16.dp))
+                    Spacer(Modifier.size(32.dp))
                     Button(
+                        modifier = Modifier.width(480.dp).height(64.dp).padding(horizontal = 16.dp, vertical = 8.dp)
+                            .background(color = Color.Transparent),
+                        colors = ButtonDefaults.buttonColors(backgroundColor = Color.Transparent),
+                        shape = RoundedCornerShape(32.dp),
+                        contentPadding = PaddingValues(),
                         onClick = {
                             tryLogin()
                         },
-                        content = {
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .background(brush = gradient, shape = RoundedCornerShape(32.dp))
+                                .then(
+                                    Modifier.width(480.dp).height(64.dp).padding(horizontal = 16.dp, vertical = 8.dp)
+                                ),
+                            contentAlignment = Alignment.Center,
+                        ) {
                             Text(
-                                text = "Вход",
-                                color = MaterialTheme.colors.surface,
-                                fontSize = 48.sp,
+                                text = "ВОЙТИ",
+                                color = Color.White,
+                                textAlign = TextAlign.Center,
                                 fontWeight = FontWeight.Bold
                             )
-                        },
-                        colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.primary)
-                    )
+                        }
+                    }
                     Spacer(Modifier.size(16.dp))
                     Button(
+                        modifier = Modifier.width(240.dp).height(64.dp).padding(horizontal = 16.dp, vertical = 8.dp)
+                            .background(color = Color.Transparent),
+                        colors = ButtonDefaults.buttonColors(backgroundColor = Color.Transparent),
+                        shape = RoundedCornerShape(32.dp),
+                        contentPadding = PaddingValues(),
                         onClick = {
                             onExit()
                         },
-                        content = {
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .background(brush = gradient2, shape = RoundedCornerShape(32.dp))
+                                .then(
+                                    Modifier.width(480.dp).height(64.dp).padding(horizontal = 16.dp, vertical = 8.dp)
+                                ),
+                            contentAlignment = Alignment.Center,
+                        ) {
                             Text(
-                                text = "Выход",
-                                color = MaterialTheme.colors.surface,
-                                fontSize = 24.sp,
+                                text = "ВЫЙТИ",
+                                color = Color.White,
+                                textAlign = TextAlign.Center,
                                 fontWeight = FontWeight.Bold
                             )
-                        },
-                        colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.secondary)
-                    )
+                        }
+                    }
                 }
             })
     }

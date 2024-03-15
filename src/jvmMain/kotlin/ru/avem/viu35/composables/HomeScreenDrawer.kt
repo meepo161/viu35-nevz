@@ -3,6 +3,7 @@ package ru.avem.viu35.composables
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -41,7 +42,7 @@ fun HomeScreenDrawer(mainViewModel: MainScreenViewModel, isClickable: MutableSta
             Icon(
                 painter = painterResource("icons/ic_avem_logo.xml"),
                 modifier = Modifier.width(48.dp).height(48.dp).padding(end = 4.dp),
-                tint = Color.Blue,
+                tint = MaterialTheme.colors.primary,
                 contentDescription = null
             )
             Column {

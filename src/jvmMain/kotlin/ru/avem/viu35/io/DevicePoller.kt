@@ -15,10 +15,12 @@ import ru.avem.viu35.io.rele.ReleController
 
 object DevicePoller : SimplePollingModel() {
     val connection = Connection(
-        adapterName = "CP2103 USB to RS-485",
+//        adapterName = "CP2103 USB to RS-485", TODO тест
+        adapterName = "CP2103 USB to HPMAIN",
         serialParameters = SerialParameters(8, 0, 1, 38400),
         timeoutRead = 100,
-        timeoutWrite = 100
+        timeoutWrite = 100,
+        attemptCount = 3
     ).apply {
         connect()
     }

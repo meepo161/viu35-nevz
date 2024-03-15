@@ -82,7 +82,7 @@ object MainScreen : Screen {
             },
             topBar = {
                 TopAppBar(navigationIcon = {
-                    IconButton(modifier = Modifier.width(256.dp),onClick = {
+                    IconButton(modifier = Modifier.width(256.dp), onClick = {
                         scope.launch {
                             if (scaffoldState.drawerState.isClosed && !isTestRunning) {
                                 scaffoldState.drawerState.open()
@@ -456,7 +456,7 @@ object MainScreen : Screen {
                                     Checkbox(
                                         checked = vm.listCheckBoxesMeger[number].value,
                                         enabled = vm.mutableStateIsRunning.value,
-//                                        colors = CheckboxDefaults.colors(MaterialTheme.colors.primary),
+                                        colors = CheckboxDefaults.colors(MaterialTheme.colors.primary),
                                         onCheckedChange = { isChecked ->
                                             vm.listCheckBoxesMeger[number].value = isChecked
                                             var selectedCheckBox = 0

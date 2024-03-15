@@ -1,5 +1,6 @@
 package ru.avem.viu35.viewmodels
 
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.state.ToggleableState
 import cafe.adriel.voyager.core.model.ScreenModel
@@ -86,10 +87,10 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
         buttonPostStartPressed = false
         chopper = false
         DD2.checkResponsibility()
-        if (!DD2.isResponding) cause = "ПР102 не отвечает"
         if (isTestRunning) {
             with(DD2) {
                 needDevices.add(this)
+                checkResponsibilityAndNotify()
                 offAllKMs()
                 init()
                 DevicePoller.addWritingRegister(name, model.CMD, 1.toShort())
@@ -291,19 +292,13 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
     fun initDDs() {
         if (isTestRunning) {
             with(DD3) {
-                checkResponsibility()
-                if (!isResponding) {
-                    cause = "$name не отвечает"
-                }
+                checkResponsibilityAndNotify()
             }
         }
 
         if (isTestRunning) {
             with(DD4) {
-                checkResponsibility()
-                if (!isResponding) {
-                    cause = "$name не отвечает"
-                }
+                checkResponsibilityAndNotify()
             }
         }
     }
@@ -324,60 +319,46 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
 
     fun start() {
         if (!isTestRunning && !checkTestSettings()) {
-            thread {
-
-                transaction {
-                    Protocol.new {
-                        serial              = "mainViewModel.listSerialNumbers[0].value"
-                        dateProduct         = "mainViewModel.listDateProduct[0].value"
-                        operator            = "operatorLogin"
-                        operatorPost        = "operatorPostString"
-                        itemName            = "mainViewModel.selectedObject.value!!.name"
-                        itemType            = "mainViewModel.selectedObject.value!!.type"
-                        pointsName          = "mainViewModel.selectedField.value!!.nameTest"
-                        spec_uViu           = "mainViewModel.selectedField.value!!.uViu.toString()"
-                        spec_uViuAmp        = "(mainViewModel.selectedField.value!!.uViu * 1.41).af()"
-                        spec_uViuFault      = "mainViewModel.selectedField.value!!.uViuFault.toString()"
-                        spec_uViuAmpFault   = "1"
-                        spec_iViu           = "mainViewModel.selectedField.value!!.current.toString()"
-                        spec_uMgr           = "mainViewModel.selectedField.value!!.uMeger.toString()"
-                        spec_rMgr           = "mainViewModel.selectedField.value!!.rMeger"
-                        uViuAmp             = "mainViewModel.storedUViuAmp"
-                        uViu                = "mainViewModel.storedUViu"
-                        iViu                = "mainViewModel.listCurrents[0].value"
-                        uMgr                = "mainViewModel.specifiedUMeger.value"
-                        rMgr                = "mainViewModel.listRs[it].value"
-                        date                = "SimpleDateFormat().format(System.currentTimeMillis()).toString()"
-                        time                = "SimpleDateFormat().format(System.currentTimeMillis()).toString()"
-                        resultMgr =                            "Не проводился"
-                        resultViu =                            "Не проводился"
-                    }
-                }
-
+            thread(isDaemon = true) {
                 initTest()
-                mainViewModel.measuredUViu.value = "0.0"
-                appendOneMessageToLog("Инициализация стенда")
-//                initCP2103()
-                if (isTestRunning) DD2.checkResponsibility()
-                if (isTestRunning && !DD2.isResponding) cause += "ПР102 не отвечает"
                 mainViewModel.listColorsProtection.forEach {
                     it.value = Color(0xFF6200EE)
                 }
+                mainViewModel.measuredUViu.value = "0.0"
+                if (!checkCP2103()) {
+                    mainViewModel.showDialog("Ошибка", "Переподключите преобразователь интерфейса RS-485", "error.gif")
+                }
+                var time = 30
+                while (!checkCP2103() && isTestRunning && time-- > 0) {
+                    sleep(1000)
+                    if (time == 0) {
+                        cause = "Не был подключен преобразователь интерфейса RS-485. Проверьте порт."
+                    }
+                }
+                mainViewModel.hideDialog()
+                appendOneMessageToLog("Инициализация стенда")
+                DevicePoller.connection.connect()
+
+                if (isTestRunning) initDD2()
+                appendOneMessageToLog("Инициализация ПР102")
+                while (isTestRunning && !DD2.isResponding) {
+                    sleep(100)
+                }
+                if (isTestRunning) appendOneMessageToLog("Инициализация программируемых реле DD3 и DD4")
+                if (isTestRunning) initDDs()
+                while (isTestRunning && !DD3.isResponding && !DD4.isResponding) {
+                    sleep(100)
+                }
                 if (isTestRunning) DD3.offAll()
                 if (isTestRunning) DD4.offAll()
-                if (isTestRunning) appendOneMessageToLog("Инициализация ПР")
-                if (isTestRunning) initDD2()
 
-//                if (operatorLogin != "admin") {
                 thread(isDaemon = true) {
                     if (isTestRunning) DD2.onSound()
                     if (isTestRunning) sleep(6000)
                     DD2.offSound()
                 }
-//                }
 
                 if (isTestRunning) appendOneMessageToLog("Инициализация устройств")
-                if (isTestRunning) initDDs()
 
                 if (isTestRunning && mainViewModel.allCheckBoxesMeger.value != ToggleableState.Off) {
                     meger()
@@ -400,14 +381,15 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
         }
     }
 
-    private fun initCP2103() {
-        DevicePoller.connection.disconnect()
-        DevicePoller.connection.connect()
-        DevicePoller.stopCP2103()
-        if (PortDiscover.ports.isEmpty()) {
-            cause = "Не подключен преобразователь интерфейса"
+    private fun checkCP2103(): Boolean {
+        var cp2103Connected = false
+        PortDiscover.ports.forEach {
+            println(it.portDescription)
+            if (it.portDescription == DevicePoller.connection.adapterName) {
+                cp2103Connected = true
+            }
         }
-        if (isTestRunning) DevicePoller.startCP2103()
+        return cp2103Connected
     }
 
     private fun meger() {
@@ -647,14 +629,17 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
         val startTime = System.currentTimeMillis()
         val time = mainViewModel.specifiedTime.value.toDouble() * 1000 + startTime
 
-        thread(isDaemon = true) {
-            repeat(3) {
-                if (isTestRunning) voltageRegulation(mainViewModel.specifiedUViu.value.toDouble())
-                if (isTestRunning) sleep(1000)
+        if (isTestRunning) {
+            thread(isDaemon = true) {
+                repeat(3) {
+                    if (isTestRunning) voltageRegulation(mainViewModel.specifiedUViu.value.toDouble())
+                    if (isTestRunning) sleep(1000)
+                }
             }
         }
 
         while (isTestRunning && System.currentTimeMillis() < (time)) {
+            if (!mainViewModel.listViu.any { it }) break
             mainViewModel.measuredTime.value =
                 "%.1f".format(Locale.ENGLISH, abs(time - System.currentTimeMillis()) / 1000)
             sleep(100)
@@ -664,8 +649,8 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
         mainViewModel.storedUViu = mainViewModel.measuredUViu.value
         mainViewModel.storedUViuAmp = mainViewModel.measuredUViuAmp.value
 
-        for (listCurrent in listCurrentsState.indices) {
-            listCurrentsState[listCurrent] = false
+        for (i in listCurrentsState.indices) {
+            listCurrentsState[i] = false
         }
 
         appendOneMessageToLog("Снижения напряжения")
@@ -851,6 +836,9 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
 
 
     private fun finalizeTest() {
+        mainViewModel.listCheckBoxesViu = List(10) { mutableStateOf(false) }
+        mainViewModel.listViu = MutableList(10) { false }
+        mainViewModel.listCheckBoxesMeger = List(10) { mutableStateOf(false) }
         isTestRunning = false
         if (PR65.isResponding) PR65.reset()
         DevicePoller.clearPollingRegisters()
@@ -918,12 +906,15 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
         mainViewModel.measuredI.value = ""
         mainViewModel.measuredUMeger.value = ""
         mainViewModel.logState.value = false
+        mainViewModel.allCheckBoxesViu.value = ToggleableState.Off
+        mainViewModel.allCheckBoxesMeger.value = ToggleableState.Off
 
         if (cause == "") {
             appendOneMessageToLog("Испытание завершено")
         } else {
             appendOneMessageToLog("Испытание прервано по ошибке: $cause")
         }
+        DevicePoller.connection.disconnect()
     }
 
     fun stop() {
@@ -1200,6 +1191,7 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
             ATR240.startUpLATRPulse(direction, speedPerc)
             ATR241.startUpLATRPulse(direction, speedPerc * coefLatr2)
             if (isTestRunning) sleep(500)
+            if (!mainViewModel.listViu.any { it }) break
         }
         ATR240.stopLATR()
         ATR241.stopLATR()
@@ -1216,6 +1208,7 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
             ATR240.startUpLATRPulse(direction, timePulsePerc)
             ATR241.startUpLATRPulse(direction, timePulsePerc * coefLatr2)
             if (isTestRunning) sleep(500)
+            if (!mainViewModel.listViu.any { it }) break
         }
         ATR240.stopLATR()
         ATR241.stopLATR()
@@ -1248,6 +1241,7 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
                 }
             }
             if (isTestRunning) sleep(500)
+            if (!mainViewModel.listViu.any { it }) break
         }
         if (System.currentTimeMillis() - timer > 60000) cause = "Превышено время регулирования"
         ATR240.stopLATR()

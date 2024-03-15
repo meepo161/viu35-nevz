@@ -434,7 +434,7 @@ class ObjectEditorScreen(private var mainViewModel: MainScreenViewModel) : Scree
                                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                                         ) {
                                             Icon(imageVector = Icons.Filled.Add, contentDescription = null)
-                                            Text(text = "Добавить")
+                                            Text(text = "Добавить", fontSize = 20.sp)
                                         }
                                     }
                                     Button(
@@ -470,7 +470,7 @@ class ObjectEditorScreen(private var mainViewModel: MainScreenViewModel) : Scree
                                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                                         ) {
                                             Icon(imageVector = Icons.Filled.ContentCopy, contentDescription = null)
-                                            Text(text = "Копировать")
+                                            Text(text = "Копировать", fontSize = 20.sp)
                                         }
                                     }
                                     Button(
@@ -489,7 +489,7 @@ class ObjectEditorScreen(private var mainViewModel: MainScreenViewModel) : Scree
                                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                                         ) {
                                             Icon(imageVector = Icons.Filled.Delete, contentDescription = null)
-                                            Text(text = "Удалить")
+                                            Text(text = "Удалить", fontSize = 20.sp)
                                         }
                                     }
 

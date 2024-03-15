@@ -3,6 +3,7 @@ import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 plugins {
     kotlin("multiplatform") version ("1.8.0")
     id("org.jetbrains.compose") version ("1.4.0")
+    id("com.github.johnrengelman.shadow") version "7.1.2"
 }
 
 apply(plugin = "java")
@@ -21,7 +22,7 @@ repositories {
 
 tasks.withType<Jar> {
     manifest {
-        attributes["Main-Class"] = "ru.avem.viu35.MainKt"
+        attributes["Main-Class"] = "MainKt"
     }
 }
 
