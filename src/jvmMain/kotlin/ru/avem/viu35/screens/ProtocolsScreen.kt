@@ -21,7 +21,7 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import com.darkrockstudios.libraries.mpfilepicker.DirectoryPicker
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import operatorLogin
+import ru.avem.viu35.operatorLogin
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.transactions.transaction

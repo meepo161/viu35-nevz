@@ -19,11 +19,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import isDarkTheme
-import operatorLogin
 import ru.avem.composables.DrawerMenuItem
 import ru.avem.viu35.database.DBManager
 import ru.avem.viu35.file
+import ru.avem.viu35.isDarkTheme
+import ru.avem.viu35.operatorLogin
 import ru.avem.viu35.screens.ObjectEditorScreen
 import ru.avem.viu35.screens.ProtocolsScreen
 import ru.avem.viu35.screens.UserEditorScreen

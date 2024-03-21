@@ -22,7 +22,7 @@ repositories {
 
 tasks.withType<Jar> {
     manifest {
-        attributes["Main-Class"] = "MainKt"
+        attributes["Main-Class"] = "ru.avem.viu35.MainKt"
     }
 }
 
@@ -80,7 +80,7 @@ kotlin {
 
 compose.desktop {
     application {
-        mainClass = "MainKt"
+        mainClass = "ru.avem.viu35.MainKt"
         nativeDistributions {
             windows {
                 iconFile.set(project.file("icon.ico"))

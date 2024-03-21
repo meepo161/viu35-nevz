@@ -4,11 +4,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.state.ToggleableState
 import cafe.adriel.voyager.core.model.ScreenModel
-import isTestRunning
+import ru.avem.viu35.isTestRunning
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import operatorLogin
-import operatorPostString
+import ru.avem.viu35.operatorLogin
+import ru.avem.viu35.operatorPostString
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.avem.kserialpooler.PortDiscover
 import ru.avem.library.polling.IDeviceController
@@ -78,7 +78,17 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
         if (isTestRunning) {
             with(this) {
                 checkResponsibility()
-                if (!isResponding) cause = "$name ${"не отвечает"}"
+                if (!isResponding) {
+                    DevicePoller.connection.disconnect()
+                    sleep(500)
+                    DevicePoller.connection.connect()
+                    sleep(500)
+                    if (!checkCP2103()) {
+                        cause = "Преобразователь интерфейса RS-485 не отвечает."
+                    } else {
+                        cause = "$name ${"не отвечает"}"
+                    }
+                }
             }
         }
     }
@@ -381,16 +391,8 @@ class TestViewModel(private var mainViewModel: MainScreenViewModel, private val 
         }
     }
 
-    private fun checkCP2103(): Boolean {
-        var cp2103Connected = false
-        PortDiscover.ports.forEach {
-            println(it.portDescription)
-            if (it.portDescription == DevicePoller.connection.adapterName) {
-                cp2103Connected = true
-            }
-        }
-        return cp2103Connected
-    }
+    private fun checkCP2103() =
+        PortDiscover.ports.any { it.portDescription == DevicePoller.connection.adapterName }
 
     private fun meger() {
         if (isTestRunning) appendOneMessageToLog("Начало испытания МГР")

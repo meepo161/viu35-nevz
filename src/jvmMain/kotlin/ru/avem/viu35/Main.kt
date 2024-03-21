@@ -1,3 +1,4 @@
+package ru.avem.viu35
 
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.desktop.ui.tooling.preview.Preview
@@ -13,7 +14,6 @@ import androidx.compose.ui.window.rememberWindowState
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.transitions.SlideTransition
 import ru.avem.viu35.database.DBManager
-import ru.avem.viu35.file
 import ru.avem.viu35.screens.auth.LoginScreen
 import kotlin.system.exitProcess
 

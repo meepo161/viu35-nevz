@@ -33,9 +33,9 @@ import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import isTestRunning
+import ru.avem.viu35.isTestRunning
 import kotlinx.coroutines.launch
-import onExit
+import ru.avem.viu35.onExit
 import org.jetbrains.skia.Image
 import ru.avem.viu35.composables.*
 import ru.avem.viu35.viewmodels.MainScreenViewModel

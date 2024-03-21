@@ -31,9 +31,9 @@ import cafe.adriel.voyager.core.lifecycle.LifecycleEffect
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import onExit
-import operatorLogin
-import operatorPostString
+import ru.avem.viu35.onExit
+import ru.avem.viu35.operatorLogin
+import ru.avem.viu35.operatorPostString
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.avem.viu35.composables.ComboBox
